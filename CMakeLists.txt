@@ -1,5 +1,7 @@
 project(JavaScriptCore)
 
+set(CMAKE_CXX_STANDARD 14)
+
 set(DYLIB_COMPAT_VERSION "1.0.0")
 set(DYLIB_CURRENT_VERSION "604.4.7")
 
@@ -36,6 +38,7 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}/wasm/js
 	${CMAKE_CURRENT_SOURCE_DIR}/yarr
 	${CMAKE_CURRENT_SOURCE_DIR}/DerrivedSources
+	${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 add_framework(JavaScriptCore
@@ -996,6 +999,7 @@ add_framework(JavaScriptCore
 	    yarr/YarrSyntaxChecker.cpp
 
     DEPENDENCIES
+    	WTF
         objc
 	CoreServices
 	CoreFoundation
@@ -1006,3 +1010,9 @@ add_framework(JavaScriptCore
 	cxx
         system
 )
+
+set_source_files_properties(bytecode/CodeBlock.cpp PROPERTIES
+	COMPILE_FLAGS -fno-strict-aliasing)
+
+set_source_files_properties(heap/Heap.cpp runtime/ProxyObject.cpp PROPERTIES
+	COMPILE_FLAGS -fno-optimize-sibling-calls)
