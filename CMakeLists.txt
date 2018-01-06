@@ -5,6 +5,10 @@ set(CMAKE_CXX_STANDARD 14)
 set(DYLIB_COMPAT_VERSION "1.0.0")
 set(DYLIB_CURRENT_VERSION "604.4.7")
 
+add_definitions(
+	-DNDEBUG
+)
+
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}/API
 	${CMAKE_CURRENT_SOURCE_DIR}/ForwardingHeaders
@@ -39,6 +43,23 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}/yarr
 	${CMAKE_CURRENT_SOURCE_DIR}/DerrivedSources
 	${CMAKE_CURRENT_SOURCE_DIR}
+	${CMAKE_CURRENT_SOURCE_DIR}/inspector/remote/cocoa
+	${CMAKE_CURRENT_BINARY_DIR}
+)
+
+# Necessary for WTF headers
+add_compile_options(
+	-mmacosx-version-min=10.12
+	-Wno-gcc-compat
+)
+
+set(FILE_ONE "${CMAKE_CURRENT_SOURCE_DIR}/llint/LowLevelInterpreter.asm")
+set(FILE_TWO "${CMAKE_CURRENT_SOURCE_DIR}/DerrivedSources/InitBytecodes.asm")
+set(FILE_THREE "${CMAKE_CURRENT_SOURCE_DIR}/llint/LowLevelInterpreter64.asm")
+set(FILE_FOUR "${CMAKE_CURRENT_SOURCE_DIR}/llint/LowLevelInterpreter32_64.asm")
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DerrivedSources/LLIntAssembly.h.in
+	${CMAKE_CURRENT_BINARY_DIR}/LLIntAssembly.h
 )
 
 add_framework(JavaScriptCore
@@ -1009,6 +1030,28 @@ add_framework(JavaScriptCore
 	Security
 	cxx
         system
+)
+
+set_property(TARGET JavaScriptCore APPEND_STRING PROPERTY LINK_FLAGS
+	" -mmacosx-version-min=10.12 \
+	-Wl,-order_file,${CMAKE_CURRENT_SOURCE_DIR}/JavaScriptCore.order \
+	-Wl,-Y,3 \
+	-Wl,-unexported_symbol -Wl,__ZTISt9bad_alloc \
+	-Wl,-unexported_symbol -Wl,__ZTISt9exception \
+	-Wl,-unexported_symbol -Wl,__ZTSSt9bad_alloc \
+	-Wl,-unexported_symbol -Wl,__ZTSSt9exception \
+	-Wl,-unexported_symbol -Wl,__ZdlPvS_ \
+	-Wl,-unexported_symbol -Wl,__ZnwmPv \
+	-Wl,-unexported_symbol -Wl,__ZNKSt3__18functionIFvvEEclEv \
+	-Wl,-unexported_symbol -Wl,__ZNSt3__18functionIFvvEEC1EOS2_ \
+	-Wl,-unexported_symbol -Wl,__ZNSt3__18functionIFvvEEC2EOS2_ \
+	-Wl,-unexported_symbol -Wl,__ZNKSt3__18functionIFvRN3JSC17BytecodeGeneratorEPNS1_10RegisterIDEEEclES3_S5_ \
+	-Wl,-unexported_symbol -Wl,__ZNSt3__18functionIFvRN3JSC17BytecodeGeneratorEPNS1_10RegisterIDEEED1Ev \
+	-Wl,-unexported_symbol -Wl,__ZNSt3__18functionIFvRN3JSC17BytecodeGeneratorEPNS1_10RegisterIDEEED2Ev \
+	-Wl,-unexported_symbol -Wl,__ZNSt3__18functionIFvvEED1Ev \
+	-Wl,-unexported_symbol -Wl,__ZNSt3__18functionIFvvEED2Ev \
+	-Wl,-unexported_symbol -Wl,__ZTVNSt3__117bad_function_callE \
+	-Wl,-all_load"
 )
 
 set_source_files_properties(bytecode/CodeBlock.cpp PROPERTIES
