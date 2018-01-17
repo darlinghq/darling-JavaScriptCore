@@ -1144,7 +1144,8 @@ set_property(TARGET JavaScriptCore APPEND_STRING PROPERTY LINK_FLAGS
 	-Wl,-unexported_symbol -Wl,__ZNSt3__18functionIFvvEED1Ev \
 	-Wl,-unexported_symbol -Wl,__ZNSt3__18functionIFvvEED2Ev \
 	-Wl,-unexported_symbol -Wl,__ZTVNSt3__117bad_function_callE \
-	-Wl,-all_load "
+	-Wl,-all_load
+	-Wl,-undefined,warning "
 )
 
 set_source_files_properties(bytecode/CodeBlock.cpp PROPERTIES
