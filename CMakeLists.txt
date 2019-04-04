@@ -77,6 +77,8 @@ add_definitions(
 	-DU_HIDE_DEPRECATED_API
 	-DU_DISABLE_RENAMING=1
 	-DU_SHOW_CPLUSPLUS_API=0
+
+	-DPRIVATE # For kdebug
 )
 
 include_directories(
