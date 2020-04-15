@@ -595,10 +595,10 @@ typedef std::pair<JSC::JSObject*, JSC::JSObject*> ConstructorPrototypePair;
         });
 
         if (!conformsToExportProtocol)
-            return m_classMap[cls] = [self classInfoForClass:class_getSuperclass(cls)];
+            return m_classMap[(id<NSCopying>)cls] = [self classInfoForClass:class_getSuperclass(cls)];
     }
 
-    return m_classMap[cls] = [[[JSObjCClassInfo alloc] initForClass:cls] autorelease];
+    return m_classMap[(id<NSCopying>)cls] = [[[JSObjCClassInfo alloc] initForClass:cls] autorelease];
 }
 
 - (JSValue *)jsWrapperForObject:(id)object inContext:(JSContext *)context
