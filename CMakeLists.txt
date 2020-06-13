@@ -136,7 +136,6 @@ add_compile_options(
 	-fasm-blocks
 	-fstrict-aliasing
 	-Winvalid-offsetof
-	-mmacosx-version-min=10.13
 	-g
 	-fvisibility=hidden
 	-fvisibility-inlines-hidden
@@ -1124,8 +1123,7 @@ add_framework(JavaScriptCore
 )
 
 set_property(TARGET JavaScriptCore APPEND_STRING PROPERTY LINK_FLAGS
-	" -mmacosx-version-min=10.13 \
-	-dead_strip \
+	" -dead_strip \
 	-fobjc-link-runtime \
 	-sub_library libobjc \
 	-single_module \
