@@ -30,10 +30,10 @@ class ArrayPrototype;
 class JSArray;
 class GetterSetter;
 
-class ArrayConstructor : public InternalFunction {
+class ArrayConstructor final : public InternalFunction {
 public:
     typedef InternalFunction Base;
-    static const unsigned StructureFlags = HasStaticPropertyTable | InternalFunction::StructureFlags;
+    static const unsigned StructureFlags = Base::StructureFlags | HasStaticPropertyTable;
 
     static ArrayConstructor* create(VM& vm, JSGlobalObject* globalObject, Structure* structure, ArrayPrototype* arrayPrototype, GetterSetter* speciesSymbol)
     {
@@ -46,7 +46,7 @@ public:
 
     static Structure* createStructure(VM& vm, JSGlobalObject* globalObject, JSValue prototype)
     {
-        return Structure::create(vm, globalObject, prototype, TypeInfo(ObjectType, StructureFlags), info());
+        return Structure::create(vm, globalObject, prototype, TypeInfo(InternalFunctionType, StructureFlags), info());
     }
 
 protected:
@@ -54,14 +54,10 @@ protected:
 
 private:
     ArrayConstructor(VM&, Structure*);
-
-    static ConstructType getConstructData(JSCell*, ConstructData&);
-    static CallType getCallData(JSCell*, CallData&);
 };
 
-JSValue constructArrayWithSizeQuirk(ExecState*, ArrayAllocationProfile*, JSGlobalObject*, JSValue length, JSValue prototype = JSValue());
+JSArray* constructArrayWithSizeQuirk(ExecState*, ArrayAllocationProfile*, JSGlobalObject*, JSValue length, JSValue prototype = JSValue());
 
-EncodedJSValue JSC_HOST_CALL arrayConstructorPrivateFuncIsArrayConstructor(ExecState*);
 EncodedJSValue JSC_HOST_CALL arrayConstructorPrivateFuncIsArraySlow(ExecState*);
 bool isArraySlow(ExecState*, ProxyObject* argument);
 

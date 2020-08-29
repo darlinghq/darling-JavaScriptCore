@@ -48,8 +48,7 @@ void GeneratorPrototype::finishCreation(VM& vm)
 {
     Base::finishCreation(vm);
     ASSERT(inherits(vm, info()));
-    putDirectWithoutTransition(vm, vm.propertyNames->toStringTagSymbol, jsString(&vm, "Generator"), DontEnum | ReadOnly);
-    vm.prototypeMap.addPrototype(this);
+    putDirectWithoutTransition(vm, vm.propertyNames->toStringTagSymbol, jsString(&vm, "Generator"), PropertyAttribute::DontEnum | PropertyAttribute::ReadOnly);
 }
 
 } // namespace JSC

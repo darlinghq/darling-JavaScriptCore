@@ -56,19 +56,21 @@ const ClassInfo SymbolConstructor::s_info = { "Function", &Base::s_info, &symbol
 @end
 */
 
+static EncodedJSValue JSC_HOST_CALL callSymbol(ExecState*);
+
 SymbolConstructor::SymbolConstructor(VM& vm, Structure* structure)
-    : InternalFunction(vm, structure)
+    : InternalFunction(vm, structure, callSymbol, nullptr)
 {
 }
 
 #define INITIALIZE_WELL_KNOWN_SYMBOLS(name) \
-    putDirectWithoutTransition(vm, Identifier::fromString(&vm, #name), Symbol::create(vm, static_cast<SymbolImpl&>(*vm.propertyNames->name##Symbol.impl())), DontEnum | DontDelete | ReadOnly);
+putDirectWithoutTransition(vm, Identifier::fromString(&vm, #name), Symbol::create(vm, static_cast<SymbolImpl&>(*vm.propertyNames->name##Symbol.impl())), PropertyAttribute::DontEnum | PropertyAttribute::DontDelete | PropertyAttribute::ReadOnly);
 
 void SymbolConstructor::finishCreation(VM& vm, SymbolPrototype* prototype)
 {
-    Base::finishCreation(vm, prototype->classInfo(vm)->className);
-    putDirectWithoutTransition(vm, vm.propertyNames->prototype, prototype, DontEnum | DontDelete | ReadOnly);
-    putDirectWithoutTransition(vm, vm.propertyNames->length, jsNumber(0), ReadOnly | DontEnum);
+    Base::finishCreation(vm, vm.propertyNames->Symbol.string(), NameVisibility::Visible, NameAdditionMode::WithoutStructureTransition);
+    putDirectWithoutTransition(vm, vm.propertyNames->prototype, prototype, PropertyAttribute::DontEnum | PropertyAttribute::DontDelete | PropertyAttribute::ReadOnly);
+    putDirectWithoutTransition(vm, vm.propertyNames->length, jsNumber(0), PropertyAttribute::ReadOnly | PropertyAttribute::DontEnum);
 
     JSC_COMMON_PRIVATE_IDENTIFIERS_EACH_WELL_KNOWN_SYMBOL(INITIALIZE_WELL_KNOWN_SYMBOLS)
 }
@@ -77,21 +79,16 @@ void SymbolConstructor::finishCreation(VM& vm, SymbolPrototype* prototype)
 
 static EncodedJSValue JSC_HOST_CALL callSymbol(ExecState* exec)
 {
+    VM& vm = exec->vm();
+    auto scope = DECLARE_THROW_SCOPE(vm);
+
     JSValue description = exec->argument(0);
     if (description.isUndefined())
-        return JSValue::encode(Symbol::create(exec->vm()));
-    return JSValue::encode(Symbol::create(exec, description.toString(exec)));
-}
+        return JSValue::encode(Symbol::create(vm));
 
-ConstructType SymbolConstructor::getConstructData(JSCell*, ConstructData&)
-{
-    return ConstructType::None;
-}
-
-CallType SymbolConstructor::getCallData(JSCell*, CallData& callData)
-{
-    callData.native.function = callSymbol;
-    return CallType::Host;
+    String string = description.toWTFString(exec);
+    RETURN_IF_EXCEPTION(scope, { });
+    return JSValue::encode(Symbol::createWithDescription(vm, string));
 }
 
 EncodedJSValue JSC_HOST_CALL symbolConstructorFor(ExecState* exec)
@@ -107,7 +104,7 @@ EncodedJSValue JSC_HOST_CALL symbolConstructorFor(ExecState* exec)
     return JSValue::encode(Symbol::create(exec->vm(), exec->vm().symbolRegistry().symbolForKey(string)));
 }
 
-const char* const SymbolKeyForTypeError = "Symbol.keyFor requires that the first argument be a symbol";
+const ASCIILiteral SymbolKeyForTypeError { "Symbol.keyFor requires that the first argument be a symbol"_s };
 
 EncodedJSValue JSC_HOST_CALL symbolConstructorKeyFor(ExecState* exec)
 {
@@ -116,9 +113,10 @@ EncodedJSValue JSC_HOST_CALL symbolConstructorKeyFor(ExecState* exec)
 
     JSValue symbolValue = exec->argument(0);
     if (!symbolValue.isSymbol())
-        return JSValue::encode(throwTypeError(exec, scope, ASCIILiteral(SymbolKeyForTypeError)));
+        return JSValue::encode(throwTypeError(exec, scope, SymbolKeyForTypeError));
 
-    SymbolImpl& uid = asSymbol(symbolValue)->privateName().uid();
+    PrivateName privateName = asSymbol(symbolValue)->privateName();
+    SymbolImpl& uid = privateName.uid();
     if (!uid.symbolRegistry())
         return JSValue::encode(jsUndefined());
 

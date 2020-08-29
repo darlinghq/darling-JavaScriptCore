@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008, 2013, 2016 Apple Inc. All rights reserved.
+ * Copyright (C) 2008-2019 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,6 +34,10 @@
 namespace JSC {
 
     class UnlinkedSourceCode {
+        template<typename SourceType>
+        friend class CachedUnlinkedSourceCodeShape;
+        friend class CachedSourceCodeWithoutProvider;
+
     public:
         UnlinkedSourceCode()
             : m_provider(0)
@@ -68,14 +72,12 @@ namespace JSC {
         {
         }
 
-        UnlinkedSourceCode(const UnlinkedSourceCode& other)
-            : m_provider(other.m_provider)
-            , m_startOffset(other.m_startOffset)
-            , m_endOffset(other.m_endOffset)
-        {
-        }
-
         bool isHashTableDeletedValue() const { return m_provider.isHashTableDeletedValue(); }
+
+        SourceProvider& provider() const
+        {
+            return *m_provider;
+        }
 
         unsigned hash() const
         {

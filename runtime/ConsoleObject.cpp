@@ -34,6 +34,18 @@
 
 namespace JSC {
 
+static String valueOrDefaultLabelString(ExecState* exec)
+{
+    if (exec->argumentCount() < 1)
+        return "default"_s;
+
+    auto value = exec->argument(0);
+    if (value.isUndefined())
+        return "default"_s;
+
+    return value.toWTFString(exec);
+}
+
 STATIC_ASSERT_IS_TRIVIALLY_DESTRUCTIBLE(ConsoleObject);
 
 static EncodedJSValue JSC_HOST_CALL consoleProtoFuncDebug(ExecState*);
@@ -48,15 +60,20 @@ static EncodedJSValue JSC_HOST_CALL consoleProtoFuncTable(ExecState*);
 static EncodedJSValue JSC_HOST_CALL consoleProtoFuncTrace(ExecState*);
 static EncodedJSValue JSC_HOST_CALL consoleProtoFuncAssert(ExecState*);
 static EncodedJSValue JSC_HOST_CALL consoleProtoFuncCount(ExecState*);
+static EncodedJSValue JSC_HOST_CALL consoleProtoFuncCountReset(ExecState*);
 static EncodedJSValue JSC_HOST_CALL consoleProtoFuncProfile(ExecState*);
 static EncodedJSValue JSC_HOST_CALL consoleProtoFuncProfileEnd(ExecState*);
 static EncodedJSValue JSC_HOST_CALL consoleProtoFuncTakeHeapSnapshot(ExecState*);
 static EncodedJSValue JSC_HOST_CALL consoleProtoFuncTime(ExecState*);
+static EncodedJSValue JSC_HOST_CALL consoleProtoFuncTimeLog(ExecState*);
 static EncodedJSValue JSC_HOST_CALL consoleProtoFuncTimeEnd(ExecState*);
 static EncodedJSValue JSC_HOST_CALL consoleProtoFuncTimeStamp(ExecState*);
 static EncodedJSValue JSC_HOST_CALL consoleProtoFuncGroup(ExecState*);
 static EncodedJSValue JSC_HOST_CALL consoleProtoFuncGroupCollapsed(ExecState*);
 static EncodedJSValue JSC_HOST_CALL consoleProtoFuncGroupEnd(ExecState*);
+static EncodedJSValue JSC_HOST_CALL consoleProtoFuncRecord(ExecState*);
+static EncodedJSValue JSC_HOST_CALL consoleProtoFuncRecordEnd(ExecState*);
+static EncodedJSValue JSC_HOST_CALL consoleProtoFuncScreenshot(ExecState*);
 
 const ClassInfo ConsoleObject::s_info = { "Console", &Base::s_info, nullptr, nullptr, CREATE_METHOD_TABLE(ConsoleObject) };
 
@@ -73,28 +90,33 @@ void ConsoleObject::finishCreation(VM& vm, JSGlobalObject* globalObject)
     // For legacy reasons, console properties are enumerable, writable, deleteable,
     // and all have a length of 0. This may change if Console is standardized.
 
-    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("debug", consoleProtoFuncDebug, None, 0);
-    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("error", consoleProtoFuncError, None, 0);
-    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("log", consoleProtoFuncLog, None, 0);
-    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("info", consoleProtoFuncInfo, None, 0);
-    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("warn", consoleProtoFuncWarn, None, 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("debug", consoleProtoFuncDebug, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("error", consoleProtoFuncError, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("log", consoleProtoFuncLog, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("info", consoleProtoFuncInfo, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("warn", consoleProtoFuncWarn, static_cast<unsigned>(PropertyAttribute::None), 0);
 
-    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION(vm.propertyNames->clear, consoleProtoFuncClear, None, 0);
-    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("dir", consoleProtoFuncDir, None, 0);
-    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("dirxml", consoleProtoFuncDirXML, None, 0);
-    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("table", consoleProtoFuncTable, None, 0);
-    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("trace", consoleProtoFuncTrace, None, 0);
-    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("assert", consoleProtoFuncAssert, None, 0);
-    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION(vm.propertyNames->count, consoleProtoFuncCount, None, 0);
-    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("profile", consoleProtoFuncProfile, None, 0);
-    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("profileEnd", consoleProtoFuncProfileEnd, None, 0);
-    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("time", consoleProtoFuncTime, None, 0);
-    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("timeEnd", consoleProtoFuncTimeEnd, None, 0);
-    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("timeStamp", consoleProtoFuncTimeStamp, None, 0);
-    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("takeHeapSnapshot", consoleProtoFuncTakeHeapSnapshot, None, 0);
-    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("group", consoleProtoFuncGroup, None, 0);
-    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("groupCollapsed", consoleProtoFuncGroupCollapsed, None, 0);
-    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("groupEnd", consoleProtoFuncGroupEnd, None, 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION(vm.propertyNames->clear, consoleProtoFuncClear, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("dir", consoleProtoFuncDir, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("dirxml", consoleProtoFuncDirXML, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("table", consoleProtoFuncTable, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("trace", consoleProtoFuncTrace, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("assert", consoleProtoFuncAssert, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION(vm.propertyNames->count, consoleProtoFuncCount, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("countReset", consoleProtoFuncCountReset, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("profile", consoleProtoFuncProfile, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("profileEnd", consoleProtoFuncProfileEnd, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("time", consoleProtoFuncTime, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("timeLog", consoleProtoFuncTimeLog, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("timeEnd", consoleProtoFuncTimeEnd, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("timeStamp", consoleProtoFuncTimeStamp, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("takeHeapSnapshot", consoleProtoFuncTakeHeapSnapshot, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("group", consoleProtoFuncGroup, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("groupCollapsed", consoleProtoFuncGroupCollapsed, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("groupEnd", consoleProtoFuncGroupEnd, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("record", consoleProtoFuncRecord, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("recordEnd", consoleProtoFuncRecordEnd, static_cast<unsigned>(PropertyAttribute::None), 0);
+    JSC_NATIVE_FUNCTION_WITHOUT_TRANSITION("screenshot", consoleProtoFuncScreenshot, static_cast<unsigned>(PropertyAttribute::None), 0);
 }
 
 static String valueToStringWithUndefinedOrNullCheck(ExecState* exec, JSValue value)
@@ -209,11 +231,29 @@ static EncodedJSValue JSC_HOST_CALL consoleProtoFuncAssert(ExecState* exec)
 
 static EncodedJSValue JSC_HOST_CALL consoleProtoFuncCount(ExecState* exec)
 {
-    ConsoleClient* client = exec->lexicalGlobalObject()->consoleClient();
+    auto scope = DECLARE_THROW_SCOPE(exec->vm());
+    auto* client = exec->lexicalGlobalObject()->consoleClient();
     if (!client)
         return JSValue::encode(jsUndefined());
 
-    client->count(exec, Inspector::createScriptArguments(exec, 0));
+    auto label = valueOrDefaultLabelString(exec);
+    RETURN_IF_EXCEPTION(scope, encodedJSValue());
+
+    client->count(exec, label);
+    return JSValue::encode(jsUndefined());
+}
+
+static EncodedJSValue JSC_HOST_CALL consoleProtoFuncCountReset(ExecState* exec)
+{
+    auto scope = DECLARE_THROW_SCOPE(exec->vm());
+    auto* client = exec->lexicalGlobalObject()->consoleClient();
+    if (!client)
+        return JSValue::encode(jsUndefined());
+
+    auto label = valueOrDefaultLabelString(exec);
+    RETURN_IF_EXCEPTION(scope, encodedJSValue());
+
+    client->countReset(exec, label);
     return JSValue::encode(jsUndefined());
 }
 
@@ -280,50 +320,45 @@ static EncodedJSValue JSC_HOST_CALL consoleProtoFuncTakeHeapSnapshot(ExecState* 
     return JSValue::encode(jsUndefined());
 }
 
-static String valueOrDefaultLabelString(ExecState* exec, JSValue value)
-{
-    if (value.isUndefined())
-        return ASCIILiteral("default");
-    return value.toWTFString(exec);
-}
-
 static EncodedJSValue JSC_HOST_CALL consoleProtoFuncTime(ExecState* exec)
 {
-    VM& vm = exec->vm();
-    auto scope = DECLARE_THROW_SCOPE(vm);
-    ConsoleClient* client = exec->lexicalGlobalObject()->consoleClient();
+    auto scope = DECLARE_THROW_SCOPE(exec->vm());
+    auto* client = exec->lexicalGlobalObject()->consoleClient();
     if (!client)
         return JSValue::encode(jsUndefined());
 
-    String title;
-    if (exec->argumentCount() < 1)
-        title = ASCIILiteral("default");
-    else {
-        title = valueOrDefaultLabelString(exec, exec->argument(0));
-        RETURN_IF_EXCEPTION(scope, encodedJSValue());
-    }
+    auto label = valueOrDefaultLabelString(exec);
+    RETURN_IF_EXCEPTION(scope, encodedJSValue());
 
-    client->time(exec, title);
+    client->time(exec, label);
+    return JSValue::encode(jsUndefined());
+}
+
+static EncodedJSValue JSC_HOST_CALL consoleProtoFuncTimeLog(ExecState* exec)
+{
+    auto scope = DECLARE_THROW_SCOPE(exec->vm());
+    auto* client = exec->lexicalGlobalObject()->consoleClient();
+    if (!client)
+        return JSValue::encode(jsUndefined());
+
+    auto label = valueOrDefaultLabelString(exec);
+    RETURN_IF_EXCEPTION(scope, encodedJSValue());
+
+    client->timeLog(exec, label, Inspector::createScriptArguments(exec, 1));
     return JSValue::encode(jsUndefined());
 }
 
 static EncodedJSValue JSC_HOST_CALL consoleProtoFuncTimeEnd(ExecState* exec)
 {
-    VM& vm = exec->vm();
-    auto scope = DECLARE_THROW_SCOPE(vm);
-    ConsoleClient* client = exec->lexicalGlobalObject()->consoleClient();
+    auto scope = DECLARE_THROW_SCOPE(exec->vm());
+    auto* client = exec->lexicalGlobalObject()->consoleClient();
     if (!client)
         return JSValue::encode(jsUndefined());
 
-    String title;
-    if (exec->argumentCount() < 1)
-        title =  ASCIILiteral("default");
-    else {
-        title = valueOrDefaultLabelString(exec, exec->argument(0));
-        RETURN_IF_EXCEPTION(scope, encodedJSValue());
-    }
+    auto label = valueOrDefaultLabelString(exec);
+    RETURN_IF_EXCEPTION(scope, encodedJSValue());
 
-    client->timeEnd(exec, title);
+    client->timeEnd(exec, label);
     return JSValue::encode(jsUndefined());
 }
 
@@ -364,6 +399,36 @@ static EncodedJSValue JSC_HOST_CALL consoleProtoFuncGroupEnd(ExecState* exec)
         return JSValue::encode(jsUndefined());
 
     client->groupEnd(exec, Inspector::createScriptArguments(exec, 0));
+    return JSValue::encode(jsUndefined());
+}
+
+static EncodedJSValue JSC_HOST_CALL consoleProtoFuncRecord(ExecState* exec)
+{
+    ConsoleClient* client = exec->lexicalGlobalObject()->consoleClient();
+    if (!client)
+        return JSValue::encode(jsUndefined());
+
+    client->record(exec, Inspector::createScriptArguments(exec, 0));
+    return JSValue::encode(jsUndefined());
+}
+
+static EncodedJSValue JSC_HOST_CALL consoleProtoFuncRecordEnd(ExecState* exec)
+{
+    ConsoleClient* client = exec->lexicalGlobalObject()->consoleClient();
+    if (!client)
+        return JSValue::encode(jsUndefined());
+
+    client->recordEnd(exec, Inspector::createScriptArguments(exec, 0));
+    return JSValue::encode(jsUndefined());
+}
+
+static EncodedJSValue JSC_HOST_CALL consoleProtoFuncScreenshot(ExecState* exec)
+{
+    ConsoleClient* client = exec->lexicalGlobalObject()->consoleClient();
+    if (!client)
+        return JSValue::encode(jsUndefined());
+
+    client->screenshot(exec, Inspector::createScriptArguments(exec, 0));
     return JSValue::encode(jsUndefined());
 }
 

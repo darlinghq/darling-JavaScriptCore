@@ -27,10 +27,16 @@
 
 #if ENABLE(WEBASSEMBLY)
 
+#include "WasmMemoryMode.h"
 #include "WasmPageCount.h"
 
+#include <wtf/CagedPtr.h>
+#include <wtf/Expected.h>
+#include <wtf/Function.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
+#include <wtf/Vector.h>
+#include <wtf/WeakPtr.h>
 
 namespace WTF {
 class PrintStream;
@@ -38,18 +44,9 @@ class PrintStream;
 
 namespace JSC {
 
-class VM;
-
 namespace Wasm {
 
-// FIXME: We should support other modes. see: https://bugs.webkit.org/show_bug.cgi?id=162693
-enum class MemoryMode : uint8_t {
-    BoundsChecking,
-    Signaling,
-    NumberOfMemoryModes
-};
-static constexpr size_t NumberOfMemoryModes = static_cast<size_t>(MemoryMode::NumberOfMemoryModes);
-JS_EXPORT_PRIVATE const char* makeString(MemoryMode);
+class Instance;
 
 class Memory : public RefCounted<Memory> {
     WTF_MAKE_NONCOPYABLE(Memory);
@@ -58,19 +55,21 @@ public:
     void dump(WTF::PrintStream&) const;
 
     explicit operator bool() const { return !!m_memory; }
+    
+    enum NotifyPressure { NotifyPressureTag };
+    enum SyncTryToReclaim { SyncTryToReclaimTag };
+    enum GrowSuccess { GrowSuccessTag };
 
-    static void initializePreallocations();
-    static RefPtr<Memory> create(VM&, PageCount initial, PageCount maximum);
+    static Ref<Memory> create();
+    static RefPtr<Memory> tryCreate(PageCount initial, PageCount maximum, WTF::Function<void(NotifyPressure)>&& notifyMemoryPressure, WTF::Function<void(SyncTryToReclaim)>&& syncTryToReclaimMemory, WTF::Function<void(GrowSuccess, PageCount, PageCount)>&& growSuccessCallback);
 
-    Memory() = default;
     ~Memory();
 
     static size_t fastMappedRedzoneBytes();
     static size_t fastMappedBytes(); // Includes redzone.
-    static size_t maxFastMemoryCount();
     static bool addressIsInActiveFastMemory(void*);
 
-    void* memory() const { return m_memory; }
+    void* memory() const { ASSERT(m_memory.getMayBeNull(size()) == m_memory.getUnsafe()); return m_memory.getMayBeNull(size()); }
     size_t size() const { return m_size; }
     PageCount sizeInPages() const { return PageCount::fromBytes(m_size); }
 
@@ -79,22 +78,36 @@ public:
 
     MemoryMode mode() const { return m_mode; }
 
-    // grow() should only be called from the JSWebAssemblyMemory object since that object needs to update internal
-    // pointers with the current base and size.
-    bool grow(PageCount);
+    enum class GrowFailReason {
+        InvalidDelta,
+        InvalidGrowSize,
+        WouldExceedMaximum,
+        OutOfMemory,
+    };
+    Expected<PageCount, GrowFailReason> grow(PageCount);
+    void registerInstance(Instance*);
 
     void check() {  ASSERT(!deletionHasBegun()); }
-private:
-    Memory(void* memory, PageCount initial, PageCount maximum, size_t mappedCapacity, MemoryMode);
-    Memory(PageCount initial, PageCount maximum);
 
-    // FIXME: we should move these to the instance to avoid a load on instance->instance calls.
-    void* m_memory { nullptr };
+    static ptrdiff_t offsetOfMemory() { return OBJECT_OFFSETOF(Memory, m_memory); }
+    static ptrdiff_t offsetOfSize() { return OBJECT_OFFSETOF(Memory, m_size); }
+
+private:
+    Memory();
+    Memory(void* memory, PageCount initial, PageCount maximum, size_t mappedCapacity, MemoryMode, WTF::Function<void(NotifyPressure)>&& notifyMemoryPressure, WTF::Function<void(SyncTryToReclaim)>&& syncTryToReclaimMemory, WTF::Function<void(GrowSuccess, PageCount, PageCount)>&& growSuccessCallback);
+    Memory(PageCount initial, PageCount maximum, WTF::Function<void(NotifyPressure)>&& notifyMemoryPressure, WTF::Function<void(SyncTryToReclaim)>&& syncTryToReclaimMemory, WTF::Function<void(GrowSuccess, PageCount, PageCount)>&& growSuccessCallback);
+
+    using CagedMemory = CagedPtr<Gigacage::Primitive, void, tagCagedPtr>;
+    CagedMemory m_memory;
     size_t m_size { 0 };
     PageCount m_initial;
     PageCount m_maximum;
     size_t m_mappedCapacity { 0 };
     MemoryMode m_mode { MemoryMode::BoundsChecking };
+    WTF::Function<void(NotifyPressure)> m_notifyMemoryPressure;
+    WTF::Function<void(SyncTryToReclaim)> m_syncTryToReclaimMemory;
+    WTF::Function<void(GrowSuccess, PageCount, PageCount)> m_growSuccessCallback;
+    Vector<WeakPtr<Instance>> m_instances;
 };
 
 } } // namespace JSC::Wasm
@@ -111,4 +124,4 @@ public:
 
 } } // namespace JSC::Wasm
 
-#endif // ENABLE(WEBASSEMLY)
+#endif // ENABLE(WEBASSEMBLY)

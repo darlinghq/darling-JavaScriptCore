@@ -57,24 +57,27 @@ function isDictionary(object)
     return object == null || typeof object === "object";
 }
 
-// FIXME: this needs to have it's name changed to "get [Symbol.species]".
-// see: https://bugs.webkit.org/show_bug.cgi?id=151363
 @globalPrivate
+@getter
+@overriddenName="get [Symbol.species]"
 function speciesGetter()
 {
+    "use strict";
     return this;
 }
 
 @globalPrivate
 function speciesConstructor(obj, defaultConstructor)
 {
+    "use strict";
+
     var constructor = obj.constructor;
     if (constructor === @undefined)
         return defaultConstructor;
     if (!@isObject(constructor))
         @throwTypeError("|this|.constructor is not an Object or undefined");
     constructor = constructor.@speciesSymbol;
-    if (constructor == null)
+    if (@isUndefinedOrNull(constructor))
         return defaultConstructor;
     if (@isConstructor(constructor))
         return constructor;
@@ -84,14 +87,16 @@ function speciesConstructor(obj, defaultConstructor)
 @globalPrivate
 function copyDataProperties(target, source, excludedSet)
 {
+    "use strict";
+
     if (!@isObject(target))
         @throwTypeError("target needs to be an object");
 
-    if (source == null) 
+    if (@isUndefinedOrNull(source))
         return target;
 
-    let from = @Object(source); 
-    let keys = @Reflect.@ownKeys(from); 
+    let from = @toObject(source);
+    let keys = @ownKeys(from);
     let keysLength = keys.length;
     for (let i = 0; i < keysLength; i++) {
         let nextKey = keys[i];
@@ -109,14 +114,16 @@ function copyDataProperties(target, source, excludedSet)
 @globalPrivate
 function copyDataPropertiesNoExclusions(target, source)
 {
+    "use strict";
+
     if (!@isObject(target))
         @throwTypeError("target needs to be an object");
 
-    if (source == null) 
+    if (@isUndefinedOrNull(source))
         return target;
 
-    let from = @Object(source); 
-    let keys = @Reflect.@ownKeys(from); 
+    let from = @toObject(source);
+    let keys = @ownKeys(from);
     let keysLength = keys.length;
     for (let i = 0; i < keysLength; i++) {
         let nextKey = keys[i];

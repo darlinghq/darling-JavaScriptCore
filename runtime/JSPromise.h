@@ -31,7 +31,7 @@ namespace JSC {
 
 class JSPromise : public JSNonFinalObject {
 public:
-    typedef JSNonFinalObject Base;
+    using Base = JSNonFinalObject;
 
     static JSPromise* create(VM&, Structure*);
     static Structure* createStructure(VM&, JSGlobalObject*, JSValue);
@@ -44,7 +44,7 @@ public:
         Rejected
     };
 
-    Status status(VM&) const;
+    JS_EXPORT_PRIVATE Status status(VM&) const;
     JS_EXPORT_PRIVATE JSValue result(VM&) const;
     JS_EXPORT_PRIVATE bool isHandled(VM&) const;
 

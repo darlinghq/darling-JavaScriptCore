@@ -25,13 +25,17 @@
 
 #pragma once
 
+#include "CPU.h"
+
 #include <wtf/PrintStream.h>
 #include <wtf/StringPrintStream.h>
 #include <wtf/Vector.h>
 
 namespace JSC {
 
-struct ProbeContext;
+namespace Probe {
+class Context;
+} // namespace Probe
 
 namespace Printer {
 
@@ -77,19 +81,19 @@ union Data {
     uintptr_t value;
     const void* pointer;
 #if USE(JSVALUE64)
-    uintptr_t buffer[4];
+    UCPURegister buffer[4];
 #elif USE(JSVALUE32_64)
-    uintptr_t buffer[6];
+    UCPURegister buffer[6];
 #endif
 };
 
 struct Context {
-    Context(ProbeContext& probeContext, Data& data)
+    Context(Probe::Context& probeContext, Data& data)
         : probeContext(probeContext)
         , data(data)
     { }
 
-    ProbeContext& probeContext;
+    Probe::Context& probeContext;
     Data& data;
 };
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2012-2019 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -38,23 +38,31 @@ namespace JSC {
 
 class LLIntOffsetsExtractor;
 
-// This is a mostly drop-in replacement for JSEnvironmentRecord, except that it preserves
+// This is a mostly drop-in replacement for JSLexicalEnvironment, except that it preserves
 // the invariant that after a variable is created, its address in memory will not change
 // so long as the JSSegmentedVariableObject is alive. This allows optimizations based
 // on getting the address of the variable and remembering it. As well, unlike a
-// JSEnvironmentRecord, this will manage the memory for the registers itself and neither
+// JSLexicalEnvironment, this will manage the memory for the registers itself and neither
 // requires nor allows for the subclasses to manage that memory. Finally,
 // JSSegmentedVariableObject has its own GC tracing functionality, since it knows the
 // exact dimensions of the variables array at all times.
-
-// Except for JSGlobalObject, subclasses of this don't call the destructor and leak memory.
 
 class JSSegmentedVariableObject : public JSSymbolTableObject {
     friend class JIT;
     friend class LLIntOffsetsExtractor;
 
 public:
-    typedef JSSymbolTableObject Base;
+    using Base = JSSymbolTableObject;
+
+    DECLARE_INFO;
+
+    static const bool needsDestruction = true;
+
+    template<typename CellType, SubspaceAccess>
+    static CompleteSubspace* subspaceFor(VM& vm)
+    {
+        return &vm.cellSpace;
+    }
 
     bool isValidScopeOffset(ScopeOffset offset)
     {
@@ -88,12 +96,6 @@ public:
     
     static void destroy(JSCell*);
     
-    template<typename>
-    static Subspace* subspaceFor(VM& vm)
-    {
-        return &vm.segmentedVariableObjectSpace;
-    }
-    
     const ClassInfo* classInfo() const { return m_classInfo; }
     
 protected:
@@ -105,9 +107,10 @@ protected:
     
 private:
     SegmentedVector<WriteBarrier<Unknown>, 16> m_variables;
-    ConcurrentJSLock m_lock;
-    bool m_alreadyDestroyed { false }; // We use these assertions to check that we aren't doing ancient hacks that result in this being destroyed more than once.
     const ClassInfo* m_classInfo;
+#ifndef NDEBUG
+    bool m_alreadyDestroyed { false }; // We use these assertions to check that we aren't doing ancient hacks that result in this being destroyed more than once.
+#endif
 };
 
 } // namespace JSC

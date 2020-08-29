@@ -33,7 +33,6 @@
 #include <string.h>
 #include <wtf/ASCIICType.h>
 #include <wtf/DataLog.h>
-#include <wtf/StringExtras.h>
 #include <wtf/text/StringBuilder.h>
 
 #if HAVE(REGEX_H)
@@ -315,7 +314,7 @@ void ConfigFile::parse()
                     while (*p && !isASCIISpace(*p) && *p != '=')
                         p++;
 
-                    builder.append(optionNameStart, p - optionNameStart);
+                    builder.appendCharacters(optionNameStart, p - optionNameStart);
 
                     while (*p && isASCIISpace(*p) && *p != '=')
                         p++;
@@ -337,7 +336,7 @@ void ConfigFile::parse()
                     while (*p && !isASCIISpace(*p))
                         p++;
 
-                    builder.append(optionValueStart, p - optionValueStart);
+                    builder.appendCharacters(optionValueStart, p - optionValueStart);
                     builder.append('\n');
 
                     while (*p && isASCIISpace(*p))
@@ -466,8 +465,8 @@ void ConfigFile::parse()
             WTF::setDataFile(logPathname);
 
         if (!jscOptionsBuilder.isEmpty()) {
-            const char* optionsStr = jscOptionsBuilder.toString().utf8().data();
-            Options::setOptions(optionsStr);
+            Options::enableRestrictedOptions(true);
+            Options::setOptions(jscOptionsBuilder.toString().utf8().data());
         }
     } else
         WTF::dataLogF("Error in JSC Config file on or near line %u, parsing '%s'\n", scanner.lineNumber(), scanner.currentBuffer());
@@ -488,8 +487,18 @@ void ConfigFile::canonicalizePaths()
             bool shouldAddPathSeparator = filenameBuffer[pathnameLength - 1] != '/';
             if (sizeof(filenameBuffer) - 1  >= pathnameLength + shouldAddPathSeparator) {
                 if (shouldAddPathSeparator)
-                    strncat(filenameBuffer, "/", 1);
+                    strncat(filenameBuffer, "/", 2); // Room for '/' plus NUL
+#if COMPILER(GCC)
+#if GCC_VERSION_AT_LEAST(8, 0, 0)
+                IGNORE_WARNINGS_BEGIN("stringop-truncation")
+#endif
+#endif
                 strncat(filenameBuffer, m_filename, sizeof(filenameBuffer) - strlen(filenameBuffer) - 1);
+#if COMPILER(GCC)
+#if GCC_VERSION_AT_LEAST(8, 0, 0)
+                IGNORE_WARNINGS_END
+#endif
+#endif
                 strncpy(m_filename, filenameBuffer, s_maxPathLength);
                 m_filename[s_maxPathLength] = '\0';
             }

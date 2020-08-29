@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2018 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,7 +34,9 @@
 
 namespace JSC { namespace B3 {
 
-using namespace Air;
+using Arg = Air::Arg;
+using Inst = Air::Inst;
+using Tmp = Air::Tmp;
 
 StackmapSpecial::StackmapSpecial()
 {
@@ -73,19 +75,19 @@ RegisterSet StackmapSpecial::extraEarlyClobberedRegs(Inst& inst)
 
 void StackmapSpecial::forEachArgImpl(
     unsigned numIgnoredB3Args, unsigned numIgnoredAirArgs,
-    Inst& inst, RoleMode roleMode, std::optional<unsigned> firstRecoverableIndex,
-    const ScopedLambda<Inst::EachArgCallback>& callback, std::optional<Width> optionalDefArgWidth)
+    Inst& inst, RoleMode roleMode, Optional<unsigned> firstRecoverableIndex,
+    const ScopedLambda<Inst::EachArgCallback>& callback, Optional<Width> optionalDefArgWidth)
 {
     StackmapValue* value = inst.origin->as<StackmapValue>();
     ASSERT(value);
 
     // Check that insane things have not happened.
     ASSERT(inst.args.size() >= numIgnoredAirArgs);
-    ASSERT(value->children().size() >= numIgnoredB3Args);
-    ASSERT(inst.args.size() - numIgnoredAirArgs >= value->children().size() - numIgnoredB3Args);
+    ASSERT(value->numChildren() >= numIgnoredB3Args);
+    ASSERT(inst.args.size() - numIgnoredAirArgs >= value->numChildren() - numIgnoredB3Args);
     ASSERT(inst.args[0].kind() == Arg::Kind::Special);
 
-    for (unsigned i = 0; i < value->children().size() - numIgnoredB3Args; ++i) {
+    for (unsigned i = 0; i < value->numChildren() - numIgnoredB3Args; ++i) {
         Arg& arg = inst.args[i + numIgnoredAirArgs];
         ConstrainedValue child = value->constrainedChild(i + numIgnoredB3Args);
 
@@ -108,6 +110,10 @@ void StackmapSpecial::forEachArgImpl(
             case ValueRep::Constant:
                 role = Arg::Use;
                 break;
+            case ValueRep::SomeRegisterWithClobber:
+                role = Arg::UseDef;
+                break;
+            case ValueRep::SomeLateRegister:
             case ValueRep::LateRegister:
                 role = Arg::LateUse;
                 break;
@@ -126,6 +132,10 @@ void StackmapSpecial::forEachArgImpl(
             // be able to recover the stackmap value. So, force LateColdUse to preserve the
             // original stackmap value across the Special operation.
             if (!Arg::isLateUse(role) && optionalDefArgWidth && *optionalDefArgWidth < child.value()->resultWidth()) {
+                // The role can only be some kind of def if we did SomeRegisterWithClobber, which is
+                // only allowed for patchpoints. Patchpoints don't use the defArgWidth feature.
+                RELEASE_ASSERT(!Arg::isAnyDef(role));
+                
                 if (Arg::isWarmUse(role))
                     role = Arg::LateUse;
                 else
@@ -151,16 +161,16 @@ bool StackmapSpecial::isValidImpl(
 
     // Check that insane things have not happened.
     ASSERT(inst.args.size() >= numIgnoredAirArgs);
-    ASSERT(value->children().size() >= numIgnoredB3Args);
+    ASSERT(value->numChildren() >= numIgnoredB3Args);
 
     // For the Inst to be valid, it needs to have the right number of arguments.
-    if (inst.args.size() - numIgnoredAirArgs < value->children().size() - numIgnoredB3Args)
+    if (inst.args.size() - numIgnoredAirArgs < value->numChildren() - numIgnoredB3Args)
         return false;
 
     // Regardless of constraints, stackmaps have some basic requirements for their arguments. For
     // example, you can't have a non-FP-offset address. This verifies those conditions as well as the
     // argument types.
-    for (unsigned i = 0; i < value->children().size() - numIgnoredB3Args; ++i) {
+    for (unsigned i = 0; i < value->numChildren() - numIgnoredB3Args; ++i) {
         Value* child = value->child(i + numIgnoredB3Args);
         Arg& arg = inst.args[i + numIgnoredAirArgs];
 
@@ -169,7 +179,7 @@ bool StackmapSpecial::isValidImpl(
     }
 
     // The number of constraints has to be no greater than the number of B3 children.
-    ASSERT(value->m_reps.size() <= value->children().size());
+    ASSERT(value->m_reps.size() <= value->numChildren());
 
     // Verify any explicitly supplied constraints.
     for (unsigned i = numIgnoredB3Args; i < value->m_reps.size(); ++i) {
@@ -210,8 +220,7 @@ bool StackmapSpecial::admitsStackImpl(
     return false;
 }
 
-Vector<ValueRep> StackmapSpecial::repsImpl(
-    GenerationContext& context, unsigned numIgnoredB3Args, unsigned numIgnoredAirArgs, Inst& inst)
+Vector<ValueRep> StackmapSpecial::repsImpl(Air::GenerationContext& context, unsigned numIgnoredB3Args, unsigned numIgnoredAirArgs, Inst& inst)
 {
     Vector<ValueRep> result;
     for (unsigned i = 0; i < inst.origin->numChildren() - numIgnoredB3Args; ++i)
@@ -244,7 +253,9 @@ bool StackmapSpecial::isArgValidForRep(Air::Code& code, const Air::Arg& arg, con
         // We already verified by isArgValidForValue().
         return true;
     case ValueRep::SomeRegister:
+    case ValueRep::SomeRegisterWithClobber:
     case ValueRep::SomeEarlyRegister:
+    case ValueRep::SomeLateRegister:
         return arg.isTmp();
     case ValueRep::LateRegister:
     case ValueRep::Register:
@@ -254,7 +265,7 @@ bool StackmapSpecial::isArgValidForRep(Air::Code& code, const Air::Arg& arg, con
             return true;
         if ((arg.isAddr() || arg.isExtendedOffsetAddr()) && code.frameSize()) {
             if (arg.base() == Tmp(GPRInfo::callFrameRegister)
-                && arg.offset() == rep.offsetFromSP() - code.frameSize())
+                && arg.offset() == static_cast<int64_t>(rep.offsetFromSP()) - code.frameSize())
                 return true;
             if (arg.base() == Tmp(MacroAssembler::stackPointerRegister)
                 && arg.offset() == rep.offsetFromSP())
@@ -267,7 +278,7 @@ bool StackmapSpecial::isArgValidForRep(Air::Code& code, const Air::Arg& arg, con
     }
 }
 
-ValueRep StackmapSpecial::repForArg(Code& code, const Arg& arg)
+ValueRep StackmapSpecial::repForArg(Air::Code& code, const Arg& arg)
 {
     switch (arg.kind()) {
     case Arg::Tmp:

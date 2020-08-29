@@ -126,7 +126,7 @@ static void initializeOverrideInfo(const SourceCode& origCode, const String& new
     newProviderStr.append(origHeader);
     newProviderStr.append(newBody);
 
-    Ref<SourceProvider> newProvider = StringSourceProvider::create(newProviderStr, SourceOrigin { "<overridden>" }, "<overridden>");
+    Ref<SourceProvider> newProvider = StringSourceProvider::create(newProviderStr, SourceOrigin { "<overridden>" }, URL({ }, "<overridden>"));
 
     info.firstLine = 1;
     info.lineCount = 1; // Faking it. This doesn't really matter for now.
@@ -217,7 +217,7 @@ static String parseClause(const char* keyword, size_t keywordLength, FILE* file,
             if (p[strlen(terminator)] != '\n')
                 FAIL_WITH_ERROR(SYNTAX_ERROR, ("Unexpected characters after '", keyword, "' clause end delimiter '", delimiter, "':\n", line, "\n"));
 
-            builder.append(line, p - line + 1);
+            builder.appendCharacters(line, p - line + 1);
             return builder.toString();
         }
         builder.append(line);

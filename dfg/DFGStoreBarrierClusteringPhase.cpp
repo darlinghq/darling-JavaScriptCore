@@ -116,11 +116,11 @@ private:
                 continue;
             
             DFG_ASSERT(m_graph, node, !node->origin.wasHoisted);
-            DFG_ASSERT(m_graph, node, node->child1().useKind() == KnownCellUse);
+            DFG_ASSERT(m_graph, node, node->child1().useKind() == KnownCellUse, node->op(), node->child1().useKind());
             
             NodeOrigin origin = node->origin;
             m_neededBarriers.append(ChildAndOrigin(node->child1().node(), origin.semantic));
-            node->remove();
+            node->remove(m_graph);
             
             if (!m_barrierPoints[nodeIndex])
                 continue;
@@ -140,7 +140,7 @@ private:
                 CodeOrigin semanticOrigin = iter->semanticOrigin;
                 
                 NodeType type;
-                if (Options::useConcurrentBarriers() && iter == m_neededBarriers.begin())
+                if (iter == m_neededBarriers.begin())
                     type = FencedStoreBarrier;
                 else
                     type = StoreBarrier;
@@ -149,7 +149,7 @@ private:
                     nodeIndex, SpecNone, type, origin.withSemantic(semanticOrigin),
                     Edge(child, KnownCellUse));
             }
-            m_neededBarriers.resize(0);
+            m_neededBarriers.shrink(0);
         }
         
         m_insertionSet.execute(block);

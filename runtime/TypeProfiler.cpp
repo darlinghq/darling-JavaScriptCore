@@ -32,7 +32,9 @@
 
 namespace JSC {
 
+namespace TypeProfilerInternal {
 static const bool verbose = false;
+}
 
 TypeProfiler::TypeProfiler()
     : m_nextUniqueVariableID(1)
@@ -59,7 +61,7 @@ void TypeProfiler::logTypesForTypeLocation(TypeLocation* location, VM& vm)
 
 void TypeProfiler::insertNewLocation(TypeLocation* location)
 {
-    if (verbose)
+    if (TypeProfilerInternal::verbose)
         dataLogF("Registering location:: divotStart:%u, divotEnd:%u\n", location->m_divotStart, location->m_divotEnd);
 
     if (!m_bucketMap.contains(location->m_sourceID)) {
@@ -146,13 +148,13 @@ TypeLocation* TypeProfiler::nextTypeLocation()
     return m_typeLocationInfo.add(); 
 }
 
-void TypeProfiler::invalidateTypeSetCache()
+void TypeProfiler::invalidateTypeSetCache(VM& vm)
 {
     for (Bag<TypeLocation>::iterator iter = m_typeLocationInfo.begin(); !!iter; ++iter) {
         TypeLocation* location = *iter;
-        location->m_instructionTypeSet->invalidateCache();
+        location->m_instructionTypeSet->invalidateCache(vm);
         if (location->m_globalTypeSet)
-            location->m_globalTypeSet->invalidateCache();
+            location->m_globalTypeSet->invalidateCache(vm);
     }
 }
 

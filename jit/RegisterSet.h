@@ -25,7 +25,7 @@
 
 #pragma once
 
-#if ENABLE(JIT)
+#if !ENABLE(C_LOOP)
 
 #include "GPRInfo.h"
 #include "MacroAssembler.h"
@@ -36,21 +36,25 @@
 namespace JSC {
 
 typedef Bitmap<MacroAssembler::numGPRs + MacroAssembler::numFPRs + 1> RegisterBitmap;
+class RegisterAtOffsetList;
 
 class RegisterSet {
 public:
+    constexpr RegisterSet() { }
+
     template<typename... Regs>
-    explicit RegisterSet(Regs... regs)
+    constexpr explicit RegisterSet(Regs... regs)
     {
         setMany(regs...);
     }
     
     JS_EXPORT_PRIVATE static RegisterSet stackRegisters();
     JS_EXPORT_PRIVATE static RegisterSet reservedHardwareRegisters();
-    static RegisterSet runtimeRegisters();
+    static RegisterSet runtimeTagRegisters();
     static RegisterSet specialRegisters(); // The union of stack, reserved hardware, and runtime registers.
     JS_EXPORT_PRIVATE static RegisterSet calleeSaveRegisters();
     static RegisterSet vmCalleeSaveRegisters(); // Callee save registers that might be saved and used by any tier.
+    static RegisterAtOffsetList* vmCalleeSaveRegisterOffsets();
     static RegisterSet llintBaselineCalleeSaveRegisters(); // Registers saved and used by the LLInt.
     static RegisterSet dfgCalleeSaveRegisters(); // Registers saved and used by the DFG JIT.
     static RegisterSet ftlCalleeSaveRegisters(); // Registers that might be saved and used by the FTL JIT.
@@ -80,7 +84,9 @@ public:
             set(regs.tagGPR(), value);
         set(regs.payloadGPR(), value);
     }
-    
+
+    void set(const RegisterSet& other, bool value = true) { value ? merge(other) : exclude(other); }
+
     void clear(Reg reg)
     {
         ASSERT(!!reg);
@@ -203,6 +209,7 @@ public:
     
 private:
     void setAny(Reg reg) { set(reg); }
+    void setAny(JSValueRegs regs) { set(regs); }
     void setAny(const RegisterSet& set) { merge(set); }
     void setMany() { }
     template<typename RegType, typename... Regs>
@@ -241,4 +248,4 @@ template<> struct HashTraits<JSC::RegisterSet> : public CustomHashTraits<JSC::Re
 
 } // namespace WTF
 
-#endif // ENABLE(JIT)
+#endif // !ENABLE(C_LOOP)

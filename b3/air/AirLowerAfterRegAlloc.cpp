@@ -34,6 +34,7 @@
 #include "AirEmitShuffle.h"
 #include "AirInsertionSet.h"
 #include "AirInstInlines.h"
+#include "AirPadInterference.h"
 #include "AirRegLiveness.h"
 #include "AirPhaseScope.h"
 #include "B3CCallValue.h"
@@ -46,7 +47,9 @@ namespace JSC { namespace B3 { namespace Air {
 
 namespace {
 
-bool verbose = false;
+namespace AirLowerAfterRegAllocInternal {
+static const bool verbose = false;
+}
     
 } // anonymous namespace
 
@@ -54,7 +57,7 @@ void lowerAfterRegAlloc(Code& code)
 {
     PhaseScope phaseScope(code, "lowerAfterRegAlloc");
 
-    if (verbose)
+    if (AirLowerAfterRegAllocInternal::verbose)
         dataLog("Code before lowerAfterRegAlloc:\n", code);
     
     auto isRelevant = [] (Inst& inst) -> bool {
@@ -74,6 +77,8 @@ void lowerAfterRegAlloc(Code& code)
     }
     if (!haveAnyRelevant)
         return;
+
+    padInterference(code);
 
     HashMap<Inst*, RegisterSet> usedRegisters;
     
@@ -221,7 +226,7 @@ void lowerAfterRegAlloc(Code& code)
                         stackSlots.append(stackSlot);
                     });
 
-                if (verbose)
+                if (AirLowerAfterRegAllocInternal::verbose)
                     dataLog("Pre-call pairs for ", inst, ": ", listDump(pairs), "\n");
                 
                 insertionSet.insertInsts(
@@ -232,7 +237,7 @@ void lowerAfterRegAlloc(Code& code)
                     inst.kind.effects = true;
 
                 // Now we need to emit code to restore registers.
-                pairs.resize(0);
+                pairs.shrink(0);
                 unsigned stackSlotIndex = 0;
                 regsToSave.forEach(
                     [&] (Reg reg) {
@@ -273,7 +278,7 @@ void lowerAfterRegAlloc(Code& code)
             });
     }
 
-    if (verbose)
+    if (AirLowerAfterRegAllocInternal::verbose)
         dataLog("Code after lowerAfterRegAlloc:\n", code);
 }
 

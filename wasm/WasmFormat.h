@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2018 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,6 +34,7 @@
 #include "RegisterAtOffsetList.h"
 #include "WasmMemoryInformation.h"
 #include "WasmName.h"
+#include "WasmNameSection.h"
 #include "WasmOps.h"
 #include "WasmPageCount.h"
 #include "WasmSignature.h"
@@ -44,13 +45,19 @@
 
 namespace JSC {
 
-class JSFunction;
-
 namespace B3 {
 class Compilation;
 }
 
 namespace Wasm {
+
+struct CompilationContext;
+struct ModuleInformation;
+
+enum class TableElementType : uint8_t {
+    Anyref,
+    Funcref
+};
 
 inline bool isValueType(Type type)
 {
@@ -60,10 +67,20 @@ inline bool isValueType(Type type)
     case F32:
     case F64:
         return true;
+    case Anyref:
+    case Funcref:
+        return Options::useWebAssemblyReferences();
     default:
         break;
     }
     return false;
+}
+
+inline bool isSubtype(Type sub, Type parent)
+{
+    if (sub == parent)
+        return true;
+    return sub == Funcref && parent == Anyref;
 }
     
 enum class ExternalKind : uint8_t {
@@ -129,6 +146,7 @@ struct Global {
     enum InitializationType {
         IsImport,
         FromGlobalImport,
+        FromRefFunc,
         FromExpression
     };
 
@@ -138,9 +156,10 @@ struct Global {
     uint64_t initialBitsOrImportNumber { 0 };
 };
 
-struct FunctionLocationInBinary {
+struct FunctionData {
     size_t start;
     size_t end;
+    Vector<uint8_t> data;
 };
 
 class I32InitExpr {
@@ -194,10 +213,12 @@ struct Segment {
 };
 
 struct Element {
-    Element(I32InitExpr offset)
-        : offset(offset)
+    Element(uint32_t tableIndex, I32InitExpr offset)
+        : tableIndex(tableIndex)
+        , offset(offset)
     { }
 
+    uint32_t tableIndex;
     I32InitExpr offset;
     Vector<uint32_t> functionIndices;
 };
@@ -209,11 +230,12 @@ public:
         ASSERT(!*this);
     }
 
-    TableInformation(uint32_t initial, std::optional<uint32_t> maximum, bool isImport)
+    TableInformation(uint32_t initial, Optional<uint32_t> maximum, bool isImport, TableElementType type)
         : m_initial(initial)
         , m_maximum(maximum)
         , m_isImport(isImport)
         , m_isValid(true)
+        , m_type(type)
     {
         ASSERT(*this);
     }
@@ -221,13 +243,16 @@ public:
     explicit operator bool() const { return m_isValid; }
     bool isImport() const { return m_isImport; }
     uint32_t initial() const { return m_initial; }
-    std::optional<uint32_t> maximum() const { return m_maximum; }
+    Optional<uint32_t> maximum() const { return m_maximum; }
+    TableElementType type() const { return m_type; }
+    Wasm::Type wasmType() const { return m_type == TableElementType::Funcref ? Type::Funcref : Type::Anyref; }
 
 private:
     uint32_t m_initial;
-    std::optional<uint32_t> m_maximum;
+    Optional<uint32_t> m_maximum;
     bool m_isImport { false };
     bool m_isValid { false };
+    TableElementType m_type;
 };
     
 struct CustomSection {
@@ -252,18 +277,9 @@ inline bool isValidNameType(Int val)
     }
     return false;
 }
-    
-struct NameSection {
-    Name moduleName;
-    Vector<Name> functionNames;
-    const Name* get(size_t functionIndexSpace)
-    {
-        return functionIndexSpace < functionNames.size() ? &functionNames[functionIndexSpace] : nullptr;
-    }
-};
 
 struct UnlinkedWasmToWasmCall {
-    CodeLocationNearCall callLocation;
+    CodeLocationNearCall<WasmEntryPtrTag> callLocation;
     size_t functionIndexSpace;
 };
 
@@ -273,35 +289,23 @@ struct Entrypoint {
 };
 
 struct InternalFunction {
-    CodeLocationDataLabelPtr calleeMoveLocation;
+    CodeLocationDataLabelPtr<WasmEntryPtrTag> calleeMoveLocation;
     Entrypoint entrypoint;
 };
 
-struct WasmExitStubs {
-    MacroAssemblerCodeRef wasmToJs;
-    MacroAssemblerCodeRef wasmToWasm;
-};
+// WebAssembly direct calls and call_indirect use indices into "function index space". This space starts
+// with all imports, and then all internal functions. WasmToWasmImportableFunction and FunctionIndexSpace are only
+// meant as fast lookup tables for these opcodes and do not own code.
+struct WasmToWasmImportableFunction {
+    using LoadLocation = MacroAssemblerCodePtr<WasmEntryPtrTag>*;
+    static ptrdiff_t offsetOfSignatureIndex() { return OBJECT_OFFSETOF(WasmToWasmImportableFunction, signatureIndex); }
+    static ptrdiff_t offsetOfEntrypointLoadLocation() { return OBJECT_OFFSETOF(WasmToWasmImportableFunction, entrypointLoadLocation); }
 
-typedef void** WasmEntrypointLoadLocation;
-
-// WebAssembly direct calls and call_indirect use indices into "function index space". This space starts with all imports, and then all internal functions.
-// CallableFunction and FunctionIndexSpace are only meant as fast lookup tables for these opcodes, and do not own code.
-struct CallableFunction {
-    CallableFunction() = default;
-
-    CallableFunction(SignatureIndex signatureIndex, WasmEntrypointLoadLocation code = nullptr)
-        : signatureIndex(signatureIndex)
-        , code(code)
-    {
-    }
-
-    static ptrdiff_t offsetOfWasmEntrypointLoadLocation() { return OBJECT_OFFSETOF(CallableFunction, code); }
-
-    // FIXME pack the SignatureIndex and the code pointer into one 64-bit value. https://bugs.webkit.org/show_bug.cgi?id=165511
+    // FIXME: Pack signature index and code pointer into one 64-bit value. See <https://bugs.webkit.org/show_bug.cgi?id=165511>.
     SignatureIndex signatureIndex { Signature::invalidIndex };
-    WasmEntrypointLoadLocation code { nullptr };
+    LoadLocation entrypointLoadLocation;
 };
-typedef Vector<CallableFunction> FunctionIndexSpace;
+using FunctionIndexSpace = Vector<WasmToWasmImportableFunction>;
 
 } } // namespace JSC::Wasm
 

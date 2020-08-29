@@ -37,12 +37,17 @@ namespace JSC { namespace B3 {
 // Warning: In B3, an Opcode is just one part of a Kind. Kind is used the way that an opcode
 // would be used in simple IRs. See B3Kind.h.
 
-enum Opcode : int16_t {
+enum Opcode : uint8_t {
     // A no-op that returns Void, useful for when you want to remove a value.
     Nop,
     
     // Polymorphic identity, usable with any value type.
     Identity,
+        
+    // This is an identity, but we prohibit the compiler from realizing this until the bitter end. This can
+    // be used to block reassociation and other compiler reasoning, if we find that it's wrong or
+    // unprofitable and we need an escape hatch.
+    Opaque,
 
     // Constants. Use the ConstValue* classes. Constants exist in the control flow, so that we can
     // reason about where we would construct them. Large constants are expensive to create.
@@ -258,7 +263,7 @@ enum Opcode : int16_t {
     // of transformation or analysis that relies on the insight that Depend is really zero is unsound,
     // because it unlocks reordering of users of @result and @phantom.
     //
-    // On X86, this is lowered to a load-load fence and @result uses @phantom directly.
+    // On X86, this is lowered to a load-load fence and @result folds to zero.
     //
     // On ARM, this is lowered as if like:
     //
@@ -369,7 +374,7 @@ inline bool isCheckMath(Opcode opcode)
     }
 }
 
-std::optional<Opcode> invertedCompare(Opcode, Type);
+Optional<Opcode> invertedCompare(Opcode, Type);
 
 inline Opcode constPtrOpcode()
 {
@@ -460,7 +465,7 @@ inline bool isLoadStore(Opcode opcode)
     }
 }
 
-inline bool isAtomic(Opcode opcode)
+inline bool isAtom(Opcode opcode)
 {
     switch (opcode) {
     case AtomicWeakCAS:
@@ -505,7 +510,7 @@ inline bool isAtomicXchg(Opcode opcode)
 
 inline bool isMemoryAccess(Opcode opcode)
 {
-    return isAtomic(opcode) || isLoadStore(opcode);
+    return isAtom(opcode) || isLoadStore(opcode);
 }
 
 inline Opcode signExtendOpcode(Width width)
