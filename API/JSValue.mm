@@ -36,7 +36,11 @@
 #import "JSValueInternal.h"
 #import "JSValuePrivate.h"
 #import "JSWrapperMap.h"
+#ifdef DARLING
+#import "ObjCRuntimeExtras.h"
+#else
 #import "ObjcRuntimeExtras.h"
+#endif
 #import "JSCInlines.h"
 #import "JSCJSValue.h"
 #import "Strong.h"

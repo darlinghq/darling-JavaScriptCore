@@ -35,7 +35,11 @@
 #import "JSValueInternal.h"
 #import "JSWeakValue.h"
 #import "WeakHandleOwner.h"
+#ifdef DARLING
+#import "ObjCRuntimeExtras.h"
+#else
 #import "ObjcRuntimeExtras.h"
+#endif
 #import "JSCInlines.h"
 #import <wtf/NeverDestroyed.h>
 

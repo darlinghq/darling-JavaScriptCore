@@ -39,7 +39,11 @@
 #import "JSVirtualMachineInternal.h"
 #import "JSWrapperMap.h"
 #import "JavaScriptCore.h"
+#ifdef DARLING
+#import "ObjCRuntimeExtras.h"
+#else
 #import "ObjcRuntimeExtras.h"
+#endif
 #import "StrongInlines.h"
 #ifdef DARLING_NONUNIFIED_BUILD
 #include "JSScriptInternal.h"

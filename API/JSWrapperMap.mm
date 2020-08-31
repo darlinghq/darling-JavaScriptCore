@@ -35,7 +35,11 @@
 #import "JSContextInternal.h"
 #import "JSWrapperMap.h"
 #import "ObjCCallbackFunction.h"
+#ifdef DARLING
+#import "ObjCRuntimeExtras.h"
+#else
 #import "ObjcRuntimeExtras.h"
+#endif
 #import "ObjectConstructor.h"
 #import "WeakGCMap.h"
 #import "WeakGCMapInlines.h"

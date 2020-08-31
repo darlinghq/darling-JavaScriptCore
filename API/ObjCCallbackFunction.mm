@@ -37,7 +37,12 @@
 #import "JSWrapperMap.h"
 #import "JSValueInternal.h"
 #import "ObjCCallbackFunction.h"
+#ifdef DARLING
+// ugh, Apple with their stupid case-insensitivity
+#import "ObjCRuntimeExtras.h"
+#else
 #import "ObjcRuntimeExtras.h"
+#endif
 #import "StructureInlines.h"
 #import <objc/runtime.h>
 #import <wtf/RetainPtr.h>
