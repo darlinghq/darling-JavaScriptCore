@@ -46,6 +46,9 @@
 #include <wtf/ListDump.h>
 #include <wtf/Lock.h>
 #include <wtf/StdLibExtras.h>
+#ifdef DARLING_NONUNIFIED_BUILD
+#include "BlockDirectoryInlines.h"
+#endif
 
 namespace JSC {
 

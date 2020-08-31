@@ -1,0 +1,8 @@
+#include "runtime/Structure.cpp"
+#include "runtime/StructureCache.cpp"
+#include "runtime/StructureChain.cpp"
+#include "runtime/StructureIDTable.cpp"
+#include "runtime/StructureRareData.cpp"
+#include "runtime/Symbol.cpp"
+#include "runtime/SymbolConstructor.cpp"
+#include "runtime/SymbolObject.cpp"

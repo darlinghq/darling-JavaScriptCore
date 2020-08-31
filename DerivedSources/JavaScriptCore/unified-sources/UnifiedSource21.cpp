@@ -1,0 +1,8 @@
+#include "b3/air/AirOptimizeBlockOrder.cpp"
+#include "b3/air/AirPadInterference.cpp"
+#include "b3/air/AirPhaseInsertionSet.cpp"
+#include "b3/air/AirPhaseScope.cpp"
+#include "b3/air/AirPrintSpecial.cpp"
+#include "b3/air/AirRegLiveness.cpp"
+#include "b3/air/AirReportUsedRegisters.cpp"
+#include "b3/air/AirSimplifyCFG.cpp"

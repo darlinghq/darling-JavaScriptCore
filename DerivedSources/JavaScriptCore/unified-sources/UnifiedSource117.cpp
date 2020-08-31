@@ -1,0 +1,8 @@
+#include "runtime/ProxyRevoke.cpp"
+#include "runtime/RandomizingFuzzerAgent.cpp"
+#include "runtime/ReflectObject.cpp"
+#include "runtime/RegExp.cpp"
+#include "runtime/RegExpCache.cpp"
+#include "runtime/RegExpCachedResult.cpp"
+#include "runtime/RegExpConstructor.cpp"
+#include "runtime/RegExpGlobalData.cpp"

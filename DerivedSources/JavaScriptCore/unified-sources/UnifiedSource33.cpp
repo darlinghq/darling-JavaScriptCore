@@ -1,0 +1,8 @@
+#include "bytecode/PolymorphicAccess.cpp"
+#include "bytecode/PreciseJumpTargets.cpp"
+#include "bytecode/ProgramCodeBlock.cpp"
+#include "bytecode/PropertyCondition.cpp"
+#include "bytecode/ProxyableAccessCase.cpp"
+#include "bytecode/PutByIdFlags.cpp"
+#include "bytecode/PutByIdStatus.cpp"
+#include "bytecode/PutByIdVariant.cpp"

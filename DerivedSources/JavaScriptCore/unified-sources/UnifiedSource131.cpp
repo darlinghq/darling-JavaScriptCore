@@ -1,0 +1,8 @@
+#include "wasm/js/JSWebAssemblyCodeBlock.cpp"
+#include "wasm/js/JSWebAssemblyCodeBlockHeapCellType.cpp"
+#include "wasm/js/JSWebAssemblyCompileError.cpp"
+#include "wasm/js/JSWebAssemblyInstance.cpp"
+#include "wasm/js/JSWebAssemblyLinkError.cpp"
+#include "wasm/js/JSWebAssemblyMemory.cpp"
+#include "wasm/js/JSWebAssemblyModule.cpp"
+#include "wasm/js/JSWebAssemblyRuntimeError.cpp"

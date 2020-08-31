@@ -1,0 +1,8 @@
+#include "runtime/DoublePredictionFuzzerAgent.cpp"
+#include "runtime/DumpContext.cpp"
+#include "runtime/ECMAScriptSpecInternalFunctions.cpp"
+#include "runtime/Error.cpp"
+#include "runtime/ErrorConstructor.cpp"
+#include "runtime/ErrorHandlingScope.cpp"
+#include "runtime/ErrorInstance.cpp"
+#include "runtime/ErrorPrototype.cpp"

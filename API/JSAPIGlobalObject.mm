@@ -47,6 +47,11 @@
 #import "ObjectConstructor.h"
 #import "SourceOrigin.h"
 #import <wtf/URL.h>
+#ifdef DARLING_NONUNIFIED_BUILD
+#include "IdentifierInlines.h"
+#include "AuxiliaryBarrierInlines.h"
+#include "StrongInlines.h"
+#endif
 
 namespace JSC {
 

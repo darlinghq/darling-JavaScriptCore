@@ -1,0 +1,8 @@
+#include "bytecode/RecordedStatuses.cpp"
+#include "bytecode/ReduceWhitespace.cpp"
+#include "bytecode/SpecialPointer.cpp"
+#include "bytecode/SpeculatedType.cpp"
+#include "bytecode/StructureSet.cpp"
+#include "bytecode/StructureStubClearingWatchpoint.cpp"
+#include "bytecode/StructureStubInfo.cpp"
+#include "bytecode/StubInfoSummary.cpp"

@@ -1,0 +1,8 @@
+#include "wasm/WasmIndexOrName.cpp"
+#include "wasm/WasmInstance.cpp"
+#include "wasm/WasmMachineThreads.cpp"
+#include "wasm/WasmMemory.cpp"
+#include "wasm/WasmMemoryInformation.cpp"
+#include "wasm/WasmMemoryMode.cpp"
+#include "wasm/WasmModule.cpp"
+#include "wasm/WasmModuleInformation.cpp"

@@ -1,0 +1,8 @@
+#include "runtime/DateConstructor.cpp"
+#include "runtime/DateConversion.cpp"
+#include "runtime/DateInstance.cpp"
+#include "runtime/DatePrototype.cpp"
+#include "runtime/DirectArguments.cpp"
+#include "runtime/DirectArgumentsOffset.cpp"
+#include "runtime/DirectEvalExecutable.cpp"
+#include "runtime/DisallowVMReentry.cpp"

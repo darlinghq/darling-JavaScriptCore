@@ -29,6 +29,9 @@
 #include <wtf/BitVector.h>
 #include <wtf/PageBlock.h>
 #include <wtf/StdLibExtras.h>
+#ifdef DARLING_NONUNIFIED_BUILD
+#include "CPU.h"
+#endif
 
 namespace JSC {
 

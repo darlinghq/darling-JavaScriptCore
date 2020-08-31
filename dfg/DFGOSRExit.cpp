@@ -44,6 +44,9 @@
 #include "OperandsInlines.h"
 #include "ProbeContext.h"
 #include "ProbeFrame.h"
+#ifdef DARLING_NONUNIFIED_BUILD
+#include "BytecodeStructs.h"
+#endif
 
 namespace JSC { namespace DFG {
 

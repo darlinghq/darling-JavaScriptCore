@@ -1,0 +1,8 @@
+#include "wasm/WasmModuleParser.cpp"
+#include "wasm/WasmNameSectionParser.cpp"
+#include "wasm/WasmOMGPlan.cpp"
+#include "wasm/WasmOpcodeOrigin.cpp"
+#include "wasm/WasmPageCount.cpp"
+#include "wasm/WasmPlan.cpp"
+#include "wasm/WasmSectionParser.cpp"
+#include "wasm/WasmSignature.cpp"

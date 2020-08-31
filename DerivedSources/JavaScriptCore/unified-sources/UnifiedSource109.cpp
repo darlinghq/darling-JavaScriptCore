@@ -1,0 +1,8 @@
+#include "runtime/JSPromiseConstructor.cpp"
+#include "runtime/JSPromiseDeferred.cpp"
+#include "runtime/JSPromisePrototype.cpp"
+#include "runtime/JSPropertyNameEnumerator.cpp"
+#include "runtime/JSProxy.cpp"
+#include "runtime/JSRunLoopTimer.cpp"
+#include "runtime/JSScope.cpp"
+#include "runtime/JSScriptFetchParameters.cpp"

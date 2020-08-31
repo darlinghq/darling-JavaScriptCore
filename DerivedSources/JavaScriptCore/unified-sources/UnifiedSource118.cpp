@@ -1,0 +1,8 @@
+#include "runtime/RegExpMatchesArray.cpp"
+#include "runtime/RegExpObject.cpp"
+#include "runtime/RegExpPrototype.cpp"
+#include "runtime/RegExpStringIteratorPrototype.cpp"
+#include "runtime/RuntimeType.cpp"
+#include "runtime/SamplingCounter.cpp"
+#include "runtime/SamplingProfiler.cpp"
+#include "runtime/ScopeOffset.cpp"

@@ -1,0 +1,8 @@
+#include "runtime/JSModuleLoader.cpp"
+#include "runtime/JSModuleNamespaceObject.cpp"
+#include "runtime/JSModuleRecord.cpp"
+#include "runtime/JSNativeStdFunction.cpp"
+#include "runtime/JSNonDestructibleProxy.cpp"
+#include "runtime/JSONObject.cpp"
+#include "runtime/JSObject.cpp"
+#include "runtime/JSPromise.cpp"

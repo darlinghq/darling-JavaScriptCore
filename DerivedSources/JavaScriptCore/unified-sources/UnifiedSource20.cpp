@@ -1,0 +1,8 @@
+#include "b3/air/AirInsertionSet.cpp"
+#include "b3/air/AirInst.cpp"
+#include "b3/air/AirKind.cpp"
+#include "b3/air/AirLogRegisterPressure.cpp"
+#include "b3/air/AirLowerAfterRegAlloc.cpp"
+#include "b3/air/AirLowerEntrySwitch.cpp"
+#include "b3/air/AirLowerMacros.cpp"
+#include "b3/air/AirLowerStackArgs.cpp"

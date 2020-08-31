@@ -1,0 +1,8 @@
+#include "runtime/SymbolPrototype.cpp"
+#include "runtime/SymbolTable.cpp"
+#include "runtime/TemplateObjectDescriptor.cpp"
+#include "runtime/TestRunnerUtils.cpp"
+#include "runtime/ThrowScope.cpp"
+#include "runtime/TypeLocationCache.cpp"
+#include "runtime/TypeProfiler.cpp"
+#include "runtime/TypeProfilerLog.cpp"

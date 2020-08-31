@@ -1,0 +1,8 @@
+#include "tools/CellList.cpp"
+#include "tools/CodeProfile.cpp"
+#include "tools/CodeProfiling.cpp"
+#include "tools/CompilerTimingScope.cpp"
+#include "tools/FunctionOverrides.cpp"
+#include "tools/FunctionWhitelist.cpp"
+#include "tools/HeapVerifier.cpp"
+#include "tools/JSDollarVM.cpp"
