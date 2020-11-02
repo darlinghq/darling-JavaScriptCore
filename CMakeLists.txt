@@ -2148,5 +2148,5 @@ if(ADDITIONAL_PACKAGES)
 		edit
 		cxx
 	)
-	install(TARGETS jsc DESTINATION darling/libexec/usr/bin)
+	install(TARGETS jsc DESTINATION libexec/darling/usr/bin)
 endif()
