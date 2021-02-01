@@ -30,6 +30,9 @@
 #include "Heap.h"
 #include "Subspace.h"
 
+// just like runtime/NativeExecutable.cpp, this was added for Darling (to build for debug), but it seems like this file should include it anyways
+#include "HeapInlines.h"
+
 namespace JSC { 
 
 AlignedMemoryAllocator::AlignedMemoryAllocator()
