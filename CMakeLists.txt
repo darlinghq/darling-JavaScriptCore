@@ -20,7 +20,7 @@ concat("${CMAKE_CURRENT_SOURCE_DIR}/DerivedSources/JavaScriptCore/LLIntAssembly-
 concat("${CMAKE_CURRENT_SOURCE_DIR}/DerivedSources/JavaScriptCore/LLIntAssembly-C_LOOP-release.h" "${CMAKE_CURRENT_BINARY_DIR}/DerivedSources/JavaScriptCore/LLIntAssembly.h")
 
 add_compile_definitions(
-	NDEBUG
+	#NDEBUG
 	ENABLE_3D_TRANSFORMS
 	ENABLE_APPLE_PAY
 	ENABLE_APPLE_PAY_SESSION_V3

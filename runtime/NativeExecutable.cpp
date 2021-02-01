@@ -36,6 +36,9 @@
 #include "VMInlines.h"
 #include <wtf/CommaPrinter.h>
 
+// added for Darling (to build for debug), but it seems like this file should include it anyways
+#include "ExecutableBaseInlines.h"
+
 namespace JSC {
 
 const ClassInfo NativeExecutable::s_info = { "NativeExecutable", &ExecutableBase::s_info, nullptr, nullptr, CREATE_METHOD_TABLE(NativeExecutable) };
