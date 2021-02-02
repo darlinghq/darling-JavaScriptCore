@@ -6,19 +6,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(DYLIB_COMPAT_VERSION "1.0.0")
 set(DYLIB_CURRENT_VERSION "608.4.9")
 
-function(concat IN OUT)
-	file(READ ${IN} CONTENTS)
-	file(APPEND ${OUT} "${CONTENTS}")
-endfunction()
-
-file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/DerivedSources/JavaScriptCore/LLIntAssembly.h")
-
-# we have to concatenate these because if we use `#include`, CMake's dependency scanner chokes up
-concat("${CMAKE_CURRENT_SOURCE_DIR}/DerivedSources/JavaScriptCore/LLIntAssembly-X86_64-debug.h"   "${CMAKE_CURRENT_BINARY_DIR}/DerivedSources/JavaScriptCore/LLIntAssembly.h")
-concat("${CMAKE_CURRENT_SOURCE_DIR}/DerivedSources/JavaScriptCore/LLIntAssembly-X86_64-release.h" "${CMAKE_CURRENT_BINARY_DIR}/DerivedSources/JavaScriptCore/LLIntAssembly.h")
-concat("${CMAKE_CURRENT_SOURCE_DIR}/DerivedSources/JavaScriptCore/LLIntAssembly-C_LOOP-debug.h"   "${CMAKE_CURRENT_BINARY_DIR}/DerivedSources/JavaScriptCore/LLIntAssembly.h")
-concat("${CMAKE_CURRENT_SOURCE_DIR}/DerivedSources/JavaScriptCore/LLIntAssembly-C_LOOP-release.h" "${CMAKE_CURRENT_BINARY_DIR}/DerivedSources/JavaScriptCore/LLIntAssembly.h")
-
 add_compile_definitions(
 	#NDEBUG
 	ENABLE_3D_TRANSFORMS
@@ -825,7 +812,6 @@ include_directories(
 
 	${CMAKE_CURRENT_BINARY_DIR}/public
 	${CMAKE_CURRENT_BINARY_DIR}/private
-	${CMAKE_CURRENT_BINARY_DIR}/DerivedSources/JavaScriptCore
 
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 )
