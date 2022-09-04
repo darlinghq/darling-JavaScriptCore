@@ -1,5 +1,7 @@
 project(JavaScriptCore)
 
+remove_sdk_framework(JavaScriptCore)
+
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 17)
 
@@ -2083,10 +2085,18 @@ set(JSC_SOURCES ${JSC_SOURCES}
 	wasm/WasmAirIRGenerator.cpp
 )
 
+set(FRAMEWORK_VERSION "A")
+
+generate_sdk_framework(JavaScriptCore
+    VERSION ${FRAMEWORK_VERSION}
+    HEADER "include/JavaScriptCore"
+)
+
+
 add_framework(JavaScriptCore
 	FAT
 	CURRENT_VERSION
-	VERSION "A"
+	VERSION ${FRAMEWORK_VERSION}
 
 	SOURCES
 		${JSC_SOURCES}
