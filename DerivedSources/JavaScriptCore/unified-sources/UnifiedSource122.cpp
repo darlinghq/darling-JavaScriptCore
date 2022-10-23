@@ -1,0 +1,8 @@
+#include "runtime/PropertySlot.cpp"
+#include "runtime/PropertyTable.cpp"
+#include "runtime/ProxyConstructor.cpp"
+#include "runtime/ProxyObject.cpp"
+#include "runtime/ProxyRevoke.cpp"
+#include "runtime/RandomizingFuzzerAgent.cpp"
+#include "runtime/ReflectObject.cpp"
+#include "runtime/RegExp.cpp"

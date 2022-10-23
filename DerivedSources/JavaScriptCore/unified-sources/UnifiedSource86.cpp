@@ -1,0 +1,6 @@
+#include "jit/Repatch.cpp"
+#include "jit/ScratchRegisterAllocator.cpp"
+#include "jit/SetupVarargsFrame.cpp"
+#include "jit/TagRegistersMode.cpp"
+#include "jit/TempRegisterSet.cpp"
+#include "jit/ThunkGenerators.cpp"

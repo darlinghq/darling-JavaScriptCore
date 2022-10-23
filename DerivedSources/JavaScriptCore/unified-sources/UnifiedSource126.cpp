@@ -1,0 +1,8 @@
+#include "runtime/StringIteratorPrototype.cpp"
+#include "runtime/StringObject.cpp"
+#include "runtime/StringPrototype.cpp"
+#include "runtime/StringRecursionChecker.cpp"
+#include "runtime/Structure.cpp"
+#include "runtime/StructureCache.cpp"
+#include "runtime/StructureChain.cpp"
+#include "runtime/StructureIDTable.cpp"

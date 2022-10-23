@@ -1,0 +1,8 @@
+#include "runtime/IntlPluralRules.cpp"
+#include "runtime/IntlPluralRulesConstructor.cpp"
+#include "runtime/IntlPluralRulesPrototype.cpp"
+#include "runtime/IntlRelativeTimeFormat.cpp"
+#include "runtime/IntlRelativeTimeFormatConstructor.cpp"
+#include "runtime/IntlRelativeTimeFormatPrototype.cpp"
+#include "runtime/IntlSegmentIterator.cpp"
+#include "runtime/IntlSegmentIteratorPrototype.cpp"
