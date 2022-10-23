@@ -1,8 +1,0 @@
-#include "runtime/FunctionConstructor.cpp"
-#include "runtime/FunctionExecutable.cpp"
-#include "runtime/FunctionExecutableDump.cpp"
-#include "runtime/FunctionHasExecutedCache.cpp"
-#include "runtime/FunctionPrototype.cpp"
-#include "runtime/FunctionRareData.cpp"
-#include "runtime/FuzzerAgent.cpp"
-#include "runtime/GeneratorFunctionConstructor.cpp"

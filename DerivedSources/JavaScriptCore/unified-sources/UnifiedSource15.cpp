@@ -1,8 +1,0 @@
-#include "b3/B3StackSlot.cpp"
-#include "b3/B3StackmapGenerationParams.cpp"
-#include "b3/B3StackmapSpecial.cpp"
-#include "b3/B3StackmapValue.cpp"
-#include "b3/B3SwitchCase.cpp"
-#include "b3/B3SwitchValue.cpp"
-#include "b3/B3Type.cpp"
-#include "b3/B3UpsilonValue.cpp"

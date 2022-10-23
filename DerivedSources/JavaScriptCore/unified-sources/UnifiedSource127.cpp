@@ -1,8 +1,0 @@
-#include "wasm/WasmB3IRGenerator.cpp"
-#include "wasm/WasmBBQPlan.cpp"
-#include "wasm/WasmBinding.cpp"
-#include "wasm/WasmCallee.cpp"
-#include "wasm/WasmCallingConvention.cpp"
-#include "wasm/WasmCodeBlock.cpp"
-#include "wasm/WasmFaultSignalHandler.cpp"
-#include "wasm/WasmFormat.cpp"

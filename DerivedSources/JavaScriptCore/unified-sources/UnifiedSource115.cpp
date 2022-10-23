@@ -1,8 +1,0 @@
-#include "runtime/NumberConstructor.cpp"
-#include "runtime/NumberObject.cpp"
-#include "runtime/NumberPrototype.cpp"
-#include "runtime/ObjectConstructor.cpp"
-#include "runtime/ObjectInitializationScope.cpp"
-#include "runtime/ObjectPrototype.cpp"
-#include "runtime/ObjectToStringAdaptiveStructureWatchpoint.cpp"
-#include "runtime/Operations.cpp"

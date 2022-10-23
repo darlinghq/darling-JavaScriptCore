@@ -1,8 +1,0 @@
-#include "inspector/JSGlobalObjectConsoleClient.cpp"
-#include "inspector/JSGlobalObjectInspectorController.cpp"
-#include "inspector/JSGlobalObjectScriptDebugServer.cpp"
-#include "inspector/JSInjectedScriptHost.cpp"
-#include "inspector/JSInjectedScriptHostPrototype.cpp"
-#include "inspector/JSJavaScriptCallFrame.cpp"
-#include "inspector/JSJavaScriptCallFramePrototype.cpp"
-#include "inspector/JavaScriptCallFrame.cpp"

@@ -1,8 +1,0 @@
-#include "bytecode/ICStatusMap.cpp"
-#include "bytecode/ICStatusUtils.cpp"
-#include "bytecode/InByIdStatus.cpp"
-#include "bytecode/InByIdVariant.cpp"
-#include "bytecode/InlineAccess.cpp"
-#include "bytecode/InlineCallFrame.cpp"
-#include "bytecode/InlineCallFrameSet.cpp"
-#include "bytecode/InstanceOfAccessCase.cpp"

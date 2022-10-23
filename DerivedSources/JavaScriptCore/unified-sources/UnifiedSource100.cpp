@@ -1,8 +1,0 @@
-#include "runtime/GeneratorFunctionPrototype.cpp"
-#include "runtime/GeneratorPrototype.cpp"
-#include "runtime/GetPutInfo.cpp"
-#include "runtime/GetterSetter.cpp"
-#include "runtime/GlobalExecutable.cpp"
-#include "runtime/HashMapImpl.cpp"
-#include "runtime/Identifier.cpp"
-#include "runtime/IndexingType.cpp"

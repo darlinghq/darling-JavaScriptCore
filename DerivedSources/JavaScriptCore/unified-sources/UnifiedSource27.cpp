@@ -1,8 +1,0 @@
-#include "bytecode/CallVariant.cpp"
-#include "bytecode/CodeBlock.cpp"
-#include "bytecode/CodeBlockHash.cpp"
-#include "bytecode/CodeBlockJettisoningWatchpoint.cpp"
-#include "bytecode/CodeOrigin.cpp"
-#include "bytecode/CodeType.cpp"
-#include "bytecode/ComplexGetStatus.cpp"
-#include "bytecode/DFGExitProfile.cpp"

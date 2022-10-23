@@ -1,8 +1,0 @@
-#include "dfg/DFGConstantFoldingPhase.cpp"
-#include "dfg/DFGConstantHoistingPhase.cpp"
-#include "dfg/DFGCriticalEdgeBreakingPhase.cpp"
-#include "dfg/DFGDCEPhase.cpp"
-#include "dfg/DFGDesiredGlobalProperties.cpp"
-#include "dfg/DFGDesiredIdentifiers.cpp"
-#include "dfg/DFGDesiredTransitions.cpp"
-#include "dfg/DFGDesiredWatchpoints.cpp"

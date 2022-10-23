@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2018 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2019 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -38,7 +38,7 @@ public:
     // The Type is set to the number of arguments the resultant function will have.
     enum class Type { Getter = 0, Setter = 1 };
 
-    static const unsigned StructureFlags = Base::StructureFlags;
+    static constexpr unsigned StructureFlags = Base::StructureFlags;
 
     template<typename CellType, SubspaceAccess mode>
     static IsoSubspace* subspaceFor(VM& vm)
@@ -56,18 +56,14 @@ public:
 
     DECLARE_EXPORT_INFO;
 
-protected:
-    static void visitChildren(JSCell*, SlotVisitor&);
-
-private:
-    JSCustomGetterSetterFunction(VM&, JSGlobalObject*, Structure*, Type, const PropertyName&);
-    void finishCreation(VM&, NativeExecutable*, CustomGetterSetter*, const String&);
-
-    static EncodedJSValue JSC_HOST_CALL customGetterSetterFunctionCall(ExecState*);
-
     CustomGetterSetter* customGetterSetter() const { return m_getterSetter.get(); }
     bool isSetter() const { return m_type == Type::Setter; }
     const PropertyName& propertyName() const { return m_propertyName; }
+
+private:
+    JSCustomGetterSetterFunction(VM&, NativeExecutable*, JSGlobalObject*, Structure*, Type, const PropertyName&);
+    void finishCreation(VM&, NativeExecutable*, CustomGetterSetter*, const String&);
+    static void visitChildren(JSCell*, SlotVisitor&);
 
     WriteBarrier<CustomGetterSetter> m_getterSetter;
     Type m_type;

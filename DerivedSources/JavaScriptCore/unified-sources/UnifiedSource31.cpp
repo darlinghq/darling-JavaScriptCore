@@ -1,8 +1,0 @@
-#include "bytecode/InstanceOfStatus.cpp"
-#include "bytecode/InstanceOfVariant.cpp"
-#include "bytecode/InstructionStream.cpp"
-#include "bytecode/IntrinsicGetterAccessCase.cpp"
-#include "bytecode/JumpTable.cpp"
-#include "bytecode/LLIntPrototypeLoadAdaptiveStructureWatchpoint.cpp"
-#include "bytecode/LazyOperandValueProfile.cpp"
-#include "bytecode/MetadataTable.cpp"

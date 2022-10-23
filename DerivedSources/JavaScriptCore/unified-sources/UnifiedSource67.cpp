@@ -1,8 +1,0 @@
-#include "heap/IsoCellSet.cpp"
-#include "heap/IsoSubspace.cpp"
-#include "heap/IsoSubspacePerVM.cpp"
-#include "heap/JITStubRoutineSet.cpp"
-#include "heap/LargeAllocation.cpp"
-#include "heap/LocalAllocator.cpp"
-#include "heap/MachineStackMarker.cpp"
-#include "heap/MarkStack.cpp"

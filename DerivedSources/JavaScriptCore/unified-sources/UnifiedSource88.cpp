@@ -1,8 +1,0 @@
-#include "profiler/ProfilerBytecode.cpp"
-#include "profiler/ProfilerBytecodeSequence.cpp"
-#include "profiler/ProfilerBytecodes.cpp"
-#include "profiler/ProfilerCompilation.cpp"
-#include "profiler/ProfilerCompilationKind.cpp"
-#include "profiler/ProfilerCompiledBytecode.cpp"
-#include "profiler/ProfilerDatabase.cpp"
-#include "profiler/ProfilerEvent.cpp"

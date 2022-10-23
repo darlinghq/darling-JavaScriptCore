@@ -1,8 +1,0 @@
-#include "heap/HeapCellType.cpp"
-#include "heap/HeapFinalizerCallback.cpp"
-#include "heap/HeapHelperPool.cpp"
-#include "heap/HeapProfiler.cpp"
-#include "heap/HeapSnapshot.cpp"
-#include "heap/HeapSnapshotBuilder.cpp"
-#include "heap/IncrementalSweeper.cpp"
-#include "heap/IsoAlignedMemoryAllocator.cpp"

@@ -1,8 +1,0 @@
-#include "dfg/DFGInPlaceAbstractState.cpp"
-#include "dfg/DFGInsertionSet.cpp"
-#include "dfg/DFGIntegerCheckCombiningPhase.cpp"
-#include "dfg/DFGIntegerRangeOptimizationPhase.cpp"
-#include "dfg/DFGInvalidationPointInjectionPhase.cpp"
-#include "dfg/DFGJITCode.cpp"
-#include "dfg/DFGJITCompiler.cpp"
-#include "dfg/DFGJITFinalizer.cpp"

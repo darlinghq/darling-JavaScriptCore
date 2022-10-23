@@ -1,8 +1,0 @@
-#include "runtime/MemoryStatistics.cpp"
-#include "runtime/ModuleProgramExecutable.cpp"
-#include "runtime/NativeErrorConstructor.cpp"
-#include "runtime/NativeErrorPrototype.cpp"
-#include "runtime/NativeExecutable.cpp"
-#include "runtime/NativeStdFunctionCell.cpp"
-#include "runtime/NullGetterFunction.cpp"
-#include "runtime/NullSetterFunction.cpp"

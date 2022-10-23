@@ -1,5 +1,0 @@
-#include "debugger/Debugger.cpp"
-#include "debugger/DebuggerCallFrame.cpp"
-#include "debugger/DebuggerLocation.cpp"
-#include "debugger/DebuggerParseData.cpp"
-#include "debugger/DebuggerScope.cpp"

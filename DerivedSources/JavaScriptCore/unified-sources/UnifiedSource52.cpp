@@ -1,8 +1,0 @@
-#include "dfg/DFGSSACalculator.cpp"
-#include "dfg/DFGSSAConversionPhase.cpp"
-#include "dfg/DFGSSALoweringPhase.cpp"
-#include "dfg/DFGSafepoint.cpp"
-#include "dfg/DFGSnippetParams.cpp"
-#include "dfg/DFGStackLayoutPhase.cpp"
-#include "dfg/DFGStaticExecutionCountEstimationPhase.cpp"
-#include "dfg/DFGStoreBarrierClusteringPhase.cpp"

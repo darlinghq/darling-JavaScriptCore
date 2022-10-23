@@ -1,8 +1,0 @@
-#include "API/JSAPIGlobalObject.cpp"
-#include "API/JSAPIValueWrapper.cpp"
-#include "API/JSBase.cpp"
-#include "API/JSCTestRunnerUtils.cpp"
-#include "API/JSCallbackConstructor.cpp"
-#include "API/JSCallbackFunction.cpp"
-#include "API/JSCallbackObject.cpp"
-#include "API/JSClassRef.cpp"

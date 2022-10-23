@@ -1,6 +1,0 @@
-#include "disassembler/ARM64Disassembler.cpp"
-#include "disassembler/CapstoneDisassembler.cpp"
-#include "disassembler/Disassembler.cpp"
-#include "disassembler/UDis86Disassembler.cpp"
-#include "disassembler/X86Disassembler.cpp"
-#include "disassembler/ARM64/A64DOpcode.cpp"

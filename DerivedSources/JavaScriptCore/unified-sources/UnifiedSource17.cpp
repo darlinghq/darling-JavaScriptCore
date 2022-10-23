@@ -1,8 +1,0 @@
-#include "b3/B3WasmAddressValue.cpp"
-#include "b3/B3WasmBoundsCheckValue.cpp"
-#include "b3/B3Width.cpp"
-#include "b3/air/AirAllocateRegistersAndStackAndGenerateCode.cpp"
-#include "b3/air/AirAllocateRegistersAndStackByLinearScan.cpp"
-#include "b3/air/AirAllocateRegistersByGraphColoring.cpp"
-#include "b3/air/AirAllocateStackByGraphColoring.cpp"
-#include "b3/air/AirArg.cpp"

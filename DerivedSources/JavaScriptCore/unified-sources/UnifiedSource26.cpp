@@ -1,8 +1,0 @@
-#include "bytecode/BytecodeGeneratorification.cpp"
-#include "bytecode/BytecodeIntrinsicRegistry.cpp"
-#include "bytecode/BytecodeLivenessAnalysis.cpp"
-#include "bytecode/BytecodeRewriter.cpp"
-#include "bytecode/CallEdge.cpp"
-#include "bytecode/CallLinkInfo.cpp"
-#include "bytecode/CallLinkStatus.cpp"
-#include "bytecode/CallMode.cpp"
