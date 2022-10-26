@@ -1,0 +1,8 @@
+#include "jit/ExecutableAllocationFuzz.cpp"
+#include "jit/ExecutableAllocator.cpp"
+#include "jit/GCAwareJITStubRoutine.cpp"
+#include "jit/GPRInfo.cpp"
+#include "jit/ICStats.cpp"
+#include "jit/IntrinsicEmitter.cpp"
+#include "jit/JIT.cpp"
+#include "jit/JITAddGenerator.cpp"

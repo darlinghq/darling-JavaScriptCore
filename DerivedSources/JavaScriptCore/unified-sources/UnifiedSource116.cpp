@@ -1,0 +1,8 @@
+#include "runtime/JSSourceCode.cpp"
+#include "runtime/JSString.cpp"
+#include "runtime/JSStringIterator.cpp"
+#include "runtime/JSStringJoiner.cpp"
+#include "runtime/JSSymbolTableObject.cpp"
+#include "runtime/JSTemplateObjectDescriptor.cpp"
+#include "runtime/JSType.cpp"
+#include "runtime/JSTypedArrayConstructors.cpp"
