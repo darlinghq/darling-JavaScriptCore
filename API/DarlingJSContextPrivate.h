@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2014 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -20,37 +20,34 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#import <JavaScriptCore/JavaScriptCore.h>
-#import <JSValueInternal.h>
-#import <objc/objc-runtime.h>
+// The file works around the circular dependencies issue when building for i386 
+
+#ifndef DARLING_JSCONTEXTPRIVATE_H
+#define DARLING_JSCONTEXTPRIVATE_H
+
+#if defined(DARLING) && __i386__
 
 #if JSC_OBJC_API_ENABLED
 
-#if defined(DARLING) && __i386__
-@interface JSWrapperMap : NSObject {
-    NSMutableDictionary *m_classMap;
-    std::unique_ptr<JSC::WeakGCMap<__unsafe_unretained id, JSC::JSObject>> m_cachedJSWrappers;
-    NSMapTable *m_cachedObjCWrappers;
-}
-#else
-@interface JSWrapperMap : NSObject
-#endif
+@class JSContext, JSValue;
 
-- (instancetype)initWithGlobalContextRef:(JSGlobalContextRef)context;
 
-- (JSValue *)jsWrapperForObject:(id)object inContext:(JSContext *)context;
+@protocol JSModuleLoaderDelegate <NSObject>
 
-- (JSValue *)objcWrapperForJSValueRef:(JSValueRef)value inContext:(JSContext *)context;
+@required
+- (void)context:(JSContext *)context fetchModuleForIdentifier:(JSValue *)identifier withResolveHandler:(JSValue *)resolve andRejectHandler:(JSValue *)reject;
+
+@optional
+- (void)willEvaluateModule:(NSURL *)key;
+- (void)didEvaluateModule:(NSURL *)key;
 
 @end
 
-id tryUnwrapObjcObject(JSGlobalContextRef, JSValueRef);
-
-bool supportsInitMethodConstructors();
-Protocol *getJSExportProtocol();
-Class getNSBlockClass();
-
 #endif
+
+#endif // !defined(DARLING) || !__i386__
+
+#endif // DARLING_JSCONTEXTPRIVATE_H

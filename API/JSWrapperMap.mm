@@ -592,11 +592,15 @@ typedef std::pair<JSC::JSObject*, JSC::JSObject*> ConstructorPrototypePair;
 
 @end
 
+#if defined(DARLING) && __i386__
+@implementation JSWrapperMap
+#else
 @implementation JSWrapperMap {
     NSMutableDictionary *m_classMap;
     std::unique_ptr<JSC::WeakGCMap<__unsafe_unretained id, JSC::JSObject>> m_cachedJSWrappers;
     NSMapTable *m_cachedObjCWrappers;
 }
+#endif
 
 - (instancetype)initWithGlobalContextRef:(JSGlobalContextRef)context
 {

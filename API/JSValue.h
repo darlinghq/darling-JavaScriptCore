@@ -45,7 +45,14 @@
  different JSVirtualMachine. Doing so will raise an Objective-C exception.
 */
 NS_CLASS_AVAILABLE(10_9, 7_0)
+#if defined(DARLING) && __i386__
+@interface JSValue : NSObject {
+    JSValueRef m_value;
+    JSContext *_context;
+}
+#else
 @interface JSValue : NSObject
+#endif
 
 /*!
 @property

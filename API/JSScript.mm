@@ -47,6 +47,9 @@
 
 #if JSC_OBJC_API_ENABLED
 
+#if defined(DARLING) && __i386__
+@implementation JSScript
+#else
 @implementation JSScript {
     WeakObjCPtr<JSVirtualMachine> m_virtualMachine;
     JSScriptType m_type;
@@ -56,6 +59,7 @@
     RetainPtr<NSURL> m_cachePath;
     RefPtr<JSC::CachedBytecode> m_cachedBytecode;
 }
+#endif
 
 static JSScript *createError(NSString *message, NSError** error)
 {

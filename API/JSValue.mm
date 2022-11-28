@@ -65,9 +65,13 @@ NSString * const JSPropertyDescriptorValueKey = @"value";
 NSString * const JSPropertyDescriptorGetKey = @"get";
 NSString * const JSPropertyDescriptorSetKey = @"set";
 
+#if defined(DARLING) && __i386__
+@implementation JSValue
+#else
 @implementation JSValue {
     JSValueRef m_value;
 }
+#endif
 
 - (void)dealloc
 {
