@@ -27,6 +27,10 @@
 
 #if JSC_OBJC_API_ENABLED
 
+#if defined(DARLING) && __i386__
+#import "JSLock.h"
+#endif
+
 /*!
 @interface
 @discussion An instance of JSVirtualMachine represents a single JavaScript "object space"
@@ -40,7 +44,17 @@
  JSVirtualMachine's run loop once it has been initialized.
 */
 NS_CLASS_AVAILABLE(10_9, 7_0)
+#if defined(DARLING) && __i386__
+@interface JSVirtualMachine : NSObject {
+    JSContextGroupRef m_group;
+    Lock m_externalDataMutex;
+    NSMapTable *m_contextCache;
+    NSMapTable *m_externalObjectGraph;
+    NSMapTable *m_externalRememberedSet;
+}
+#else
 @interface JSVirtualMachine : NSObject
+#endif
 
 /*!
 @methodgroup Creating New Virtual Machines

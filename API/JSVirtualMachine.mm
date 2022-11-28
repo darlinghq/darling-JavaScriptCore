@@ -82,6 +82,9 @@ static NSMapTable *wrapperCache()
 
 @end
 
+#if defined(DARLING) && __i386__
+@implementation JSVirtualMachine
+#else
 @implementation JSVirtualMachine {
     JSContextGroupRef m_group;
     Lock m_externalDataMutex;
@@ -89,6 +92,7 @@ static NSMapTable *wrapperCache()
     NSMapTable *m_externalObjectGraph;
     NSMapTable *m_externalRememberedSet;
 }
+#endif
 
 - (instancetype)init
 {

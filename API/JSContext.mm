@@ -46,12 +46,16 @@
 
 #if JSC_OBJC_API_ENABLED
 
+#if defined(DARLING) && __i386__
+@implementation JSContext
+#else
 @implementation JSContext {
     JSVirtualMachine *m_virtualMachine;
     JSGlobalContextRef m_context;
     JSC::Strong<JSC::JSObject> m_exception;
     WeakObjCPtr<id <JSModuleLoaderDelegate>> m_moduleLoaderDelegate;
 }
+#endif
 
 - (JSGlobalContextRef)JSGlobalContextRef
 {

@@ -30,6 +30,8 @@
 
 #import <JavaScriptCore/JSContext.h>
 
+#if !defined(DARLING) || defined(DARLING) && !__i386__
+
 @protocol JSModuleLoaderDelegate <NSObject>
 
 @required
@@ -114,6 +116,7 @@
 
 @end
 
+#endif // !defined(DARLING) || defined(DARLING) && !__i386__
 #endif
 
 #endif // JSContextInternal_h

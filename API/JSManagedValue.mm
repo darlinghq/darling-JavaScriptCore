@@ -51,12 +51,16 @@ static JSManagedValueHandleOwner& managedValueHandleOwner()
     return jsManagedValueHandleOwner;
 }
 
+#if defined(DARLING) && __i386__
+@implementation JSManagedValue
+#else
 @implementation JSManagedValue {
     JSC::Weak<JSC::JSGlobalObject> m_globalObject;
     RefPtr<JSC::JSLock> m_lock;
     JSC::JSWeakValue m_weakValue;
     NSMapTable *m_owners;
 }
+#endif
 
 + (JSManagedValue *)managedValueWithValue:(JSValue *)value
 {
