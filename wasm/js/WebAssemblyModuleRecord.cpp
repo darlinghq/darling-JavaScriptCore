@@ -40,6 +40,10 @@
 #include "WasmSignatureInlines.h"
 #include "WebAssemblyFunction.h"
 
+#ifdef DARLING
+#include "ObjectConstructor.h"
+#endif
+
 namespace JSC {
 
 const ClassInfo WebAssemblyModuleRecord::s_info = { "WebAssemblyModuleRecord", &Base::s_info, nullptr, nullptr, CREATE_METHOD_TABLE(WebAssemblyModuleRecord) };

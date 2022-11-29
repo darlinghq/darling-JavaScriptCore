@@ -32,6 +32,10 @@
 #include "NumberObject.h"
 #include "TypeError.h"
 
+#ifdef DARLING
+#include "ParseInt.h"
+#endif
+
 namespace JSC {
 
 // ECMA 9.4

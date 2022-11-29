@@ -35,6 +35,10 @@
 #include "ProfilerCompilation.h"
 #include <wtf/StringPrintStream.h>
 
+#ifdef DARLING
+#include "JSCellInlines.h"
+#endif
+
 namespace JSC {
 
 JITDisassembler::JITDisassembler(CodeBlock *codeBlock)

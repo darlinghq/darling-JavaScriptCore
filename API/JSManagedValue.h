@@ -31,7 +31,7 @@
 
 #if JSC_OBJC_API_ENABLED
 
-#ifdef defined(DARLING) && __i386__
+#if defined(DARLING) && __i386__
 #import "JSWeakValue.h"
 #import "JSLock.h"
 #endif

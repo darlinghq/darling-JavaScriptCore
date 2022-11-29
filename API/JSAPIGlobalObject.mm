@@ -48,6 +48,14 @@
 #import "SourceOrigin.h"
 #import <wtf/URL.h>
 
+#ifdef DARLING_NONUNIFIED_BUILD
+#include "IdentifierInlines.h"
+#include "AuxiliaryBarrierInlines.h"
+#include "StrongInlines.h"
+#include "JSObjectInlines.h"
+#include "JSGlobalObjectInlines.h"
+#endif
+
 namespace JSC {
 
 const ClassInfo JSAPIGlobalObject::s_info = { "GlobalObject", &Base::s_info, nullptr, nullptr, CREATE_METHOD_TABLE(JSAPIGlobalObject) };

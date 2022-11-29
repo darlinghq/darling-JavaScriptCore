@@ -33,6 +33,10 @@
 #include "MaxFrameExtentForSlowPathCall.h"
 #include "StackAlignment.h"
 
+#ifdef DARLING
+#include "JSCellInlines.h"
+#endif
+
 namespace JSC { namespace LLInt {
 
 #if CPU(ARM64E)

@@ -42,6 +42,11 @@
 #import "ObjcRuntimeExtras.h"
 #import "StrongInlines.h"
 
+#ifdef DARLING_NONUNIFIED_BUILD
+#include "JSScriptInternal.h"
+#include "JSAPIGlobalObject.h"
+#endif
+
 #import <wtf/WeakObjCPtr.h>
 
 #if JSC_OBJC_API_ENABLED

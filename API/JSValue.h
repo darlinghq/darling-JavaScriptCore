@@ -26,6 +26,11 @@
 #ifndef JSValue_h
 #define JSValue_h
 
+#ifdef DARLING_NONUNIFIED_BUILD
+#include <JavaScriptCore/JSBase.h>
+#include <JavaScriptCore/WebKitAvailability.h>
+#endif
+
 #if JSC_OBJC_API_ENABLED
 
 #import <CoreGraphics/CGGeometry.h>
