@@ -38,6 +38,10 @@
 #include "TypeProfilerLog.h"
 #include <wtf/NeverDestroyed.h>
 
+#ifdef DARLING
+#include "JSCellInlines.h"
+#endif
+
 namespace JSC { namespace DFG {
 
 static unsigned numCompilations;

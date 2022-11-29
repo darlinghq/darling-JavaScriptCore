@@ -33,6 +33,10 @@
 #include "JSWebAssemblyInstance.h"
 #include "SlotVisitorInlines.h"
 
+#ifdef DARLING
+#include "JSCellInlines.h"
+#endif
+
 namespace JSC {
 
 const ClassInfo WebAssemblyFunctionBase::s_info = { "WebAssemblyFunctionBase", &Base::s_info, nullptr, nullptr, CREATE_METHOD_TABLE(WebAssemblyFunctionBase) };

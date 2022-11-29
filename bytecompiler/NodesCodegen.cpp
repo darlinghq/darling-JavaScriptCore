@@ -48,6 +48,10 @@
 #include <wtf/Assertions.h>
 #include <wtf/text/StringBuilder.h>
 
+#ifdef DARLING_NONUNIFIED_BUILD
+#include "BytecodeStructs.h"
+#endif
+
 namespace JSC {
 
 /*

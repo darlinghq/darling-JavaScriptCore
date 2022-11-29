@@ -34,6 +34,10 @@
 #include "StructureStubInfo.h"
 #include <wtf/ListDump.h>
 
+#ifdef DARLING
+#include "JSCellInlines.h"
+#endif
+
 namespace JSC {
 
 bool InByIdStatus::appendVariant(const InByIdVariant& variant)

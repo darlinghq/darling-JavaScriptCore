@@ -32,6 +32,10 @@
 #include "DFGCommonData.h"
 #include "IdentifierInlines.h"
 
+#ifdef DARLING
+#include "JSCellInlines.h"
+#endif
+
 namespace JSC { namespace DFG {
 
 DesiredIdentifiers::DesiredIdentifiers()

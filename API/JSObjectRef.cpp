@@ -52,6 +52,10 @@
 #include "JSGlobalObjectInspectorController.h"
 #endif
 
+#ifdef DARLING
+#include "JSAPIWrapperObject.h"
+#endif
+
 using namespace JSC;
 
 JSClassRef JSClassCreate(const JSClassDefinition* definition)

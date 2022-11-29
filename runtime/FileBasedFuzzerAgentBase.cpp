@@ -29,6 +29,11 @@
 #include "CodeBlock.h"
 #include <wtf/text/StringBuilder.h>
 
+#ifdef DARLING
+#include "JSCellInlines.h"
+#include "HeapCellInlines.h"
+#endif
+
 namespace JSC {
 
 FileBasedFuzzerAgentBase::FileBasedFuzzerAgentBase(VM&)

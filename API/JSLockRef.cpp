@@ -28,6 +28,11 @@
 
 #include "JSLock.h"
 
+#ifdef DARLING
+#include "APICast.h"
+#include "JSGlobalObject.h"
+#endif
+
 using namespace JSC;
 
 void JSLock(JSContextRef ctx)

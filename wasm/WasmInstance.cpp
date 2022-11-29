@@ -35,6 +35,10 @@
 #include "WasmSignatureInlines.h"
 #include <wtf/CheckedArithmetic.h>
 
+#ifdef DARLING
+#include "JSWebAssemblyHelpers.h"
+#endif
+
 namespace JSC { namespace Wasm {
 
 namespace {

@@ -45,6 +45,10 @@
 #import <wtf/WeakObjCPtr.h>
 #import <wtf/spi/darwin/DataVaultSPI.h>
 
+#ifdef DARLING_NONUNIFIED_BUILD
+#include "runtime/Completion.h"
+#endif
+
 #if JSC_OBJC_API_ENABLED
 
 #if defined(DARLING) && __i386__

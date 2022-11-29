@@ -32,6 +32,10 @@
 #include "DFGCommon.h"
 #include "Options.h"
 
+#ifdef DARLING
+#include "JSCellInlines.h"
+#endif
+
 namespace JSC { namespace DFG {
 
 bool isSupported()
