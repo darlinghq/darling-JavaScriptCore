@@ -27,7 +27,7 @@
 
 #if JSC_OBJC_API_ENABLED
 
-#ifdef defined(DARLING) && __i386__
+#if defined(DARLING) && __i386__
 #import <wtf/WeakObjCPtr.h>
 #import <wtf/FileSystem.h>
 #import "CachedBytecode.h"
