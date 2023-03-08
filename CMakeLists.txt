@@ -2089,7 +2089,7 @@ set(FRAMEWORK_VERSION "A")
 
 generate_sdk_framework(JavaScriptCore
     VERSION ${FRAMEWORK_VERSION}
-    HEADER "include/JavaScriptCore"
+    HEADER "darling/include/JavaScriptCore"
 )
 
 
