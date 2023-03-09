@@ -1009,7 +1009,7 @@ else()
 	set(JSC_SOURCES
 		DerivedSources/JavaScriptCore/BytecodeDumperGenerated.cpp
 		DerivedSources/JavaScriptCore/JSCBuiltins.cpp
-		DerivedSources/JavaScriptCore/udis86_itab.c
+		# DerivedSources/JavaScriptCore/udis86_itab.c
 		DerivedSources/JavaScriptCore/inspector/InspectorBackendDispatchers.cpp
 		DerivedSources/JavaScriptCore/inspector/InspectorFrontendDispatchers.cpp
 		DerivedSources/JavaScriptCore/inspector/InspectorProtocolObjects.cpp
@@ -2152,6 +2152,32 @@ else()
 	)
 endif()
 
+# From my experience, I found using a combinied LLIntAssembly.h header results in a lot of memory being used
+# (I was able to get my 32GB system to run out of memory)... So to workaround that issue, we are going to 
+# rework how llint/LowLevelInterpreter.cpp gets build.
+if (TARGET_x86_64)
+	# While the release header is able to build low_level_interpreter_x86_64, the linker does complain about
+	# undefined symbols, so we will just stick with the debug header.
+	set(LOW_LEVEL_INTERPRETER_X86_64_HEADERS "DerivedSources/JavaScriptCore/LLIntOffsets/X86_64/debug")
+
+	add_darling_object_library(low_level_interpreter_x86_64 64BIT_ONLY llint/LowLevelInterpreter.cpp)
+	target_include_directories(low_level_interpreter_x86_64 PUBLIC ${LOW_LEVEL_INTERPRETER_X86_64_HEADERS})
+else()
+	add_darling_object_library(low_level_interpreter_x86_64 darling/source/empty.c)
+endif()
+
+if (TARGET_i386)
+	# I don't know why, but for some reason, building LowLevelInterpreter.cpp with the release header fails
+	# for i386. Generating the X86 header doesn't work, so I'm just going to stick with using the debug
+	# header file instead.
+	set(LOW_LEVEL_INTERPRETER_I386_HEADERS "DerivedSources/JavaScriptCore/LLIntOffsets/C_LOOP/debug")
+	
+	add_darling_object_library(low_level_interpreter_i386 32BIT_ONLY llint/LowLevelInterpreter.cpp)
+	target_include_directories(low_level_interpreter_i386 PUBLIC ${LOW_LEVEL_INTERPRETER_I386_HEADERS})
+else()
+	add_darling_object_library(low_level_interpreter_i386 darling/source/empty.c)
+endif()
+
 # these sources are the same, regardless of whether unified builds are enabled or not
 set(JSC_SOURCES ${JSC_SOURCES}
 	dfg/DFGSpeculativeJIT.cpp
@@ -2170,7 +2196,7 @@ set(JSC_SOURCES ${JSC_SOURCES}
 	inspector/cocoa/DeprecatedInspectorValues.cpp
 	inspector/InspectorBackendDispatcherCompatibility.cpp
 
-	llint/LowLevelInterpreter.cpp
+	# llint/LowLevelInterpreter.cpp
 	# llint/LowLevelInterpreter.asm
 	# llint/LowLevelInterpreter32_64.asm
 	# llint/LowLevelInterpreter64.asm
@@ -2193,6 +2219,10 @@ add_framework(JavaScriptCore
 
 	SOURCES
 		${JSC_SOURCES}
+	
+	OBJECTS
+		$<TARGET_OBJECTS:low_level_interpreter_x86_64>
+		$<TARGET_OBJECTS:low_level_interpreter_i386>
 
 	DEPENDENCIES
 		WTF
