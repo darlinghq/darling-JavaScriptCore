@@ -179,7 +179,7 @@ CFLAGS=(
 	"-isystem${DARLING_ROOT}/src/external/libcxx/include"
 	-B "${DARLING_BUILD_ROOT}/src/external/cctools-port/cctools/ld64/src/"
 	-B "${DARLING_BUILD_ROOT}/src/external/cctools-port/cctools/misc/"
-	"-fuse-ld=${DARLING_BUILD_ROOT}/src/external/cctools-port/cctools/ld64/src/x86_64-apple-darwin19-ld"
+	"-fuse-ld=${DARLING_BUILD_ROOT}/src/external/cctools-port/cctools/ld64/src/x86_64-apple-darwin20-ld"
 )
 
 DEFINITIONS_release=(
