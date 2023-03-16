@@ -14,7 +14,7 @@ cd "${BUILT_PRODUCTS_DIR}/DerivedSources/JavaScriptCore"
 if [[ -d JavaScriptCore ]]; then
     rm -d JavaScriptCore
 fi
-/bin/ln -sf "${SRCROOT}" JavaScriptCore
+/bin/ln -sf ../.. JavaScriptCore
 
 export JavaScriptCore="JavaScriptCore"
 
