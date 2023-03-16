@@ -78,17 +78,6 @@ InspectorBackend.registerEvent("Browser.extensionsDisabled", null, ["extensionId
 InspectorBackend.registerBrowserDispatcher = InspectorBackend.registerDispatcher.bind(InspectorBackend, "Browser");
 InspectorBackend.activateDomain("Browser", ["web-page"]);
 
-// CPUProfiler
-InspectorBackend.registerDomain("CPUProfiler", ["page"]);
-InspectorBackend.registerEnum("CPUProfiler.ThreadInfoType", {Main: "main", WebKit: "webkit"});
-InspectorBackend.registerCommand("CPUProfiler.startTracking", null, [], []);
-InspectorBackend.registerCommand("CPUProfiler.stopTracking", null, [], []);
-InspectorBackend.registerEvent("CPUProfiler.trackingStart", null, ["timestamp"]);
-InspectorBackend.registerEvent("CPUProfiler.trackingUpdate", null, ["event"]);
-InspectorBackend.registerEvent("CPUProfiler.trackingComplete", null, ["timestamp"]);
-InspectorBackend.registerCPUProfilerDispatcher = InspectorBackend.registerDispatcher.bind(InspectorBackend, "CPUProfiler");
-InspectorBackend.activateDomain("CPUProfiler", ["page", "web-page"]);
-
 // CSS
 InspectorBackend.registerDomain("CSS", ["itml", "page"]);
 InspectorBackend.registerEnum("CSS.StyleSheetOrigin", {User: "user", UserAgent: "user-agent", Author: "author", Inspector: "inspector"});
@@ -122,8 +111,6 @@ InspectorBackend.activateDomain("CSS", ["itml", "page", "web-page"]);
 // Canvas
 InspectorBackend.registerDomain("Canvas", ["page"]);
 InspectorBackend.registerEnum("Canvas.ContextType", {Canvas2D: "canvas-2d", BitmapRenderer: "bitmaprenderer", WebGL: "webgl", WebGL2: "webgl2", WebGPU: "webgpu"});
-InspectorBackend.registerEnum("Canvas.ProgramType", {Compute: "compute", Render: "render"});
-InspectorBackend.registerEnum("Canvas.ShaderType", {Compute: "compute", Fragment: "fragment", Vertex: "vertex"});
 InspectorBackend.registerCommand("Canvas.enable", null, [], []);
 InspectorBackend.registerCommand("Canvas.disable", null, [], []);
 InspectorBackend.registerCommand("Canvas.requestNode", null, [{"name": "canvasId", "type": "string"}], ["nodeId"]);
@@ -133,10 +120,6 @@ InspectorBackend.registerCommand("Canvas.resolveContext", null, [{"name": "canva
 InspectorBackend.registerCommand("Canvas.setRecordingAutoCaptureFrameCount", null, [{"name": "count", "type": "number"}], []);
 InspectorBackend.registerCommand("Canvas.startRecording", null, [{"name": "canvasId", "type": "string"}, {"name": "frameCount", "type": "number", "optional": true}, {"name": "memoryLimit", "type": "number", "optional": true}], []);
 InspectorBackend.registerCommand("Canvas.stopRecording", null, [{"name": "canvasId", "type": "string"}], []);
-InspectorBackend.registerCommand("Canvas.requestShaderSource", null, [{"name": "programId", "type": "string"}, {"name": "shaderType", "type": "string"}], ["source"]);
-InspectorBackend.registerCommand("Canvas.updateShader", null, [{"name": "programId", "type": "string"}, {"name": "shaderType", "type": "string"}, {"name": "source", "type": "string"}], []);
-InspectorBackend.registerCommand("Canvas.setShaderProgramDisabled", null, [{"name": "programId", "type": "string"}, {"name": "disabled", "type": "boolean"}], []);
-InspectorBackend.registerCommand("Canvas.setShaderProgramHighlighted", null, [{"name": "programId", "type": "string"}, {"name": "highlighted", "type": "boolean"}], []);
 InspectorBackend.registerEvent("Canvas.canvasAdded", null, ["canvas"]);
 InspectorBackend.registerEvent("Canvas.canvasRemoved", null, ["canvasId"]);
 InspectorBackend.registerEvent("Canvas.canvasMemoryChanged", null, ["canvasId", "memoryCost"]);
@@ -145,8 +128,6 @@ InspectorBackend.registerEvent("Canvas.clientNodesChanged", null, ["canvasId"]);
 InspectorBackend.registerEvent("Canvas.recordingStarted", null, ["canvasId", "initiator"]);
 InspectorBackend.registerEvent("Canvas.recordingProgress", null, ["canvasId", "frames", "bufferUsed"]);
 InspectorBackend.registerEvent("Canvas.recordingFinished", null, ["canvasId", "recording"]);
-InspectorBackend.registerEvent("Canvas.programCreated", null, ["shaderProgram"]);
-InspectorBackend.registerEvent("Canvas.programDeleted", null, ["programId"]);
 InspectorBackend.registerCanvasDispatcher = InspectorBackend.registerDispatcher.bind(InspectorBackend, "Canvas");
 InspectorBackend.activateDomain("Canvas", ["page", "web-page"]);
 
@@ -189,8 +170,6 @@ InspectorBackend.registerCommand("DOM.setAttributeValue", null, [{"name": "nodeI
 InspectorBackend.registerCommand("DOM.setAttributesAsText", null, [{"name": "nodeId", "type": "number"}, {"name": "text", "type": "string"}, {"name": "name", "type": "string", "optional": true}], []);
 InspectorBackend.registerCommand("DOM.removeAttribute", null, [{"name": "nodeId", "type": "number"}, {"name": "name", "type": "string"}], []);
 InspectorBackend.registerCommand("DOM.getSupportedEventNames", null, [], ["eventNames"]);
-InspectorBackend.registerCommand("DOM.getDataBindingsForNode", ["itml"], [{"name": "nodeId", "type": "number"}], ["dataBindings"]);
-InspectorBackend.registerCommand("DOM.getAssociatedDataForNode", ["itml"], [{"name": "nodeId", "type": "number"}], ["associatedData"]);
 InspectorBackend.registerCommand("DOM.getEventListenersForNode", null, [{"name": "nodeId", "type": "number"}], ["listeners"]);
 InspectorBackend.registerCommand("DOM.setEventListenerDisabled", null, [{"name": "eventListenerId", "type": "number"}, {"name": "disabled", "type": "boolean"}], []);
 InspectorBackend.registerCommand("DOM.setBreakpointForEventListener", ["page"], [{"name": "eventListenerId", "type": "number"}, {"name": "options", "type": "object", "optional": true}], []);
@@ -239,7 +218,6 @@ InspectorBackend.registerEvent("DOM.pseudoElementRemoved", ["page"], ["parentId"
 InspectorBackend.registerEvent("DOM.didAddEventListener", null, ["nodeId"]);
 InspectorBackend.registerEvent("DOM.willRemoveEventListener", null, ["nodeId"]);
 InspectorBackend.registerEvent("DOM.didFireEvent", ["page"], ["nodeId", "eventName", "timestamp", "data"]);
-InspectorBackend.registerEvent("DOM.powerEfficientPlaybackStateChanged", ["page"], ["nodeId", "timestamp", "isPowerEfficient"]);
 InspectorBackend.registerDOMDispatcher = InspectorBackend.registerDispatcher.bind(InspectorBackend, "DOM");
 InspectorBackend.activateDomain("DOM", ["itml", "page", "web-page"]);
 
@@ -338,19 +316,6 @@ InspectorBackend.registerEvent("Heap.trackingComplete", null, ["timestamp", "sna
 InspectorBackend.registerHeapDispatcher = InspectorBackend.registerDispatcher.bind(InspectorBackend, "Heap");
 InspectorBackend.activateDomain("Heap", ["itml", "javascript", "page", "service-worker", "web-page"]);
 
-// IndexedDB
-InspectorBackend.registerDomain("IndexedDB", ["page"]);
-InspectorBackend.registerEnum("IndexedDB.KeyType", {Number: "number", String: "string", Date: "date", Array: "array"});
-InspectorBackend.registerEnum("IndexedDB.KeyPathType", {Null: "null", String: "string", Array: "array"});
-InspectorBackend.registerCommand("IndexedDB.enable", null, [], []);
-InspectorBackend.registerCommand("IndexedDB.disable", null, [], []);
-InspectorBackend.registerCommand("IndexedDB.requestDatabaseNames", null, [{"name": "securityOrigin", "type": "string"}], ["databaseNames"]);
-InspectorBackend.registerCommand("IndexedDB.requestDatabase", null, [{"name": "securityOrigin", "type": "string"}, {"name": "databaseName", "type": "string"}], ["databaseWithObjectStores"]);
-InspectorBackend.registerCommand("IndexedDB.requestData", null, [{"name": "securityOrigin", "type": "string"}, {"name": "databaseName", "type": "string"}, {"name": "objectStoreName", "type": "string"}, {"name": "indexName", "type": "string"}, {"name": "skipCount", "type": "number"}, {"name": "pageSize", "type": "number"}, {"name": "keyRange", "type": "object", "optional": true}], ["objectStoreDataEntries", "hasMore"]);
-InspectorBackend.registerCommand("IndexedDB.clearObjectStore", null, [{"name": "securityOrigin", "type": "string"}, {"name": "databaseName", "type": "string"}, {"name": "objectStoreName", "type": "string"}], []);
-InspectorBackend.registerIndexedDBDispatcher = InspectorBackend.registerDispatcher.bind(InspectorBackend, "IndexedDB");
-InspectorBackend.activateDomain("IndexedDB", ["page", "web-page"]);
-
 // Inspector
 InspectorBackend.registerDomain("Inspector", ["itml", "javascript", "page"]);
 InspectorBackend.registerCommand("Inspector.enable", null, [], []);
@@ -370,21 +335,6 @@ InspectorBackend.registerCommand("LayerTree.reasonsForCompositingLayer", null, [
 InspectorBackend.registerEvent("LayerTree.layerTreeDidChange", null, []);
 InspectorBackend.registerLayerTreeDispatcher = InspectorBackend.registerDispatcher.bind(InspectorBackend, "LayerTree");
 InspectorBackend.activateDomain("LayerTree", ["page", "web-page"]);
-
-// Memory
-InspectorBackend.registerDomain("Memory", ["page"]);
-InspectorBackend.registerEnum("Memory.CategoryDataType", {JavaScript: "javascript", JIT: "jit", Images: "images", Layers: "layers", Page: "page", Other: "other"});
-InspectorBackend.registerCommand("Memory.enable", null, [], []);
-InspectorBackend.registerCommand("Memory.disable", null, [], []);
-InspectorBackend.registerCommand("Memory.startTracking", null, [], []);
-InspectorBackend.registerCommand("Memory.stopTracking", null, [], []);
-InspectorBackend.registerEnum("Memory.MemoryPressureSeverity", {Critical: "critical", NonCritical: "non-critical"});
-InspectorBackend.registerEvent("Memory.memoryPressure", null, ["timestamp", "severity"]);
-InspectorBackend.registerEvent("Memory.trackingStart", null, ["timestamp"]);
-InspectorBackend.registerEvent("Memory.trackingUpdate", null, ["event"]);
-InspectorBackend.registerEvent("Memory.trackingComplete", null, ["timestamp"]);
-InspectorBackend.registerMemoryDispatcher = InspectorBackend.registerDispatcher.bind(InspectorBackend, "Memory");
-InspectorBackend.activateDomain("Memory", ["page", "web-page"]);
 
 // Network
 InspectorBackend.registerDomain("Network", ["itml", "page", "service-worker"]);
@@ -433,7 +383,6 @@ InspectorBackend.registerEnum("Page.Setting", {PrivateClickMeasurementDebugModeE
 InspectorBackend.registerEnum("Page.ResourceType", {Document: "Document", StyleSheet: "StyleSheet", Image: "Image", Font: "Font", Script: "Script", XHR: "XHR", Fetch: "Fetch", Ping: "Ping", Beacon: "Beacon", WebSocket: "WebSocket", Other: "Other"});
 InspectorBackend.registerEnum("Page.CoordinateSystem", {Viewport: "Viewport", Page: "Page"});
 InspectorBackend.registerEnum("Page.CookieSameSitePolicy", {None: "None", Lax: "Lax", Strict: "Strict"});
-InspectorBackend.registerEnum("Page.Appearance", {Light: "Light", Dark: "Dark"});
 InspectorBackend.registerCommand("Page.enable", null, [], []);
 InspectorBackend.registerCommand("Page.disable", null, [], []);
 InspectorBackend.registerCommand("Page.reload", null, [{"name": "ignoreCache", "type": "boolean", "optional": true}, {"name": "revalidateAllResources", "type": "boolean", "optional": true}], []);
@@ -451,10 +400,9 @@ InspectorBackend.registerCommand("Page.searchInResources", ["page"], [{"name": "
 InspectorBackend.registerCommand("Page.setShowRulers", ["page"], [{"name": "result", "type": "boolean"}], []);
 InspectorBackend.registerCommand("Page.setShowPaintRects", ["page"], [{"name": "result", "type": "boolean"}], []);
 InspectorBackend.registerCommand("Page.setEmulatedMedia", ["page"], [{"name": "media", "type": "string"}], []);
-InspectorBackend.registerCommand("Page.setForcedAppearance", ["page"], [{"name": "appearance", "type": "string", "optional": true}], []);
 InspectorBackend.registerCommand("Page.snapshotNode", ["page"], [{"name": "nodeId", "type": "number"}], ["dataURL"]);
 InspectorBackend.registerCommand("Page.snapshotRect", ["page"], [{"name": "x", "type": "number"}, {"name": "y", "type": "number"}, {"name": "width", "type": "number"}, {"name": "height", "type": "number"}, {"name": "coordinateSystem", "type": "string"}], ["dataURL"]);
-InspectorBackend.registerCommand("Page.archive", ["page"], [], ["data"]);
+InspectorBackend.registerCommand("Page.setScreenSizeOverride", ["page"], [{"name": "width", "type": "number", "optional": true}, {"name": "height", "type": "number", "optional": true}], []);
 InspectorBackend.registerEvent("Page.domContentEventFired", ["page"], ["timestamp"]);
 InspectorBackend.registerEvent("Page.loadEventFired", ["page"], ["timestamp"]);
 InspectorBackend.registerEvent("Page.frameNavigated", null, ["frame"]);
@@ -463,7 +411,6 @@ InspectorBackend.registerEvent("Page.frameStartedLoading", null, ["frameId"]);
 InspectorBackend.registerEvent("Page.frameStoppedLoading", null, ["frameId"]);
 InspectorBackend.registerEvent("Page.frameScheduledNavigation", ["page"], ["frameId", "delay"]);
 InspectorBackend.registerEvent("Page.frameClearedScheduledNavigation", ["page"], ["frameId"]);
-InspectorBackend.registerEvent("Page.defaultAppearanceDidChange", ["page"], ["appearance"]);
 InspectorBackend.registerPageDispatcher = InspectorBackend.registerDispatcher.bind(InspectorBackend, "Page");
 InspectorBackend.activateDomain("Page", ["itml", "page", "web-page"]);
 
@@ -518,11 +465,6 @@ InspectorBackend.registerEvent("ScriptProfiler.trackingUpdate", null, ["event"])
 InspectorBackend.registerEvent("ScriptProfiler.trackingComplete", null, ["timestamp", "samples"]);
 InspectorBackend.registerScriptProfilerDispatcher = InspectorBackend.registerDispatcher.bind(InspectorBackend, "ScriptProfiler");
 InspectorBackend.activateDomain("ScriptProfiler", ["itml", "javascript", "page", "web-page"]);
-
-// ServiceWorker
-InspectorBackend.registerDomain("ServiceWorker", ["service-worker"]);
-InspectorBackend.registerCommand("ServiceWorker.getInitializationInfo", null, [], ["info"]);
-InspectorBackend.activateDomain("ServiceWorker", ["service-worker"]);
 
 // Target
 InspectorBackend.registerDomain("Target", ["web-page"]);
