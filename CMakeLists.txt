@@ -1431,9 +1431,9 @@ else()
 		dfg/DFGSSALoweringPhase.cpp
 		dfg/DFGSafepoint.cpp
 		dfg/DFGSnippetParams.cpp
-		dfg/DFGSpeculativeJIT.cpp
-		dfg/DFGSpeculativeJIT32_64.cpp
-		dfg/DFGSpeculativeJIT64.cpp
+		# dfg/DFGSpeculativeJIT.cpp
+		# dfg/DFGSpeculativeJIT32_64.cpp
+		# dfg/DFGSpeculativeJIT64.cpp
 		dfg/DFGStackLayoutPhase.cpp
 		dfg/DFGStaticExecutionCountEstimationPhase.cpp
 		dfg/DFGStoreBarrierClusteringPhase.cpp
@@ -1493,7 +1493,7 @@ else()
 		ftl/FTLLazySlowPath.cpp
 		ftl/FTLLink.cpp
 		ftl/FTLLocation.cpp
-		ftl/FTLLowerDFGToB3.cpp
+		# ftl/FTLLowerDFGToB3.cpp
 		ftl/FTLOSREntry.cpp
 		ftl/FTLOSRExit.cpp
 		ftl/FTLOSRExitCompiler.cpp
@@ -1840,13 +1840,13 @@ else()
 		runtime/IntlCollator.cpp
 		runtime/IntlCollatorConstructor.cpp
 		runtime/IntlCollatorPrototype.cpp
-		runtime/IntlDateTimeFormat.cpp
+		# runtime/IntlDateTimeFormat.cpp
 		runtime/IntlDateTimeFormatConstructor.cpp
 		runtime/IntlDateTimeFormatPrototype.cpp
 		runtime/IntlDisplayNames.cpp
 		runtime/IntlDisplayNamesConstructor.cpp
 		runtime/IntlDisplayNamesPrototype.cpp
-		runtime/IntlListFormat.cpp
+		# runtime/IntlListFormat.cpp
 		runtime/IntlListFormatConstructor.cpp
 		runtime/IntlListFormatPrototype.cpp
 		runtime/IntlLocale.cpp
@@ -1891,7 +1891,7 @@ else()
 		runtime/JSCustomGetterSetterFunction.cpp
 		runtime/JSDataView.cpp
 		runtime/JSDataViewPrototype.cpp
-		runtime/JSDateMath.cpp
+		# runtime/JSDateMath.cpp
 		runtime/JSDestructibleObjectHeapCellType.cpp
 		runtime/JSFinalizationRegistry.cpp
 		runtime/JSFunction.cpp
@@ -2091,7 +2091,7 @@ else()
 		wasm/js/WebAssemblyTablePrototype.cpp
 		wasm/js/WebAssemblyWrapperFunction.cpp
 
-		wasm/WasmAirIRGenerator.cpp
+		# wasm/WasmAirIRGenerator.cpp
 		wasm/WasmB3IRGenerator.cpp
 		wasm/WasmBBQPlan.cpp
 		wasm/WasmBinding.cpp
@@ -2195,6 +2195,10 @@ set(JSC_SOURCES ${JSC_SOURCES}
 
 	inspector/cocoa/DeprecatedInspectorValues.cpp
 	inspector/InspectorBackendDispatcherCompatibility.cpp
+
+	runtime/IntlDateTimeFormat.cpp
+	runtime/IntlListFormat.cpp
+	runtime/JSDateMath.cpp
 
 	# llint/LowLevelInterpreter.cpp
 	# llint/LowLevelInterpreter.asm
