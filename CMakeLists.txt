@@ -2261,6 +2261,7 @@ target_link_options(JavaScriptCore PRIVATE
 )
 
 if (COMPONENT_cli_extra)
+	set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME "cli_extra")
 	# this isn't included on a default macOS install (which is why it's only built with `COMPONENT_cli_extra`),
 	# but i think it's a pretty neat party trick; great for showing off JavaScriptCore in action on the command line
 	add_darling_executable(jsc
