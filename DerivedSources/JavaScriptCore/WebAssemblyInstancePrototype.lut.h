@@ -10,7 +10,7 @@ static const struct CompactHashIndex prototypeTableWebAssemblyInstanceIndex[2] =
 };
 
 static const struct HashTableValue prototypeTableWebAssemblyInstanceValues[1] = {
-   { "exports", static_cast<unsigned>(PropertyAttribute::DontEnum|PropertyAttribute::Accessor), NoIntrinsic, { (intptr_t)static_cast<RawNativeFunction>(webAssemblyInstanceProtoFuncExports), (intptr_t)static_cast<RawNativeFunction>(nullptr) } },
+   { "exports", static_cast<unsigned>(PropertyAttribute::Accessor), NoIntrinsic, { (intptr_t)static_cast<RawNativeFunction>(webAssemblyInstanceProtoFuncExports), (intptr_t)static_cast<RawNativeFunction>(nullptr) } },
 };
 
 static const struct HashTable prototypeTableWebAssemblyInstance =

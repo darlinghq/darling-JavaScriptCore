@@ -28,6 +28,7 @@
 #include "JSCast.h"
 #include "ParserModes.h"
 #include "VariableEnvironment.h"
+#include <wtf/FileSystem.h>
 #include <wtf/HashMap.h>
 #include <wtf/MallocPtr.h>
 
@@ -89,8 +90,8 @@ public:
     void cacheOffset(ptrdiff_t, void*);
     WTF::Optional<void*> cachedPtrForOffset(ptrdiff_t);
     const void* ptrForOffsetFromBase(ptrdiff_t);
-    CompactVariableMap::Handle handleForEnvironment(CompactVariableEnvironment*) const;
-    void setHandleForEnvironment(CompactVariableEnvironment*, const CompactVariableMap::Handle&);
+    CompactTDZEnvironmentMap::Handle handleForTDZEnvironment(CompactTDZEnvironment*) const;
+    void setHandleForTDZEnvironment(CompactTDZEnvironment*, const CompactTDZEnvironmentMap::Handle&);
     void addLeafExecutable(const UnlinkedFunctionExecutable*, ptrdiff_t);
     RefPtr<SourceProvider> provider() const;
 
@@ -104,12 +105,12 @@ private:
     Ref<CachedBytecode> m_cachedBytecode;
     HashMap<ptrdiff_t, void*> m_offsetToPtrMap;
     Vector<std::function<void()>> m_finalizers;
-    HashMap<CompactVariableEnvironment*, CompactVariableMap::Handle> m_environmentToHandleMap;
+    HashMap<CompactTDZEnvironment*, CompactTDZEnvironmentMap::Handle> m_environmentToHandleMap;
     RefPtr<SourceProvider> m_provider;
 };
 
 JS_EXPORT_PRIVATE RefPtr<CachedBytecode> encodeCodeBlock(VM&, const SourceCodeKey&, const UnlinkedCodeBlock*);
-JS_EXPORT_PRIVATE RefPtr<CachedBytecode> encodeCodeBlock(VM&, const SourceCodeKey&, const UnlinkedCodeBlock*, int fd, BytecodeCacheError&);
+JS_EXPORT_PRIVATE RefPtr<CachedBytecode> encodeCodeBlock(VM&, const SourceCodeKey&, const UnlinkedCodeBlock*, FileSystem::PlatformFileHandle fd, BytecodeCacheError&);
 
 UnlinkedCodeBlock* decodeCodeBlockImpl(VM&, const SourceCodeKey&, Ref<CachedBytecode>);
 

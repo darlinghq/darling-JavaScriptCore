@@ -23,13 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#ifdef DARLING_NONUNIFIED_BUILD
+#include <JavaScriptCore/JSBase.h>
+#include <JavaScriptCore/WebKitAvailability.h>
+#endif
+
+#if JSC_OBJC_API_ENABLED
 
 #import "JSScript.h"
 #import "SourceCode.h"
 #import <wtf/RefPtr.h>
-
-#if JSC_OBJC_API_ENABLED
 
 NS_ASSUME_NONNULL_BEGIN
 

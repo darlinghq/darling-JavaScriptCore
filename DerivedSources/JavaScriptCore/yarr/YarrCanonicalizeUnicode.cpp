@@ -58,7 +58,7 @@ const UChar32 unicodeCharacterSet24[] = { 0x0462, 0x0463, 0x1c87, 0 };
 const UChar32 unicodeCharacterSet25[] = { 0x1e60, 0x1e61, 0x1e9b, 0 };
 const UChar32 unicodeCharacterSet26[] = { 0x1c88, 0xa64a, 0xa64b, 0 };
 
-static const size_t UNICODE_CANONICALIZATION_SETS = 27;
+static constexpr size_t UNICODE_CANONICALIZATION_SETS = 27;
 const UChar32* const unicodeCharacterSetInfo[UNICODE_CANONICALIZATION_SETS] = {
     unicodeCharacterSet0,
     unicodeCharacterSet1,
@@ -89,7 +89,7 @@ const UChar32* const unicodeCharacterSetInfo[UNICODE_CANONICALIZATION_SETS] = {
     unicodeCharacterSet26,
 };
 
-const size_t UNICODE_CANONICALIZATION_RANGES = 506;
+const size_t UNICODE_CANONICALIZATION_RANGES = 518;
 const CanonicalizationRange unicodeRangeInfo[UNICODE_CANONICALIZATION_RANGES] = {
     { 0x0000, 0x0040, 0x0000, CanonicalizeUnique },
     { 0x0041, 0x004a, 0x0020, CanonicalizeRangeLo },
@@ -232,7 +232,8 @@ const CanonicalizationRange unicodeRangeInfo[UNICODE_CANONICALIZATION_RANGES] = 
     { 0x027d, 0x027d, 0x29e7, CanonicalizeRangeLo },
     { 0x027e, 0x027f, 0x0000, CanonicalizeUnique },
     { 0x0280, 0x0280, 0x00da, CanonicalizeRangeHi },
-    { 0x0281, 0x0282, 0x0000, CanonicalizeUnique },
+    { 0x0281, 0x0281, 0x0000, CanonicalizeUnique },
+    { 0x0282, 0x0282, 0xa543, CanonicalizeRangeLo },
     { 0x0283, 0x0283, 0x00da, CanonicalizeRangeHi },
     { 0x0284, 0x0286, 0x0000, CanonicalizeUnique },
     { 0x0287, 0x0287, 0xa52a, CanonicalizeRangeLo },
@@ -399,7 +400,9 @@ const CanonicalizationRange unicodeRangeInfo[UNICODE_CANONICALIZATION_RANGES] = 
     { 0x1d79, 0x1d79, 0x8a04, CanonicalizeRangeLo },
     { 0x1d7a, 0x1d7c, 0x0000, CanonicalizeUnique },
     { 0x1d7d, 0x1d7d, 0x0ee6, CanonicalizeRangeLo },
-    { 0x1d7e, 0x1dff, 0x0000, CanonicalizeUnique },
+    { 0x1d7e, 0x1d8d, 0x0000, CanonicalizeUnique },
+    { 0x1d8e, 0x1d8e, 0x8a38, CanonicalizeRangeLo },
+    { 0x1d8f, 0x1dff, 0x0000, CanonicalizeUnique },
     { 0x1e00, 0x1e5f, 0x0000, CanonicalizeAlternatingAligned },
     { 0x1e60, 0x1e61, 0x0019, CanonicalizeSet },
     { 0x1e62, 0x1e95, 0x0000, CanonicalizeAlternatingAligned },
@@ -555,7 +558,8 @@ const CanonicalizationRange unicodeRangeInfo[UNICODE_CANONICALIZATION_RANGES] = 
     { 0xa78d, 0xa78d, 0xa528, CanonicalizeRangeHi },
     { 0xa78e, 0xa78f, 0x0000, CanonicalizeUnique },
     { 0xa790, 0xa793, 0x0000, CanonicalizeAlternatingAligned },
-    { 0xa794, 0xa795, 0x0000, CanonicalizeUnique },
+    { 0xa794, 0xa794, 0x0030, CanonicalizeRangeLo },
+    { 0xa795, 0xa795, 0x0000, CanonicalizeUnique },
     { 0xa796, 0xa7a9, 0x0000, CanonicalizeAlternatingAligned },
     { 0xa7aa, 0xa7aa, 0xa544, CanonicalizeRangeHi },
     { 0xa7ab, 0xa7ab, 0xa54f, CanonicalizeRangeHi },
@@ -567,8 +571,16 @@ const CanonicalizationRange unicodeRangeInfo[UNICODE_CANONICALIZATION_RANGES] = 
     { 0xa7b1, 0xa7b1, 0xa52a, CanonicalizeRangeHi },
     { 0xa7b2, 0xa7b2, 0xa515, CanonicalizeRangeHi },
     { 0xa7b3, 0xa7b3, 0x03a0, CanonicalizeRangeLo },
-    { 0xa7b4, 0xa7b9, 0x0000, CanonicalizeAlternatingAligned },
-    { 0xa7ba, 0xab52, 0x0000, CanonicalizeUnique },
+    { 0xa7b4, 0xa7bf, 0x0000, CanonicalizeAlternatingAligned },
+    { 0xa7c0, 0xa7c1, 0x0000, CanonicalizeUnique },
+    { 0xa7c2, 0xa7c3, 0x0000, CanonicalizeAlternatingAligned },
+    { 0xa7c4, 0xa7c4, 0x0030, CanonicalizeRangeHi },
+    { 0xa7c5, 0xa7c5, 0xa543, CanonicalizeRangeHi },
+    { 0xa7c6, 0xa7c6, 0x8a38, CanonicalizeRangeHi },
+    { 0xa7c7, 0xa7ca, 0x0000, CanonicalizeAlternatingUnaligned },
+    { 0xa7cb, 0xa7f4, 0x0000, CanonicalizeUnique },
+    { 0xa7f5, 0xa7f6, 0x0000, CanonicalizeAlternatingUnaligned },
+    { 0xa7f7, 0xab52, 0x0000, CanonicalizeUnique },
     { 0xab53, 0xab53, 0x03a0, CanonicalizeRangeHi },
     { 0xab54, 0xab6f, 0x0000, CanonicalizeUnique },
     { 0xab70, 0xabbf, 0x97d0, CanonicalizeRangeHi },

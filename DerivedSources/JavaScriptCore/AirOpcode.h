@@ -183,6 +183,18 @@ enum Opcode : int16_t {
     StoreCondRel64,
     Depend32,
     Depend64,
+    AtomicXchgOr8,
+    AtomicXchgOr16,
+    AtomicXchgOr32,
+    AtomicXchgOr64,
+    AtomicXchgClear8,
+    AtomicXchgClear16,
+    AtomicXchgClear32,
+    AtomicXchgClear64,
+    AtomicXchgXor8,
+    AtomicXchgXor16,
+    AtomicXchgXor32,
+    AtomicXchgXor64,
     Compare32,
     Compare64,
     Test32,
@@ -195,6 +207,8 @@ enum Opcode : int16_t {
     BranchTest8,
     BranchTest32,
     BranchTest64,
+    BranchTestBit64,
+    BranchTestBit32,
     BranchDouble,
     BranchFloat,
     BranchAdd32,
@@ -234,7 +248,7 @@ enum Opcode : int16_t {
     ColdCCall,
     WasmBoundsCheck,
 };
-static const unsigned numOpcodes = 230;
+static const unsigned numOpcodes = 244;
 } } } // namespace JSC::B3::Air
 namespace WTF {
 class PrintStream;

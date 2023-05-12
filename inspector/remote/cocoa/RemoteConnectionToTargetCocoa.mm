@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013, 2015 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2013-2019 Apple Inc. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,14 +28,15 @@
 
 #if ENABLE(REMOTE_INSPECTOR)
 
-#import "EventLoop.h"
+#import "JSGlobalObjectDebugger.h"
 #import "RemoteAutomationTarget.h"
 #import "RemoteInspectionTarget.h"
 #import "RemoteInspector.h"
 #import <dispatch/dispatch.h>
 #import <wtf/Optional.h>
+#import <wtf/RunLoop.h>
 
-#if PLATFORM(IOS_FAMILY)
+#if USE(WEB_THREAD)
 #import <wtf/ios/WebCoreThread.h>
 #endif
 
@@ -54,22 +55,21 @@ static void RemoteTargetHandleRunSourceGlobal(void*)
     RemoteTargetQueue queueCopy;
     {
         LockHolder lock(rwiQueueMutex);
-        queueCopy = *rwiQueue;
-        rwiQueue->clear();
+        std::swap(queueCopy, *rwiQueue);
     }
 
-    for (const auto& block : queueCopy)
-        block();
+    for (const auto& function : queueCopy)
+        function();
 }
 
-static void RemoteTargetQueueTaskOnGlobalQueue(void (^task)())
+static void RemoteTargetQueueTaskOnGlobalQueue(Function<void ()>&& function)
 {
     ASSERT(rwiRunLoopSource);
     ASSERT(rwiQueue);
 
     {
         LockHolder lock(rwiQueueMutex);
-        rwiQueue->append(task);
+        rwiQueue->append(WTFMove(function));
     }
 
     CFRunLoopSourceSignal(rwiRunLoopSource);
@@ -87,7 +87,9 @@ static void RemoteTargetInitializeGlobalQueue()
 
         // Add to the default run loop mode for default handling, and the JSContext remote inspector run loop mode when paused.
         CFRunLoopAddSource(CFRunLoopGetMain(), rwiRunLoopSource, kCFRunLoopDefaultMode);
-        CFRunLoopAddSource(CFRunLoopGetMain(), rwiRunLoopSource, EventLoop::remoteInspectorRunLoopMode());
+        auto mode = JSGlobalObjectDebugger::runLoopMode();
+        if (mode != DefaultRunLoopMode)
+            CFRunLoopAddSource(CFRunLoopGetMain(), rwiRunLoopSource, mode);
     });
 }
 
@@ -98,12 +100,11 @@ static void RemoteTargetHandleRunSourceWithInfo(void* info)
     RemoteTargetQueue queueCopy;
     {
         LockHolder lock(connectionToTarget->queueMutex());
-        queueCopy = connectionToTarget->queue();
-        connectionToTarget->clearQueue();
+        queueCopy = connectionToTarget->takeQueue();
     }
 
-    for (const auto& block : queueCopy)
-        block();
+    for (const auto& function : queueCopy)
+        function();
 }
 
 
@@ -135,21 +136,24 @@ NSString *RemoteConnectionToTarget::destination() const
     return [[m_destination copy] autorelease];
 }
 
-void RemoteConnectionToTarget::dispatchAsyncOnTarget(void (^block)())
+void RemoteConnectionToTarget::dispatchAsyncOnTarget(Function<void ()>&& callback)
 {
     if (m_runLoop) {
-        queueTaskOnPrivateRunLoop(block);
+        queueTaskOnPrivateRunLoop(WTFMove(callback));
         return;
     }
 
-#if PLATFORM(IOS_FAMILY)
+#if USE(WEB_THREAD)
     if (WebCoreWebThreadIsEnabled && WebCoreWebThreadIsEnabled()) {
-        WebCoreWebThreadRun(block);
+        __block auto blockCallback(WTFMove(callback));
+        WebCoreWebThreadRun(^{
+            blockCallback();
+        });
         return;
     }
 #endif
 
-    RemoteTargetQueueTaskOnGlobalQueue(block);
+    RemoteTargetQueueTaskOnGlobalQueue(WTFMove(callback));
 }
 
 bool RemoteConnectionToTarget::setup(bool isAutomaticInspection, bool automaticallyPause)
@@ -160,30 +164,26 @@ bool RemoteConnectionToTarget::setup(bool isAutomaticInspection, bool automatica
         return false;
 
     auto targetIdentifier = this->targetIdentifier().valueOr(0);
-    
-    ref();
-    dispatchAsyncOnTarget(^{
-        {
-            LockHolder lock(m_targetMutex);
 
-            if (!m_target || !m_target->remoteControlAllowed()) {
-                RemoteInspector::singleton().setupFailed(targetIdentifier);
-                m_target = nullptr;
-            } else if (is<RemoteInspectionTarget>(m_target)) {
-                auto castedTarget = downcast<RemoteInspectionTarget>(m_target);
-                castedTarget->connect(*this, isAutomaticInspection, automaticallyPause);
-                m_connected = true;
+    dispatchAsyncOnTarget([this, targetIdentifier, isAutomaticInspection, automaticallyPause, strongThis = makeRef(*this)]() {
+        LockHolder lock(m_targetMutex);
 
-                RemoteInspector::singleton().updateTargetListing(targetIdentifier);
-            } else if (is<RemoteAutomationTarget>(m_target)) {
-                auto castedTarget = downcast<RemoteAutomationTarget>(m_target);
-                castedTarget->connect(*this);
-                m_connected = true;
+        if (!m_target || !m_target->remoteControlAllowed()) {
+            RemoteInspector::singleton().setupFailed(targetIdentifier);
+            m_target = nullptr;
+        } else if (is<RemoteInspectionTarget>(m_target)) {
+            auto castedTarget = downcast<RemoteInspectionTarget>(m_target);
+            castedTarget->connect(*this, isAutomaticInspection, automaticallyPause);
+            m_connected = true;
 
-                RemoteInspector::singleton().updateTargetListing(targetIdentifier);
-            }
+            RemoteInspector::singleton().updateTargetListing(targetIdentifier);
+        } else if (is<RemoteAutomationTarget>(m_target)) {
+            auto castedTarget = downcast<RemoteAutomationTarget>(m_target);
+            castedTarget->connect(*this);
+            m_connected = true;
+
+            RemoteInspector::singleton().updateTargetListing(targetIdentifier);
         }
-        deref();
     });
 
     return true;
@@ -200,39 +200,31 @@ void RemoteConnectionToTarget::close()
 {
     auto targetIdentifier = m_target ? m_target->targetIdentifier() : 0;
     
-    ref();
-    dispatchAsyncOnTarget(^{
-        {
-            LockHolder lock(m_targetMutex);
-            if (m_target) {
-                if (m_connected)
-                    m_target->disconnect(*this);
+    dispatchAsyncOnTarget([this, targetIdentifier, strongThis = makeRef(*this)]() {
+        LockHolder lock(m_targetMutex);
+        if (m_target) {
+            if (m_connected)
+                m_target->disconnect(*this);
 
-                m_target = nullptr;
-                
+            m_target = nullptr;
+            if (targetIdentifier)
                 RemoteInspector::singleton().updateTargetListing(targetIdentifier);
-            }
         }
-        deref();
     });
 }
 
 void RemoteConnectionToTarget::sendMessageToTarget(NSString *message)
 {
-    ref();
-    dispatchAsyncOnTarget(^{
+    dispatchAsyncOnTarget([this, strongMessage = retainPtr(message), strongThis = makeRef(*this)]() {
+        RemoteControllableTarget* target = nullptr;
         {
-            RemoteControllableTarget* target = nullptr;
-            {
-                LockHolder lock(m_targetMutex);
-                if (!m_target)
-                    return;
-                target = m_target;
-            }
-
-            target->dispatchMessageFromRemote(message);
+            LockHolder lock(m_targetMutex);
+            if (!m_target)
+                return;
+            target = m_target;
         }
-        deref();
+
+        target->dispatchMessageFromRemote(strongMessage.get());
     });
 }
 
@@ -258,7 +250,9 @@ void RemoteConnectionToTarget::setupRunLoop()
     m_runLoopSource = adoptCF(CFRunLoopSourceCreate(kCFAllocatorDefault, 1, &runLoopSourceContext));
 
     CFRunLoopAddSource(m_runLoop.get(), m_runLoopSource.get(), kCFRunLoopDefaultMode);
-    CFRunLoopAddSource(m_runLoop.get(), m_runLoopSource.get(), EventLoop::remoteInspectorRunLoopMode());
+    auto mode = JSGlobalObjectDebugger::runLoopMode();
+    if (mode != DefaultRunLoopMode)
+        CFRunLoopAddSource(m_runLoop.get(), m_runLoopSource.get(), mode);
 }
 
 void RemoteConnectionToTarget::teardownRunLoop()
@@ -267,23 +261,30 @@ void RemoteConnectionToTarget::teardownRunLoop()
         return;
 
     CFRunLoopRemoveSource(m_runLoop.get(), m_runLoopSource.get(), kCFRunLoopDefaultMode);
-    CFRunLoopRemoveSource(m_runLoop.get(), m_runLoopSource.get(), EventLoop::remoteInspectorRunLoopMode());
+    auto mode = JSGlobalObjectDebugger::runLoopMode();
+    if (mode != DefaultRunLoopMode)
+        CFRunLoopRemoveSource(m_runLoop.get(), m_runLoopSource.get(), mode);
 
     m_runLoop = nullptr;
     m_runLoopSource = nullptr;
 }
 
-void RemoteConnectionToTarget::queueTaskOnPrivateRunLoop(void (^block)())
+void RemoteConnectionToTarget::queueTaskOnPrivateRunLoop(Function<void ()>&& function)
 {
     ASSERT(m_runLoop);
 
     {
         LockHolder lock(m_queueMutex);
-        m_queue.append(block);
+        m_queue.append(WTFMove(function));
     }
 
     CFRunLoopSourceSignal(m_runLoopSource.get());
     CFRunLoopWakeUp(m_runLoop.get());
+}
+
+RemoteTargetQueue RemoteConnectionToTarget::takeQueue()
+{
+    return std::exchange(m_queue, { });
 }
 
 } // namespace Inspector

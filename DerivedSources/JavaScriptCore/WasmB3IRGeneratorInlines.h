@@ -102,9 +102,9 @@ template<> auto B3IRGenerator::addOp<OpType::F64Mul>(ExpressionType arg0, Expres
     return { };
 }
 
-template<> auto B3IRGenerator::addOp<OpType::F32Div>(ExpressionType arg0, ExpressionType arg1, ExpressionType& result) -> PartialResult
+template<> auto B3IRGenerator::addOp<OpType::F32Eq>(ExpressionType arg0, ExpressionType arg1, ExpressionType& result) -> PartialResult
 {
-    result = m_currentBlock->appendNew<Value>(m_proc, B3::Div, origin(), arg0, arg1);
+    result = m_currentBlock->appendNew<Value>(m_proc, B3::Equal, origin(), arg0, arg1);
     return { };
 }
 
@@ -240,6 +240,12 @@ template<> auto B3IRGenerator::addOp<OpType::F32Neg>(ExpressionType arg0, Expres
     return { };
 }
 
+template<> auto B3IRGenerator::addOp<OpType::I64Sub>(ExpressionType arg0, ExpressionType arg1, ExpressionType& result) -> PartialResult
+{
+    result = m_currentBlock->appendNew<Value>(m_proc, B3::Sub, origin(), arg0, arg1);
+    return { };
+}
+
 template<> auto B3IRGenerator::addOp<OpType::I32And>(ExpressionType arg0, ExpressionType arg1, ExpressionType& result) -> PartialResult
 {
     result = m_currentBlock->appendNew<Value>(m_proc, B3::BitAnd, origin(), arg0, arg1);
@@ -275,6 +281,14 @@ template<> auto B3IRGenerator::addOp<OpType::I32LtS>(ExpressionType arg0, Expres
 template<> auto B3IRGenerator::addOp<OpType::I32Eq>(ExpressionType arg0, ExpressionType arg1, ExpressionType& result) -> PartialResult
 {
     result = m_currentBlock->appendNew<Value>(m_proc, B3::Equal, origin(), arg0, arg1);
+    return { };
+}
+
+template<> auto B3IRGenerator::addOp<OpType::I64Extend32S>(ExpressionType arg0, ExpressionType& result) -> PartialResult
+{
+    Value* temp2 = m_currentBlock->appendNew<Value>(m_proc, B3::Trunc, origin(), arg0);    
+Value* temp0 = m_currentBlock->appendNew<Value>(m_proc, B3::SExt32, origin(), temp2);    
+result = temp0;
     return { };
 }
 
@@ -418,12 +432,6 @@ template<> auto B3IRGenerator::addOp<OpType::F32Mul>(ExpressionType arg0, Expres
     return { };
 }
 
-template<> auto B3IRGenerator::addOp<OpType::I64Sub>(ExpressionType arg0, ExpressionType arg1, ExpressionType& result) -> PartialResult
-{
-    result = m_currentBlock->appendNew<Value>(m_proc, B3::Sub, origin(), arg0, arg1);
-    return { };
-}
-
 template<> auto B3IRGenerator::addOp<OpType::I32ReinterpretF32>(ExpressionType arg0, ExpressionType& result) -> PartialResult
 {
     result = m_currentBlock->appendNew<Value>(m_proc, B3::BitwiseCast, origin(), arg0);
@@ -522,6 +530,21 @@ template<> auto B3IRGenerator::addOp<OpType::I64GeS>(ExpressionType arg0, Expres
     return { };
 }
 
+template<> auto B3IRGenerator::addOp<OpType::I64Extend16S>(ExpressionType arg0, ExpressionType& result) -> PartialResult
+{
+    Value* temp4 = m_currentBlock->appendNew<Value>(m_proc, B3::Trunc, origin(), arg0);    
+Value* temp2 = m_currentBlock->appendNew<Value>(m_proc, B3::SExt16, origin(), temp4);    
+Value* temp0 = m_currentBlock->appendNew<Value>(m_proc, B3::SExt32, origin(), temp2);    
+result = temp0;
+    return { };
+}
+
+template<> auto B3IRGenerator::addOp<OpType::I32Extend8S>(ExpressionType arg0, ExpressionType& result) -> PartialResult
+{
+    result = m_currentBlock->appendNew<Value>(m_proc, B3::SExt8, origin(), arg0);
+    return { };
+}
+
 template<> auto B3IRGenerator::addOp<OpType::I64ExtendUI32>(ExpressionType arg0, ExpressionType& result) -> PartialResult
 {
     result = m_currentBlock->appendNew<Value>(m_proc, B3::ZExt32, origin(), arg0);
@@ -540,9 +563,9 @@ template<> auto B3IRGenerator::addOp<OpType::F64ReinterpretI64>(ExpressionType a
     return { };
 }
 
-template<> auto B3IRGenerator::addOp<OpType::F32Eq>(ExpressionType arg0, ExpressionType arg1, ExpressionType& result) -> PartialResult
+template<> auto B3IRGenerator::addOp<OpType::F32Div>(ExpressionType arg0, ExpressionType arg1, ExpressionType& result) -> PartialResult
 {
-    result = m_currentBlock->appendNew<Value>(m_proc, B3::Equal, origin(), arg0, arg1);
+    result = m_currentBlock->appendNew<Value>(m_proc, B3::Div, origin(), arg0, arg1);
     return { };
 }
 
@@ -600,6 +623,12 @@ result = temp0;
     return { };
 }
 
+template<> auto B3IRGenerator::addOp<OpType::I32Extend16S>(ExpressionType arg0, ExpressionType& result) -> PartialResult
+{
+    result = m_currentBlock->appendNew<Value>(m_proc, B3::SExt16, origin(), arg0);
+    return { };
+}
+
 template<> auto B3IRGenerator::addOp<OpType::F32Gt>(ExpressionType arg0, ExpressionType arg1, ExpressionType& result) -> PartialResult
 {
     result = m_currentBlock->appendNew<Value>(m_proc, B3::GreaterThan, origin(), arg0, arg1);
@@ -615,6 +644,15 @@ template<> auto B3IRGenerator::addOp<OpType::I32WrapI64>(ExpressionType arg0, Ex
 template<> auto B3IRGenerator::addOp<OpType::I32Rotl>(ExpressionType arg0, ExpressionType arg1, ExpressionType& result) -> PartialResult
 {
     result = m_currentBlock->appendNew<Value>(m_proc, B3::RotL, origin(), arg0, arg1);
+    return { };
+}
+
+template<> auto B3IRGenerator::addOp<OpType::I64Extend8S>(ExpressionType arg0, ExpressionType& result) -> PartialResult
+{
+    Value* temp4 = m_currentBlock->appendNew<Value>(m_proc, B3::Trunc, origin(), arg0);    
+Value* temp2 = m_currentBlock->appendNew<Value>(m_proc, B3::SExt8, origin(), temp4);    
+Value* temp0 = m_currentBlock->appendNew<Value>(m_proc, B3::SExt32, origin(), temp2);    
+result = temp0;
     return { };
 }
 

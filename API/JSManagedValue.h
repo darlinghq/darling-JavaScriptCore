@@ -31,6 +31,11 @@
 
 #if JSC_OBJC_API_ENABLED
 
+#if defined(DARLING) && __i386__
+#import "JSWeakValue.h"
+#import "JSLock.h"
+#endif
+
 @class JSValue;
 @class JSContext;
 
@@ -49,7 +54,16 @@ or Swift object that is exported to JavaScript. It is incorrect to store a JSVal
 in an object that is exported to JavaScript, since doing so creates a retain cycle.
 */ 
 NS_CLASS_AVAILABLE(10_9, 7_0)
+#if defined(DARLING) && __i386__
+@interface JSManagedValue : NSObject {
+    JSC::Weak<JSC::JSGlobalObject> m_globalObject;
+    RefPtr<JSC::JSLock> m_lock;
+    JSC::JSWeakValue m_weakValue;
+    NSMapTable *m_owners;
+}
+#else
 @interface JSManagedValue : NSObject
+#endif
 
 /*!
 @method

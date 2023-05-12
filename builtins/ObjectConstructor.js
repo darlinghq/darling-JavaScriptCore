@@ -35,7 +35,7 @@ function entries(object)
     for (var i = 0, length = names.length; i < length; ++i) {
         var name = names[i];
         if (@propertyIsEnumerable(obj, name))
-            properties.@push([name, obj[name]]);
+            @arrayPush(properties, [name, obj[name]]);
     }
 
     return properties;
@@ -45,13 +45,13 @@ function fromEntries(iterable)
 {
     "use strict";
 
-    let object = {};
+    var object = {};
 
-    for (let entry of iterable) {
+    for (var entry of iterable) {
         if (!@isObject(entry))
             @throwTypeError("Object.fromEntries requires the first iterable parameter yields objects");
-        let key = entry[0];
-        let value = entry[1];
+        var key = entry[0];
+        var value = entry[1];
         @putByValDirect(object, key, value);
     }
 

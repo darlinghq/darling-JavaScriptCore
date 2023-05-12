@@ -23,14 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifdef DARLING_NONUNIFIED_BUILD
-#include <JavaScriptCore/JSBase.h>
-#include <JavaScriptCore/WebKitAvailability.h>
-#endif
-
 #import <JavaScriptCore/JSValue.h>
 
 #if JSC_OBJC_API_ENABLED
+
+#if defined(DARLING) && __i386__
+#import <wtf/WeakObjCPtr.h>
+#import <wtf/FileSystem.h>
+#import "CachedBytecode.h"
+#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -49,7 +50,19 @@ typedef NS_ENUM(NSInteger, JSScriptType) {
 
 
 JSC_CLASS_AVAILABLE(macos(10.15), ios(13.0))
+#if defined(DARLING) && __i386__
+@interface JSScript : NSObject {
+    WeakObjCPtr<JSVirtualMachine> m_virtualMachine;
+    JSScriptType m_type;
+    FileSystem::MappedFileData m_mappedSource;
+    String m_source;
+    RetainPtr<NSURL> m_sourceURL;
+    RetainPtr<NSURL> m_cachePath;
+    RefPtr<JSC::CachedBytecode> m_cachedBytecode;
+}
+#else
 @interface JSScript : NSObject
+#endif
 
 /*!
  @method

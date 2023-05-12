@@ -1,2 +1,6 @@
-#include "parser/UnlinkedSourceCode.cpp"
-#include "parser/VariableEnvironment.cpp"
+#include "llint/LLIntCLoop.cpp"
+#include "llint/LLIntData.cpp"
+#include "llint/LLIntEntrypoint.cpp"
+#include "llint/LLIntExceptions.cpp"
+#include "llint/LLIntSlowPaths.cpp"
+#include "llint/LLIntThunks.cpp"

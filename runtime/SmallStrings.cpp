@@ -26,10 +26,7 @@
 #include "config.h"
 #include "SmallStrings.h"
 
-#include "JSGlobalObject.h"
-#include "JSString.h"
-#include "JSCInlines.h"
-#include <wtf/Noncopyable.h>
+#include "JSCJSValueInlines.h"
 #include <wtf/text/StringImpl.h>
 
 namespace JSC {
@@ -61,6 +58,10 @@ void SmallStrings::initializeCommonStrings(VM& vm)
     initialize(&vm, m_objectStringStart, "[object ");
     initialize(&vm, m_nullObjectString, "[object Null]");
     initialize(&vm, m_undefinedObjectString, "[object Undefined]");
+    initialize(&vm, m_boundPrefixString, "bound ");
+    initialize(&vm, m_notEqualString, "not-equal");
+    initialize(&vm, m_timedOutString, "timed-out");
+    initialize(&vm, m_okString, "ok");
 
     setIsInitialized(true);
 }
@@ -77,6 +78,10 @@ void SmallStrings::visitStrongReferences(SlotVisitor& visitor)
     visitor.appendUnbarriered(m_objectStringStart);
     visitor.appendUnbarriered(m_nullObjectString);
     visitor.appendUnbarriered(m_undefinedObjectString);
+    visitor.appendUnbarriered(m_boundPrefixString);
+    visitor.appendUnbarriered(m_notEqualString);
+    visitor.appendUnbarriered(m_timedOutString);
+    visitor.appendUnbarriered(m_okString);
 }
 
 SmallStrings::~SmallStrings()

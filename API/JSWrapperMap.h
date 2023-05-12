@@ -29,7 +29,15 @@
 
 #if JSC_OBJC_API_ENABLED
 
+#if defined(DARLING) && __i386__
+@interface JSWrapperMap : NSObject {
+    NSMutableDictionary *m_classMap;
+    std::unique_ptr<JSC::WeakGCMap<__unsafe_unretained id, JSC::JSObject>> m_cachedJSWrappers;
+    NSMapTable *m_cachedObjCWrappers;
+}
+#else
 @interface JSWrapperMap : NSObject
+#endif
 
 - (instancetype)initWithGlobalContextRef:(JSGlobalContextRef)context;
 

@@ -30,19 +30,17 @@
 
 #include "JSCInlines.h"
 #include "JSWebAssemblyInstance.h"
-#include <wtf/CheckedArithmetic.h>
 
 namespace JSC {
 
 const ClassInfo JSWebAssemblyTable::s_info = { "WebAssembly.Table", &Base::s_info, nullptr, nullptr, CREATE_METHOD_TABLE(JSWebAssemblyTable) };
 
-JSWebAssemblyTable* JSWebAssemblyTable::create(ExecState* exec, VM& vm, Structure* structure, Ref<Wasm::Table>&& table)
+JSWebAssemblyTable* JSWebAssemblyTable::tryCreate(JSGlobalObject* globalObject, VM& vm, Structure* structure, Ref<Wasm::Table>&& table)
 {
     auto throwScope = DECLARE_THROW_SCOPE(vm);
-    auto* globalObject = exec->lexicalGlobalObject();
 
     if (!globalObject->webAssemblyEnabled()) {
-        throwException(exec, throwScope, createEvalError(exec, globalObject->webAssemblyDisabledErrorMessage()));
+        throwException(globalObject, throwScope, createEvalError(globalObject, globalObject->webAssemblyDisabledErrorMessage()));
         return nullptr;
     }
 
@@ -83,11 +81,11 @@ void JSWebAssemblyTable::visitChildren(JSCell* cell, SlotVisitor& visitor)
     thisObject->table()->visitAggregate(visitor);
 }
 
-bool JSWebAssemblyTable::grow(uint32_t delta)
+bool JSWebAssemblyTable::grow(uint32_t delta, JSValue defaultValue)
 {
     if (delta == 0)
         return true;
-    return !!m_table->grow(delta);
+    return !!m_table->grow(delta, defaultValue);
 }
 
 JSValue JSWebAssemblyTable::get(uint32_t index)
@@ -99,7 +97,7 @@ JSValue JSWebAssemblyTable::get(uint32_t index)
 void JSWebAssemblyTable::set(uint32_t index, JSValue value)
 {
     RELEASE_ASSERT(index < length());
-    RELEASE_ASSERT(m_table->isAnyrefTable());
+    RELEASE_ASSERT(m_table->isExternrefTable());
     m_table->set(index, value);
 }
 

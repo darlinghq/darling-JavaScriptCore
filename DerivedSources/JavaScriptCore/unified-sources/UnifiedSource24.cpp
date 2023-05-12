@@ -1,3 +1,3 @@
-#include "builtins/BuiltinExecutableCreator.cpp"
-#include "builtins/BuiltinExecutables.cpp"
-#include "builtins/BuiltinNames.cpp"
+#include "bindings/ScriptFunctionCall.cpp"
+#include "bindings/ScriptObject.cpp"
+#include "bindings/ScriptValue.cpp"

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2015-2019 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,19 +27,17 @@
 #include "AbstractModuleRecord.h"
 
 #include "Error.h"
-#include "Interpreter.h"
 #include "JSCInlines.h"
 #include "JSMap.h"
 #include "JSModuleEnvironment.h"
 #include "JSModuleNamespaceObject.h"
 #include "JSModuleRecord.h"
-#include "UnlinkedModuleProgramCodeBlock.h"
 #include "WebAssemblyModuleRecord.h"
 #include <wtf/Optional.h>
 
 namespace JSC {
 namespace AbstractModuleRecordInternal {
-static const bool verbose = false;
+static constexpr bool verbose = false;
 } // namespace AbstractModuleRecordInternal
 
 const ClassInfo AbstractModuleRecord::s_info = { "AbstractModuleRecord", &Base::s_info, nullptr, nullptr, CREATE_METHOD_TABLE(AbstractModuleRecord) };
@@ -50,27 +48,22 @@ AbstractModuleRecord::AbstractModuleRecord(VM& vm, Structure* structure, const I
 {
 }
 
-void AbstractModuleRecord::destroy(JSCell* cell)
-{
-    AbstractModuleRecord* thisObject = static_cast<AbstractModuleRecord*>(cell);
-    thisObject->AbstractModuleRecord::~AbstractModuleRecord();
-}
-
-void AbstractModuleRecord::finishCreation(ExecState* exec, VM& vm)
+void AbstractModuleRecord::finishCreation(JSGlobalObject* globalObject, VM& vm)
 {
     Base::finishCreation(vm);
     ASSERT(inherits(vm, info()));
 
     auto scope = DECLARE_THROW_SCOPE(vm);
-    JSMap* map = JSMap::create(exec, vm, globalObject(vm)->mapStructure());
+    JSMap* map = JSMap::create(globalObject, vm, globalObject->mapStructure());
     scope.releaseAssertNoException();
     m_dependenciesMap.set(vm, this, map);
-    putDirect(vm, Identifier::fromString(&vm, "dependenciesMap"_s), m_dependenciesMap.get());
+    putDirect(vm, Identifier::fromString(vm, "dependenciesMap"_s), m_dependenciesMap.get());
 }
 
 void AbstractModuleRecord::visitChildren(JSCell* cell, SlotVisitor& visitor)
 {
     AbstractModuleRecord* thisObject = jsCast<AbstractModuleRecord*>(cell);
+    ASSERT_GC_OBJECT_INHERITS(thisObject, info());
     Base::visitChildren(thisObject, visitor);
     visitor.append(thisObject->m_moduleEnvironment);
     visitor.append(thisObject->m_moduleNamespaceObject);
@@ -125,6 +118,11 @@ auto AbstractModuleRecord::ExportEntry::createIndirect(const Identifier& exportN
     return ExportEntry { Type::Indirect, exportName, moduleName, importName, Identifier() };
 }
 
+auto AbstractModuleRecord::ExportEntry::createNamespace(const Identifier& exportName, const Identifier& moduleName) -> ExportEntry
+{
+    return ExportEntry { Type::Namespace, exportName, moduleName, Identifier(), Identifier() };
+}
+
 auto AbstractModuleRecord::Resolution::notFound() -> Resolution
 {
     return Resolution { Type::NotFound, nullptr, Identifier() };
@@ -140,19 +138,19 @@ auto AbstractModuleRecord::Resolution::ambiguous() -> Resolution
     return Resolution { Type::Ambiguous, nullptr, Identifier() };
 }
 
-AbstractModuleRecord* AbstractModuleRecord::hostResolveImportedModule(ExecState* exec, const Identifier& moduleName)
+AbstractModuleRecord* AbstractModuleRecord::hostResolveImportedModule(JSGlobalObject* globalObject, const Identifier& moduleName)
 {
-    VM& vm = exec->vm();
+    VM& vm = globalObject->vm();
     auto scope = DECLARE_THROW_SCOPE(vm);
     JSValue moduleNameValue = identifierToJSValue(vm, moduleName);
-    JSValue entry = m_dependenciesMap->JSMap::get(exec, moduleNameValue);
+    JSValue entry = m_dependenciesMap->JSMap::get(globalObject, moduleNameValue);
     RETURN_IF_EXCEPTION(scope, nullptr);
-    RELEASE_AND_RETURN(scope, jsCast<AbstractModuleRecord*>(entry.get(exec, Identifier::fromString(exec, "module"))));
+    RELEASE_AND_RETURN(scope, jsCast<AbstractModuleRecord*>(entry.get(globalObject, Identifier::fromString(vm, "module"))));
 }
 
-auto AbstractModuleRecord::resolveImport(ExecState* exec, const Identifier& localName) -> Resolution
+auto AbstractModuleRecord::resolveImport(JSGlobalObject* globalObject, const Identifier& localName) -> Resolution
 {
-    VM& vm = exec->vm();
+    VM& vm = globalObject->vm();
     auto scope = DECLARE_THROW_SCOPE(vm);
 
     Optional<ImportEntry> optionalImportEntry = tryGetImportEntry(localName.impl());
@@ -163,16 +161,16 @@ auto AbstractModuleRecord::resolveImport(ExecState* exec, const Identifier& loca
     if (importEntry.type == AbstractModuleRecord::ImportEntryType::Namespace)
         return Resolution::notFound();
 
-    AbstractModuleRecord* importedModule = hostResolveImportedModule(exec, importEntry.moduleRequest);
+    AbstractModuleRecord* importedModule = hostResolveImportedModule(globalObject, importEntry.moduleRequest);
     RETURN_IF_EXCEPTION(scope, Resolution::error());
-    return importedModule->resolveExport(exec, importEntry.importName);
+    return importedModule->resolveExport(globalObject, importEntry.importName);
 }
 
 struct AbstractModuleRecord::ResolveQuery {
     struct Hash {
         static unsigned hash(const ResolveQuery&);
         static bool equal(const ResolveQuery&, const ResolveQuery&);
-        static const bool safeToCompareToEmptyOrDeleted = true;
+        static constexpr bool safeToCompareToEmptyOrDeleted = true;
     };
     using HashTraits = WTF::CustomHashTraits<ResolveQuery>;
 
@@ -247,9 +245,9 @@ void AbstractModuleRecord::cacheResolution(UniquedStringImpl* exportName, const 
     m_resolutionCache.add(exportName, resolution);
 }
 
-auto AbstractModuleRecord::resolveExportImpl(ExecState* exec, const ResolveQuery& root) -> Resolution
+auto AbstractModuleRecord::resolveExportImpl(JSGlobalObject* globalObject, const ResolveQuery& root) -> Resolution
 {
-    VM& vm = exec->vm();
+    VM& vm = globalObject->vm();
     auto scope = DECLARE_THROW_SCOPE(vm);
 
     if (AbstractModuleRecordInternal::verbose)
@@ -526,7 +524,7 @@ auto AbstractModuleRecord::resolveExportImpl(ExecState* exec, const ResolveQuery
         // section 15.2.1.16.3, step 6
         // If the "default" name is not resolved in the current module, we need to throw an error and stop resolution immediately,
         // Rationale to this error: A default export cannot be provided by an export *.
-        VM& vm = exec->vm();
+        VM& vm = globalObject->vm();
         auto scope = DECLARE_THROW_SCOPE(vm);
         if (query.exportName == vm.propertyNames->defaultKeyword.impl())
             return false;
@@ -540,7 +538,7 @@ auto AbstractModuleRecord::resolveExportImpl(ExecState* exec, const ResolveQuery
         // Enqueue the tasks in reverse order.
         for (auto iterator = query.moduleRecord->starExportEntries().rbegin(), end = query.moduleRecord->starExportEntries().rend(); iterator != end; ++iterator) {
             const RefPtr<UniquedStringImpl>& starModuleName = *iterator;
-            AbstractModuleRecord* importedModuleRecord = query.moduleRecord->hostResolveImportedModule(exec, Identifier::fromUid(exec, starModuleName.get()));
+            AbstractModuleRecord* importedModuleRecord = query.moduleRecord->hostResolveImportedModule(globalObject, Identifier::fromUid(vm, starModuleName.get()));
             RETURN_IF_EXCEPTION(scope, false);
             pendingTasks.append(Task { ResolveQuery(importedModuleRecord, query.exportName.get()), Type::Query });
         }
@@ -627,7 +625,7 @@ auto AbstractModuleRecord::resolveExportImpl(ExecState* exec, const ResolveQuery
             }
 
             case ExportEntry::Type::Indirect: {
-                AbstractModuleRecord* importedModuleRecord = moduleRecord->hostResolveImportedModule(exec, exportEntry.moduleName);
+                AbstractModuleRecord* importedModuleRecord = moduleRecord->hostResolveImportedModule(globalObject, exportEntry.moduleName);
                 RETURN_IF_EXCEPTION(scope, Resolution::error());
 
                 // When the imported module does not produce any resolved binding, we need to look into the stars in the *current*
@@ -636,6 +634,18 @@ auto AbstractModuleRecord::resolveExportImpl(ExecState* exec, const ResolveQuery
                 // And append the new Resolution frame to check the indirect export will be resolved or not.
                 frames.append(Resolution::notFound());
                 pendingTasks.append(Task { ResolveQuery(importedModuleRecord, exportEntry.importName), Type::Query });
+                continue;
+            }
+
+            case ExportEntry::Type::Namespace: {
+                AbstractModuleRecord* importedModuleRecord = moduleRecord->hostResolveImportedModule(globalObject, exportEntry.moduleName);
+                RETURN_IF_EXCEPTION(scope, Resolution::error());
+
+                Resolution resolution { Resolution::Type::Resolved, importedModuleRecord, vm.propertyNames->starNamespacePrivateName };
+                //  2. A module that has resolved a module namespace binding is always cacheable.
+                cacheResolutionForQuery(query, resolution);
+                if (!mergeToCurrentTop(resolution))
+                    return Resolution::ambiguous();
                 continue;
             }
             }
@@ -688,17 +698,17 @@ auto AbstractModuleRecord::resolveExportImpl(ExecState* exec, const ResolveQuery
     return frames[0];
 }
 
-auto AbstractModuleRecord::resolveExport(ExecState* exec, const Identifier& exportName) -> Resolution
+auto AbstractModuleRecord::resolveExport(JSGlobalObject* globalObject, const Identifier& exportName) -> Resolution
 {
     // Look up the cached resolution first before entering the resolving loop, since the loop setup takes some cost.
     if (Optional<Resolution> cachedResolution = tryGetCachedResolution(exportName.impl()))
         return *cachedResolution;
-    return resolveExportImpl(exec, ResolveQuery(this, exportName.impl()));
+    return resolveExportImpl(globalObject, ResolveQuery(this, exportName.impl()));
 }
 
-static void getExportedNames(ExecState* exec, AbstractModuleRecord* root, IdentifierSet& exportedNames)
+static void getExportedNames(JSGlobalObject* globalObject, AbstractModuleRecord* root, IdentifierSet& exportedNames)
 {
-    VM& vm = exec->vm();
+    VM& vm = globalObject->vm();
     auto scope = DECLARE_THROW_SCOPE(vm);
 
     HashSet<AbstractModuleRecord*> exportStarSet;
@@ -719,39 +729,38 @@ static void getExportedNames(ExecState* exec, AbstractModuleRecord* root, Identi
         }
 
         for (const auto& starModuleName : moduleRecord->starExportEntries()) {
-            AbstractModuleRecord* requestedModuleRecord = moduleRecord->hostResolveImportedModule(exec, Identifier::fromUid(exec, starModuleName.get()));
+            AbstractModuleRecord* requestedModuleRecord = moduleRecord->hostResolveImportedModule(globalObject, Identifier::fromUid(vm, starModuleName.get()));
             RETURN_IF_EXCEPTION(scope, void());
             pendingModules.append(requestedModuleRecord);
         }
     }
 }
 
-JSModuleNamespaceObject* AbstractModuleRecord::getModuleNamespace(ExecState* exec)
+JSModuleNamespaceObject* AbstractModuleRecord::getModuleNamespace(JSGlobalObject* globalObject)
 {
-    VM& vm = exec->vm();
+    VM& vm = globalObject->vm();
     auto scope = DECLARE_THROW_SCOPE(vm);
 
     // http://www.ecma-international.org/ecma-262/6.0/#sec-getmodulenamespace
     if (m_moduleNamespaceObject)
         return m_moduleNamespaceObject.get();
 
-    JSGlobalObject* globalObject = exec->lexicalGlobalObject();
     IdentifierSet exportedNames;
-    getExportedNames(exec, this, exportedNames);
+    getExportedNames(globalObject, this, exportedNames);
     RETURN_IF_EXCEPTION(scope, nullptr);
 
     Vector<std::pair<Identifier, Resolution>> resolutions;
     for (auto& name : exportedNames) {
-        Identifier ident = Identifier::fromUid(exec, name.get());
-        const Resolution resolution = resolveExport(exec, ident);
+        Identifier ident = Identifier::fromUid(vm, name.get());
+        const Resolution resolution = resolveExport(globalObject, ident);
         RETURN_IF_EXCEPTION(scope, nullptr);
         switch (resolution.type) {
         case Resolution::Type::NotFound:
-            throwSyntaxError(exec, scope, makeString("Exported binding name '", String(name.get()), "' is not found."));
+            throwSyntaxError(globalObject, scope, makeString("Exported binding name '", String(name.get()), "' is not found."));
             return nullptr;
 
         case Resolution::Type::Error:
-            throwSyntaxError(exec, scope, makeString("Exported binding name 'default' cannot be resolved by star export entries."));
+            throwSyntaxError(globalObject, scope, makeString("Exported binding name 'default' cannot be resolved by star export entries."));
             return nullptr;
 
         case Resolution::Type::Ambiguous:
@@ -763,32 +772,59 @@ JSModuleNamespaceObject* AbstractModuleRecord::getModuleNamespace(ExecState* exe
         }
     }
 
-    auto* moduleNamespaceObject = JSModuleNamespaceObject::create(exec, globalObject, globalObject->moduleNamespaceObjectStructure(), this, WTFMove(resolutions));
+    auto* moduleNamespaceObject = JSModuleNamespaceObject::create(globalObject, globalObject->moduleNamespaceObjectStructure(), this, WTFMove(resolutions));
     RETURN_IF_EXCEPTION(scope, nullptr);
+
+    // Materialize *namespace* slot with module namespace object unless the module environment is not yet materialized, in which case we'll do it in setModuleEnvironment
+    if (m_moduleEnvironment) {
+        bool putResult = false;
+        constexpr bool shouldThrowReadOnlyError = false;
+        constexpr bool ignoreReadOnlyErrors = true;
+        symbolTablePutTouchWatchpointSet(m_moduleEnvironment.get(), globalObject, vm.propertyNames->starNamespacePrivateName, moduleNamespaceObject, shouldThrowReadOnlyError, ignoreReadOnlyErrors, putResult);
+        RETURN_IF_EXCEPTION(scope, nullptr);
+    }
     m_moduleNamespaceObject.set(vm, this, moduleNamespaceObject);
+
     return moduleNamespaceObject;
 }
 
-void AbstractModuleRecord::link(ExecState* exec, JSValue scriptFetcher)
+void AbstractModuleRecord::setModuleEnvironment(JSGlobalObject* globalObject, JSModuleEnvironment* moduleEnvironment)
 {
-    VM& vm = exec->vm();
+    VM& vm = globalObject->vm();
+    auto scope = DECLARE_THROW_SCOPE(vm);
+
+    ASSERT(!m_moduleEnvironment);
+    // If module namespace object is materialized, we will materialize *namespace* slot too.
+    if (m_moduleNamespaceObject) {
+        bool putResult = false;
+        constexpr bool shouldThrowReadOnlyError = false;
+        constexpr bool ignoreReadOnlyErrors = true;
+        symbolTablePutTouchWatchpointSet(moduleEnvironment, globalObject, vm.propertyNames->starNamespacePrivateName, m_moduleNamespaceObject.get(), shouldThrowReadOnlyError, ignoreReadOnlyErrors, putResult);
+        RETURN_IF_EXCEPTION(scope, void());
+    }
+    m_moduleEnvironment.set(vm, this, moduleEnvironment);
+}
+
+void AbstractModuleRecord::link(JSGlobalObject* globalObject, JSValue scriptFetcher)
+{
+    VM& vm = globalObject->vm();
     if (auto* jsModuleRecord = jsDynamicCast<JSModuleRecord*>(vm, this))
-        return jsModuleRecord->link(exec, scriptFetcher);
+        return jsModuleRecord->link(globalObject, scriptFetcher);
 #if ENABLE(WEBASSEMBLY)
     if (auto* wasmModuleRecord = jsDynamicCast<WebAssemblyModuleRecord*>(vm, this))
-        return wasmModuleRecord->link(exec, scriptFetcher, nullptr, Wasm::CreationMode::FromModuleLoader);
+        return wasmModuleRecord->link(globalObject, scriptFetcher, nullptr, Wasm::CreationMode::FromModuleLoader);
 #endif
     RELEASE_ASSERT_NOT_REACHED();
 }
 
-JS_EXPORT_PRIVATE JSValue AbstractModuleRecord::evaluate(ExecState* exec)
+JS_EXPORT_PRIVATE JSValue AbstractModuleRecord::evaluate(JSGlobalObject* globalObject)
 {
-    VM& vm = exec->vm();
+    VM& vm = globalObject->vm();
     if (auto* jsModuleRecord = jsDynamicCast<JSModuleRecord*>(vm, this))
-        return jsModuleRecord->evaluate(exec);
+        return jsModuleRecord->evaluate(globalObject);
 #if ENABLE(WEBASSEMBLY)
     if (auto* wasmModuleRecord = jsDynamicCast<WebAssemblyModuleRecord*>(vm, this))
-        return wasmModuleRecord->evaluate(exec);
+        return wasmModuleRecord->evaluate(globalObject);
 #endif
     RELEASE_ASSERT_NOT_REACHED();
     return jsUndefined();
@@ -830,6 +866,10 @@ void AbstractModuleRecord::dump()
 
         case ExportEntry::Type::Indirect:
             dataLog("      [Indirect] ", "export(", printableName(exportEntry.exportName), "), import(", printableName(exportEntry.importName), "), module(", printableName(exportEntry.moduleName), ")\n");
+            break;
+
+        case ExportEntry::Type::Namespace:
+            dataLog("      [Namespace] ", "export(", printableName(exportEntry.exportName), "), module(", printableName(exportEntry.moduleName), ")\n");
             break;
         }
     }

@@ -21,16 +21,10 @@
 #include "config.h"
 #include "JSLock.h"
 
-#include "Heap.h"
-#include "CallFrame.h"
+#include "HeapInlines.h"
 #include "JSGlobalObject.h"
-#include "JSObject.h"
-#include "JSCInlines.h"
 #include "MachineStackMarker.h"
 #include "SamplingProfiler.h"
-#include "WasmCapabilities.h"
-#include "WasmMachineThreads.h"
-#include <thread>
 #include <wtf/StackPointer.h>
 #include <wtf/Threading.h>
 #include <wtf/threads/Signals.h>
@@ -53,8 +47,8 @@ GlobalJSLock::~GlobalJSLock()
     s_sharedInstanceMutex.unlock();
 }
 
-JSLockHolder::JSLockHolder(ExecState* exec)
-    : JSLockHolder(exec->vm())
+JSLockHolder::JSLockHolder(JSGlobalObject* globalObject)
+    : JSLockHolder(globalObject->vm())
 {
 }
 
@@ -152,28 +146,23 @@ void JSLock::didAcquireLock()
     void* p = currentStackPointer();
     m_vm->setStackPointerAtVMEntry(p);
 
-    if (m_vm->heap.machineThreads().addCurrentThread()) {
-        if (isKernTCSMAvailable())
-            enableKernTCSM();
+    if (thread.uid() != m_lastOwnerThread) {
+        m_lastOwnerThread = thread.uid();
+        if (m_vm->heap.machineThreads().addCurrentThread()) {
+            if (isKernTCSMAvailable())
+                enableKernTCSM();
+        }
     }
-
-#if ENABLE(WEBASSEMBLY)
-    if (Wasm::isSupported())
-        Wasm::startTrackingCurrentThread();
-#endif
-
-#if HAVE(MACH_EXCEPTIONS)
-    registerThreadForMachExceptionHandling(Thread::current());
-#endif
 
     // Note: everything below must come after addCurrentThread().
     m_vm->traps().notifyGrabAllLocks();
-    
-    m_vm->firePrimitiveGigacageEnabledIfNecessary();
 
 #if ENABLE(SAMPLING_PROFILER)
-    if (SamplingProfiler* samplingProfiler = m_vm->samplingProfiler())
-        samplingProfiler->noticeJSLockAcquisition();
+    {
+        SamplingProfiler* samplingProfiler = m_vm->samplingProfiler();
+        if (UNLIKELY(samplingProfiler))
+            samplingProfiler->noticeJSLockAcquisition();
+    }
 #endif
 }
 
@@ -222,14 +211,14 @@ void JSLock::willReleaseLock()
     }
 }
 
-void JSLock::lock(ExecState* exec)
+void JSLock::lock(JSGlobalObject* globalObject)
 {
-    exec->vm().apiLock().lock();
+    globalObject->vm().apiLock().lock();
 }
 
-void JSLock::unlock(ExecState* exec)
+void JSLock::unlock(JSGlobalObject* globalObject)
 {
-    exec->vm().apiLock().unlock();
+    globalObject->vm().apiLock().unlock();
 }
 
 // This function returns the number of locks that were dropped.
@@ -279,7 +268,7 @@ JSLock::DropAllLocks::DropAllLocks(VM* vm)
     // If the VM is in the middle of being destroyed then we don't want to resurrect it
     // by allowing DropAllLocks to ref it. By this point the JSLock has already been 
     // released anyways, so it doesn't matter that DropAllLocks is a no-op.
-    , m_vm(vm->refCount() ? vm : nullptr)
+    , m_vm(vm->heap.isShuttingDown() ? nullptr : vm)
 {
     if (!m_vm)
         return;
@@ -287,8 +276,8 @@ JSLock::DropAllLocks::DropAllLocks(VM* vm)
     m_droppedLockCount = m_vm->apiLock().dropAllLocks(this);
 }
 
-JSLock::DropAllLocks::DropAllLocks(ExecState* exec)
-    : DropAllLocks(exec ? &exec->vm() : nullptr)
+JSLock::DropAllLocks::DropAllLocks(JSGlobalObject* globalObject)
+    : DropAllLocks(globalObject ? &globalObject->vm() : nullptr)
 {
 }
 

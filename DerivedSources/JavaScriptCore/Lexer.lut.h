@@ -179,7 +179,7 @@ static const struct HashTableValue mainTableValues[46] = {
    { "debugger", static_cast<unsigned>(PropertyAttribute::None), NoIntrinsic, { (intptr_t)(DEBUGGER), (intptr_t)(0) } },
    { "yield", static_cast<unsigned>(PropertyAttribute::None), NoIntrinsic, { (intptr_t)(YIELD), (intptr_t)(0) } },
    { "enum", static_cast<unsigned>(PropertyAttribute::None), NoIntrinsic, { (intptr_t)(RESERVED), (intptr_t)(0) } },
-   { "export", static_cast<unsigned>(PropertyAttribute::None), NoIntrinsic, { (intptr_t)(EXPORT), (intptr_t)(0) } },
+   { "export", static_cast<unsigned>(PropertyAttribute::None), NoIntrinsic, { (intptr_t)(EXPORT_), (intptr_t)(0) } },
    { "import", static_cast<unsigned>(PropertyAttribute::None), NoIntrinsic, { (intptr_t)(IMPORT), (intptr_t)(0) } },
    { "implements", static_cast<unsigned>(PropertyAttribute::None), NoIntrinsic, { (intptr_t)(RESERVED_IF_STRICT), (intptr_t)(0) } },
    { "interface", static_cast<unsigned>(PropertyAttribute::None), NoIntrinsic, { (intptr_t)(RESERVED_IF_STRICT), (intptr_t)(0) } },

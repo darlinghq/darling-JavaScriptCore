@@ -2,6 +2,7 @@
 #ifndef AirOpcodeGenerated_h
 #define AirOpcodeGenerated_h
 #include "AirInstInlines.h"
+#include "CCallHelpers.h"
 #include "wtf/PrintStream.h"
 namespace WTF {
 using namespace JSC::B3::Air;
@@ -548,6 +549,42 @@ void printInternal(PrintStream& out, Opcode opcode)
     case Opcode::Depend64:
         out.print("Depend64");
         return;
+    case Opcode::AtomicXchgOr8:
+        out.print("AtomicXchgOr8");
+        return;
+    case Opcode::AtomicXchgOr16:
+        out.print("AtomicXchgOr16");
+        return;
+    case Opcode::AtomicXchgOr32:
+        out.print("AtomicXchgOr32");
+        return;
+    case Opcode::AtomicXchgOr64:
+        out.print("AtomicXchgOr64");
+        return;
+    case Opcode::AtomicXchgClear8:
+        out.print("AtomicXchgClear8");
+        return;
+    case Opcode::AtomicXchgClear16:
+        out.print("AtomicXchgClear16");
+        return;
+    case Opcode::AtomicXchgClear32:
+        out.print("AtomicXchgClear32");
+        return;
+    case Opcode::AtomicXchgClear64:
+        out.print("AtomicXchgClear64");
+        return;
+    case Opcode::AtomicXchgXor8:
+        out.print("AtomicXchgXor8");
+        return;
+    case Opcode::AtomicXchgXor16:
+        out.print("AtomicXchgXor16");
+        return;
+    case Opcode::AtomicXchgXor32:
+        out.print("AtomicXchgXor32");
+        return;
+    case Opcode::AtomicXchgXor64:
+        out.print("AtomicXchgXor64");
+        return;
     case Opcode::Compare32:
         out.print("Compare32");
         return;
@@ -583,6 +620,12 @@ void printInternal(PrintStream& out, Opcode opcode)
         return;
     case Opcode::BranchTest64:
         out.print("BranchTest64");
+        return;
+    case Opcode::BranchTestBit64:
+        out.print("BranchTestBit64");
+        return;
+    case Opcode::BranchTestBit32:
+        out.print("BranchTestBit32");
         return;
     case Opcode::BranchDouble:
         out.print("BranchDouble");
@@ -703,7 +746,7 @@ void printInternal(PrintStream& out, Opcode opcode)
 }
 } // namespace WTF
 namespace JSC { namespace B3 { namespace Air {
-const uint8_t g_formTable[4830] = {
+const uint8_t g_formTable[5124] = {
 // Nop 
 
 // Invalid: Nop with numOperands = 1
@@ -1829,9 +1872,9 @@ INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVA
 // Invalid: Move with numOperands = 1
 INVALID_INST_FORM, 
 // Move U:G:Ptr, D:G:Ptr
-ENCODE_INST_FORM(Arg::Use, GP, POINTER_WIDTH), ENCODE_INST_FORM(Arg::Def, GP, POINTER_WIDTH), 
+ENCODE_INST_FORM(Arg::Use, GP, pointerWidth()), ENCODE_INST_FORM(Arg::Def, GP, pointerWidth()), 
 // Move U:G:Ptr, D:G:Ptr, S:G:Ptr
-ENCODE_INST_FORM(Arg::Use, GP, POINTER_WIDTH), ENCODE_INST_FORM(Arg::Def, GP, POINTER_WIDTH), ENCODE_INST_FORM(Arg::Scratch, GP, POINTER_WIDTH), 
+ENCODE_INST_FORM(Arg::Use, GP, pointerWidth()), ENCODE_INST_FORM(Arg::Def, GP, pointerWidth()), ENCODE_INST_FORM(Arg::Scratch, GP, pointerWidth()), 
 // Invalid: Move with numOperands = 4
 INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
 // Invalid: Move with numOperands = 5
@@ -1913,7 +1956,7 @@ INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVA
 // Invalid: SignExtend32ToPtr with numOperands = 1
 INVALID_INST_FORM, 
 // SignExtend32ToPtr U:G:32, D:G:Ptr
-ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Def, GP, POINTER_WIDTH), 
+ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Def, GP, pointerWidth()), 
 // Invalid: SignExtend32ToPtr with numOperands = 3
 INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
 // Invalid: SignExtend32ToPtr with numOperands = 4
@@ -2866,8 +2909,8 @@ INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVA
 INVALID_INST_FORM, 
 // AtomicXchgAdd8 UD:G:8, UD:G:8
 ENCODE_INST_FORM(Arg::UseDef, GP, Width8), ENCODE_INST_FORM(Arg::UseDef, GP, Width8), 
-// Invalid: AtomicXchgAdd8 with numOperands = 3
-INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// AtomicXchgAdd8 U:G:8, UD:G:8, ZD:G:32
+ENCODE_INST_FORM(Arg::Use, GP, Width8), ENCODE_INST_FORM(Arg::UseDef, GP, Width8), ENCODE_INST_FORM(Arg::ZDef, GP, Width32), 
 // Invalid: AtomicXchgAdd8 with numOperands = 4
 INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
 // Invalid: AtomicXchgAdd8 with numOperands = 5
@@ -2880,8 +2923,8 @@ INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVA
 INVALID_INST_FORM, 
 // AtomicXchgAdd16 UD:G:16, UD:G:16
 ENCODE_INST_FORM(Arg::UseDef, GP, Width16), ENCODE_INST_FORM(Arg::UseDef, GP, Width16), 
-// Invalid: AtomicXchgAdd16 with numOperands = 3
-INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// AtomicXchgAdd16 U:G:16, UD:G:16, ZD:G:32
+ENCODE_INST_FORM(Arg::Use, GP, Width16), ENCODE_INST_FORM(Arg::UseDef, GP, Width16), ENCODE_INST_FORM(Arg::ZDef, GP, Width32), 
 // Invalid: AtomicXchgAdd16 with numOperands = 4
 INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
 // Invalid: AtomicXchgAdd16 with numOperands = 5
@@ -2894,8 +2937,8 @@ INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVA
 INVALID_INST_FORM, 
 // AtomicXchgAdd32 UD:G:32, UD:G:32
 ENCODE_INST_FORM(Arg::UseDef, GP, Width32), ENCODE_INST_FORM(Arg::UseDef, GP, Width32), 
-// Invalid: AtomicXchgAdd32 with numOperands = 3
-INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// AtomicXchgAdd32 U:G:32, UD:G:32, ZD:G:32
+ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::UseDef, GP, Width32), ENCODE_INST_FORM(Arg::ZDef, GP, Width32), 
 // Invalid: AtomicXchgAdd32 with numOperands = 4
 INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
 // Invalid: AtomicXchgAdd32 with numOperands = 5
@@ -2908,8 +2951,8 @@ INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVA
 INVALID_INST_FORM, 
 // AtomicXchgAdd64 UD:G:64, UD:G:64
 ENCODE_INST_FORM(Arg::UseDef, GP, Width64), ENCODE_INST_FORM(Arg::UseDef, GP, Width64), 
-// Invalid: AtomicXchgAdd64 with numOperands = 3
-INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// AtomicXchgAdd64 U:G:64, UD:G:64, ZD:G:64
+ENCODE_INST_FORM(Arg::Use, GP, Width64), ENCODE_INST_FORM(Arg::UseDef, GP, Width64), ENCODE_INST_FORM(Arg::ZDef, GP, Width64), 
 // Invalid: AtomicXchgAdd64 with numOperands = 4
 INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
 // Invalid: AtomicXchgAdd64 with numOperands = 5
@@ -2922,8 +2965,8 @@ INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVA
 INVALID_INST_FORM, 
 // AtomicXchg8 UD:G:8, UD:G:8
 ENCODE_INST_FORM(Arg::UseDef, GP, Width8), ENCODE_INST_FORM(Arg::UseDef, GP, Width8), 
-// Invalid: AtomicXchg8 with numOperands = 3
-INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// AtomicXchg8 U:G:8, UD:G:8, ZD:G:32
+ENCODE_INST_FORM(Arg::Use, GP, Width8), ENCODE_INST_FORM(Arg::UseDef, GP, Width8), ENCODE_INST_FORM(Arg::ZDef, GP, Width32), 
 // Invalid: AtomicXchg8 with numOperands = 4
 INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
 // Invalid: AtomicXchg8 with numOperands = 5
@@ -2936,8 +2979,8 @@ INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVA
 INVALID_INST_FORM, 
 // AtomicXchg16 UD:G:16, UD:G:16
 ENCODE_INST_FORM(Arg::UseDef, GP, Width16), ENCODE_INST_FORM(Arg::UseDef, GP, Width16), 
-// Invalid: AtomicXchg16 with numOperands = 3
-INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// AtomicXchg16 U:G:16, UD:G:16, ZD:G:32
+ENCODE_INST_FORM(Arg::Use, GP, Width16), ENCODE_INST_FORM(Arg::UseDef, GP, Width16), ENCODE_INST_FORM(Arg::ZDef, GP, Width32), 
 // Invalid: AtomicXchg16 with numOperands = 4
 INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
 // Invalid: AtomicXchg16 with numOperands = 5
@@ -2950,8 +2993,8 @@ INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVA
 INVALID_INST_FORM, 
 // AtomicXchg32 UD:G:32, UD:G:32
 ENCODE_INST_FORM(Arg::UseDef, GP, Width32), ENCODE_INST_FORM(Arg::UseDef, GP, Width32), 
-// Invalid: AtomicXchg32 with numOperands = 3
-INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// AtomicXchg32 U:G:32, UD:G:32, ZD:G:32
+ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::UseDef, GP, Width32), ENCODE_INST_FORM(Arg::ZDef, GP, Width32), 
 // Invalid: AtomicXchg32 with numOperands = 4
 INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
 // Invalid: AtomicXchg32 with numOperands = 5
@@ -2964,8 +3007,8 @@ INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVA
 INVALID_INST_FORM, 
 // AtomicXchg64 UD:G:64, UD:G:64
 ENCODE_INST_FORM(Arg::UseDef, GP, Width64), ENCODE_INST_FORM(Arg::UseDef, GP, Width64), 
-// Invalid: AtomicXchg64 with numOperands = 3
-INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// AtomicXchg64 U:G:64, UD:G:64, ZD:G:64
+ENCODE_INST_FORM(Arg::Use, GP, Width64), ENCODE_INST_FORM(Arg::UseDef, GP, Width64), ENCODE_INST_FORM(Arg::ZDef, GP, Width64), 
 // Invalid: AtomicXchg64 with numOperands = 4
 INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
 // Invalid: AtomicXchg64 with numOperands = 5
@@ -3224,6 +3267,174 @@ INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM,
 INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
 // Invalid: Depend64 with numOperands = 6
 INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgOr8 with numOperands = 0
+
+// Invalid: AtomicXchgOr8 with numOperands = 1
+INVALID_INST_FORM, 
+// Invalid: AtomicXchgOr8 with numOperands = 2
+INVALID_INST_FORM, INVALID_INST_FORM, 
+// AtomicXchgOr8 U:G:8, UD:G:8, ZD:G:32
+ENCODE_INST_FORM(Arg::Use, GP, Width8), ENCODE_INST_FORM(Arg::UseDef, GP, Width8), ENCODE_INST_FORM(Arg::ZDef, GP, Width32), 
+// Invalid: AtomicXchgOr8 with numOperands = 4
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgOr8 with numOperands = 5
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgOr8 with numOperands = 6
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgOr16 with numOperands = 0
+
+// Invalid: AtomicXchgOr16 with numOperands = 1
+INVALID_INST_FORM, 
+// Invalid: AtomicXchgOr16 with numOperands = 2
+INVALID_INST_FORM, INVALID_INST_FORM, 
+// AtomicXchgOr16 U:G:16, UD:G:16, ZD:G:32
+ENCODE_INST_FORM(Arg::Use, GP, Width16), ENCODE_INST_FORM(Arg::UseDef, GP, Width16), ENCODE_INST_FORM(Arg::ZDef, GP, Width32), 
+// Invalid: AtomicXchgOr16 with numOperands = 4
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgOr16 with numOperands = 5
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgOr16 with numOperands = 6
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgOr32 with numOperands = 0
+
+// Invalid: AtomicXchgOr32 with numOperands = 1
+INVALID_INST_FORM, 
+// Invalid: AtomicXchgOr32 with numOperands = 2
+INVALID_INST_FORM, INVALID_INST_FORM, 
+// AtomicXchgOr32 U:G:32, UD:G:32, ZD:G:32
+ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::UseDef, GP, Width32), ENCODE_INST_FORM(Arg::ZDef, GP, Width32), 
+// Invalid: AtomicXchgOr32 with numOperands = 4
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgOr32 with numOperands = 5
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgOr32 with numOperands = 6
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgOr64 with numOperands = 0
+
+// Invalid: AtomicXchgOr64 with numOperands = 1
+INVALID_INST_FORM, 
+// Invalid: AtomicXchgOr64 with numOperands = 2
+INVALID_INST_FORM, INVALID_INST_FORM, 
+// AtomicXchgOr64 U:G:64, UD:G:64, ZD:G:64
+ENCODE_INST_FORM(Arg::Use, GP, Width64), ENCODE_INST_FORM(Arg::UseDef, GP, Width64), ENCODE_INST_FORM(Arg::ZDef, GP, Width64), 
+// Invalid: AtomicXchgOr64 with numOperands = 4
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgOr64 with numOperands = 5
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgOr64 with numOperands = 6
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgClear8 with numOperands = 0
+
+// Invalid: AtomicXchgClear8 with numOperands = 1
+INVALID_INST_FORM, 
+// Invalid: AtomicXchgClear8 with numOperands = 2
+INVALID_INST_FORM, INVALID_INST_FORM, 
+// AtomicXchgClear8 U:G:8, UD:G:8, ZD:G:32
+ENCODE_INST_FORM(Arg::Use, GP, Width8), ENCODE_INST_FORM(Arg::UseDef, GP, Width8), ENCODE_INST_FORM(Arg::ZDef, GP, Width32), 
+// Invalid: AtomicXchgClear8 with numOperands = 4
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgClear8 with numOperands = 5
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgClear8 with numOperands = 6
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgClear16 with numOperands = 0
+
+// Invalid: AtomicXchgClear16 with numOperands = 1
+INVALID_INST_FORM, 
+// Invalid: AtomicXchgClear16 with numOperands = 2
+INVALID_INST_FORM, INVALID_INST_FORM, 
+// AtomicXchgClear16 U:G:16, UD:G:16, ZD:G:32
+ENCODE_INST_FORM(Arg::Use, GP, Width16), ENCODE_INST_FORM(Arg::UseDef, GP, Width16), ENCODE_INST_FORM(Arg::ZDef, GP, Width32), 
+// Invalid: AtomicXchgClear16 with numOperands = 4
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgClear16 with numOperands = 5
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgClear16 with numOperands = 6
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgClear32 with numOperands = 0
+
+// Invalid: AtomicXchgClear32 with numOperands = 1
+INVALID_INST_FORM, 
+// Invalid: AtomicXchgClear32 with numOperands = 2
+INVALID_INST_FORM, INVALID_INST_FORM, 
+// AtomicXchgClear32 U:G:32, UD:G:32, ZD:G:32
+ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::UseDef, GP, Width32), ENCODE_INST_FORM(Arg::ZDef, GP, Width32), 
+// Invalid: AtomicXchgClear32 with numOperands = 4
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgClear32 with numOperands = 5
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgClear32 with numOperands = 6
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgClear64 with numOperands = 0
+
+// Invalid: AtomicXchgClear64 with numOperands = 1
+INVALID_INST_FORM, 
+// Invalid: AtomicXchgClear64 with numOperands = 2
+INVALID_INST_FORM, INVALID_INST_FORM, 
+// AtomicXchgClear64 U:G:64, UD:G:64, ZD:G:64
+ENCODE_INST_FORM(Arg::Use, GP, Width64), ENCODE_INST_FORM(Arg::UseDef, GP, Width64), ENCODE_INST_FORM(Arg::ZDef, GP, Width64), 
+// Invalid: AtomicXchgClear64 with numOperands = 4
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgClear64 with numOperands = 5
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgClear64 with numOperands = 6
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgXor8 with numOperands = 0
+
+// Invalid: AtomicXchgXor8 with numOperands = 1
+INVALID_INST_FORM, 
+// Invalid: AtomicXchgXor8 with numOperands = 2
+INVALID_INST_FORM, INVALID_INST_FORM, 
+// AtomicXchgXor8 U:G:8, UD:G:8, ZD:G:32
+ENCODE_INST_FORM(Arg::Use, GP, Width8), ENCODE_INST_FORM(Arg::UseDef, GP, Width8), ENCODE_INST_FORM(Arg::ZDef, GP, Width32), 
+// Invalid: AtomicXchgXor8 with numOperands = 4
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgXor8 with numOperands = 5
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgXor8 with numOperands = 6
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgXor16 with numOperands = 0
+
+// Invalid: AtomicXchgXor16 with numOperands = 1
+INVALID_INST_FORM, 
+// Invalid: AtomicXchgXor16 with numOperands = 2
+INVALID_INST_FORM, INVALID_INST_FORM, 
+// AtomicXchgXor16 U:G:16, UD:G:16, ZD:G:32
+ENCODE_INST_FORM(Arg::Use, GP, Width16), ENCODE_INST_FORM(Arg::UseDef, GP, Width16), ENCODE_INST_FORM(Arg::ZDef, GP, Width32), 
+// Invalid: AtomicXchgXor16 with numOperands = 4
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgXor16 with numOperands = 5
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgXor16 with numOperands = 6
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgXor32 with numOperands = 0
+
+// Invalid: AtomicXchgXor32 with numOperands = 1
+INVALID_INST_FORM, 
+// Invalid: AtomicXchgXor32 with numOperands = 2
+INVALID_INST_FORM, INVALID_INST_FORM, 
+// AtomicXchgXor32 U:G:32, UD:G:32, ZD:G:32
+ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::UseDef, GP, Width32), ENCODE_INST_FORM(Arg::ZDef, GP, Width32), 
+// Invalid: AtomicXchgXor32 with numOperands = 4
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgXor32 with numOperands = 5
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgXor32 with numOperands = 6
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgXor64 with numOperands = 0
+
+// Invalid: AtomicXchgXor64 with numOperands = 1
+INVALID_INST_FORM, 
+// Invalid: AtomicXchgXor64 with numOperands = 2
+INVALID_INST_FORM, INVALID_INST_FORM, 
+// AtomicXchgXor64 U:G:64, UD:G:64, ZD:G:64
+ENCODE_INST_FORM(Arg::Use, GP, Width64), ENCODE_INST_FORM(Arg::UseDef, GP, Width64), ENCODE_INST_FORM(Arg::ZDef, GP, Width64), 
+// Invalid: AtomicXchgXor64 with numOperands = 4
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgXor64 with numOperands = 5
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: AtomicXchgXor64 with numOperands = 6
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
 // Invalid: Compare32 with numOperands = 0
 
 // Invalid: Compare32 with numOperands = 1
@@ -3392,6 +3603,34 @@ INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM,
 INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
 // Invalid: BranchTest64 with numOperands = 6
 INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: BranchTestBit64 with numOperands = 0
+
+// Invalid: BranchTestBit64 with numOperands = 1
+INVALID_INST_FORM, 
+// Invalid: BranchTestBit64 with numOperands = 2
+INVALID_INST_FORM, INVALID_INST_FORM, 
+// BranchTestBit64 U:G:32, U:G:64, U:G:8
+ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width64), ENCODE_INST_FORM(Arg::Use, GP, Width8), 
+// Invalid: BranchTestBit64 with numOperands = 4
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: BranchTestBit64 with numOperands = 5
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: BranchTestBit64 with numOperands = 6
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: BranchTestBit32 with numOperands = 0
+
+// Invalid: BranchTestBit32 with numOperands = 1
+INVALID_INST_FORM, 
+// Invalid: BranchTestBit32 with numOperands = 2
+INVALID_INST_FORM, INVALID_INST_FORM, 
+// BranchTestBit32 U:G:32, U:G:32, U:G:8
+ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width8), 
+// Invalid: BranchTestBit32 with numOperands = 4
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: BranchTestBit32 with numOperands = 5
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
+// Invalid: BranchTestBit32 with numOperands = 6
+INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
 // Invalid: BranchDouble with numOperands = 0
 
 // Invalid: BranchDouble with numOperands = 1
@@ -3543,9 +3782,9 @@ INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM,
 // Invalid: MoveConditionally32 with numOperands = 4
 INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
 // MoveConditionally32 U:G:32, U:G:32, U:G:32, U:G:Ptr, UD:G:Ptr
-ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, POINTER_WIDTH), ENCODE_INST_FORM(Arg::UseDef, GP, POINTER_WIDTH), 
+ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, pointerWidth()), ENCODE_INST_FORM(Arg::UseDef, GP, pointerWidth()), 
 // MoveConditionally32 U:G:32, U:G:32, U:G:32, U:G:Ptr, U:G:Ptr, D:G:Ptr
-ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, POINTER_WIDTH), ENCODE_INST_FORM(Arg::Use, GP, POINTER_WIDTH), ENCODE_INST_FORM(Arg::Def, GP, POINTER_WIDTH), 
+ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, pointerWidth()), ENCODE_INST_FORM(Arg::Use, GP, pointerWidth()), ENCODE_INST_FORM(Arg::Def, GP, pointerWidth()), 
 // Invalid: MoveConditionally64 with numOperands = 0
 
 // Invalid: MoveConditionally64 with numOperands = 1
@@ -3557,9 +3796,9 @@ INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM,
 // Invalid: MoveConditionally64 with numOperands = 4
 INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
 // MoveConditionally64 U:G:32, U:G:64, U:G:64, U:G:Ptr, UD:G:Ptr
-ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width64), ENCODE_INST_FORM(Arg::Use, GP, Width64), ENCODE_INST_FORM(Arg::Use, GP, POINTER_WIDTH), ENCODE_INST_FORM(Arg::UseDef, GP, POINTER_WIDTH), 
+ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width64), ENCODE_INST_FORM(Arg::Use, GP, Width64), ENCODE_INST_FORM(Arg::Use, GP, pointerWidth()), ENCODE_INST_FORM(Arg::UseDef, GP, pointerWidth()), 
 // MoveConditionally64 U:G:32, U:G:64, U:G:64, U:G:Ptr, U:G:Ptr, D:G:Ptr
-ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width64), ENCODE_INST_FORM(Arg::Use, GP, Width64), ENCODE_INST_FORM(Arg::Use, GP, POINTER_WIDTH), ENCODE_INST_FORM(Arg::Use, GP, POINTER_WIDTH), ENCODE_INST_FORM(Arg::Def, GP, POINTER_WIDTH), 
+ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width64), ENCODE_INST_FORM(Arg::Use, GP, Width64), ENCODE_INST_FORM(Arg::Use, GP, pointerWidth()), ENCODE_INST_FORM(Arg::Use, GP, pointerWidth()), ENCODE_INST_FORM(Arg::Def, GP, pointerWidth()), 
 // Invalid: MoveConditionallyTest32 with numOperands = 0
 
 // Invalid: MoveConditionallyTest32 with numOperands = 1
@@ -3571,9 +3810,9 @@ INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM,
 // Invalid: MoveConditionallyTest32 with numOperands = 4
 INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
 // MoveConditionallyTest32 U:G:32, U:G:32, U:G:32, U:G:Ptr, UD:G:Ptr
-ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, POINTER_WIDTH), ENCODE_INST_FORM(Arg::UseDef, GP, POINTER_WIDTH), 
+ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, pointerWidth()), ENCODE_INST_FORM(Arg::UseDef, GP, pointerWidth()), 
 // MoveConditionallyTest32 U:G:32, U:G:32, U:G:32, U:G:Ptr, U:G:Ptr, D:G:Ptr
-ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, POINTER_WIDTH), ENCODE_INST_FORM(Arg::Use, GP, POINTER_WIDTH), ENCODE_INST_FORM(Arg::Def, GP, POINTER_WIDTH), 
+ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, pointerWidth()), ENCODE_INST_FORM(Arg::Use, GP, pointerWidth()), ENCODE_INST_FORM(Arg::Def, GP, pointerWidth()), 
 // Invalid: MoveConditionallyTest64 with numOperands = 0
 
 // Invalid: MoveConditionallyTest64 with numOperands = 1
@@ -3585,9 +3824,9 @@ INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM,
 // Invalid: MoveConditionallyTest64 with numOperands = 4
 INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
 // MoveConditionallyTest64 U:G:32, U:G:64, U:G:64, U:G:Ptr, UD:G:Ptr
-ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width64), ENCODE_INST_FORM(Arg::Use, GP, Width64), ENCODE_INST_FORM(Arg::Use, GP, POINTER_WIDTH), ENCODE_INST_FORM(Arg::UseDef, GP, POINTER_WIDTH), 
+ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width64), ENCODE_INST_FORM(Arg::Use, GP, Width64), ENCODE_INST_FORM(Arg::Use, GP, pointerWidth()), ENCODE_INST_FORM(Arg::UseDef, GP, pointerWidth()), 
 // MoveConditionallyTest64 U:G:32, U:G:32, U:G:32, U:G:Ptr, U:G:Ptr, D:G:Ptr
-ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, POINTER_WIDTH), ENCODE_INST_FORM(Arg::Use, GP, POINTER_WIDTH), ENCODE_INST_FORM(Arg::Def, GP, POINTER_WIDTH), 
+ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, GP, pointerWidth()), ENCODE_INST_FORM(Arg::Use, GP, pointerWidth()), ENCODE_INST_FORM(Arg::Def, GP, pointerWidth()), 
 // Invalid: MoveConditionallyDouble with numOperands = 0
 
 // Invalid: MoveConditionallyDouble with numOperands = 1
@@ -3599,9 +3838,9 @@ INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM,
 // Invalid: MoveConditionallyDouble with numOperands = 4
 INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
 // MoveConditionallyDouble U:G:32, U:F:64, U:F:64, U:G:Ptr, UD:G:Ptr
-ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, FP, Width64), ENCODE_INST_FORM(Arg::Use, FP, Width64), ENCODE_INST_FORM(Arg::Use, GP, POINTER_WIDTH), ENCODE_INST_FORM(Arg::UseDef, GP, POINTER_WIDTH), 
+ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, FP, Width64), ENCODE_INST_FORM(Arg::Use, FP, Width64), ENCODE_INST_FORM(Arg::Use, GP, pointerWidth()), ENCODE_INST_FORM(Arg::UseDef, GP, pointerWidth()), 
 // MoveConditionallyDouble U:G:32, U:F:64, U:F:64, U:G:Ptr, U:G:Ptr, D:G:Ptr
-ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, FP, Width64), ENCODE_INST_FORM(Arg::Use, FP, Width64), ENCODE_INST_FORM(Arg::Use, GP, POINTER_WIDTH), ENCODE_INST_FORM(Arg::Use, GP, POINTER_WIDTH), ENCODE_INST_FORM(Arg::Def, GP, POINTER_WIDTH), 
+ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, FP, Width64), ENCODE_INST_FORM(Arg::Use, FP, Width64), ENCODE_INST_FORM(Arg::Use, GP, pointerWidth()), ENCODE_INST_FORM(Arg::Use, GP, pointerWidth()), ENCODE_INST_FORM(Arg::Def, GP, pointerWidth()), 
 // Invalid: MoveConditionallyFloat with numOperands = 0
 
 // Invalid: MoveConditionallyFloat with numOperands = 1
@@ -3613,9 +3852,9 @@ INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM,
 // Invalid: MoveConditionallyFloat with numOperands = 4
 INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, INVALID_INST_FORM, 
 // MoveConditionallyFloat U:G:32, U:F:32, U:F:32, U:G:Ptr, UD:G:Ptr
-ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, FP, Width32), ENCODE_INST_FORM(Arg::Use, FP, Width32), ENCODE_INST_FORM(Arg::Use, GP, POINTER_WIDTH), ENCODE_INST_FORM(Arg::UseDef, GP, POINTER_WIDTH), 
+ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, FP, Width32), ENCODE_INST_FORM(Arg::Use, FP, Width32), ENCODE_INST_FORM(Arg::Use, GP, pointerWidth()), ENCODE_INST_FORM(Arg::UseDef, GP, pointerWidth()), 
 // MoveConditionallyFloat U:G:32, U:F:32, U:F:32, U:G:Ptr, U:G:Ptr, D:G:Ptr
-ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, FP, Width32), ENCODE_INST_FORM(Arg::Use, FP, Width32), ENCODE_INST_FORM(Arg::Use, GP, POINTER_WIDTH), ENCODE_INST_FORM(Arg::Use, GP, POINTER_WIDTH), ENCODE_INST_FORM(Arg::Def, GP, POINTER_WIDTH), 
+ENCODE_INST_FORM(Arg::Use, GP, Width32), ENCODE_INST_FORM(Arg::Use, FP, Width32), ENCODE_INST_FORM(Arg::Use, FP, Width32), ENCODE_INST_FORM(Arg::Use, GP, pointerWidth()), ENCODE_INST_FORM(Arg::Use, GP, pointerWidth()), ENCODE_INST_FORM(Arg::Def, GP, pointerWidth()), 
 // Invalid: MoveDoubleConditionally32 with numOperands = 0
 
 // Invalid: MoveDoubleConditionally32 with numOperands = 1
@@ -9957,7 +10196,7 @@ break;
 case Arg::Index:
 if (!args[0].tmp().isGP())
 OPGEN_RETURN(false);
-if (!Arg::isValidIndexForm(args[1].scale(), args[1].offset(), POINTER_WIDTH))
+if (!Arg::isValidIndexForm(args[1].scale(), args[1].offset(), pointerWidth()))
 OPGEN_RETURN(false);
 OPGEN_RETURN(true);
 break;
@@ -10025,7 +10264,7 @@ break;
 case Arg::Index:
 switch (this->args[1].kind()) {
 case Arg::Tmp:
-if (!Arg::isValidIndexForm(args[0].scale(), args[0].offset(), POINTER_WIDTH))
+if (!Arg::isValidIndexForm(args[0].scale(), args[0].offset(), pointerWidth()))
 OPGEN_RETURN(false);
 if (!args[1].tmp().isGP())
 OPGEN_RETURN(false);
@@ -11934,6 +12173,18 @@ OPGEN_RETURN(true);
 #endif
 break;
 break;
+case Arg::SimpleAddr:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[2].ptr().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
 default:
 break;
 }
@@ -12053,6 +12304,18 @@ OPGEN_RETURN(false);
 if (!Arg::isValidIndexForm(args[2].scale(), args[2].offset(), Width16))
 OPGEN_RETURN(false);
 if (!isAtomicStrongCAS16Valid(*this))
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+case Arg::SimpleAddr:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[2].ptr().isGP())
 OPGEN_RETURN(false);
 OPGEN_RETURN(true);
 #endif
@@ -12182,6 +12445,18 @@ OPGEN_RETURN(true);
 #endif
 break;
 break;
+case Arg::SimpleAddr:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[2].ptr().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
 default:
 break;
 }
@@ -12301,6 +12576,18 @@ OPGEN_RETURN(false);
 if (!Arg::isValidIndexForm(args[2].scale(), args[2].offset(), Width64))
 OPGEN_RETURN(false);
 if (!isAtomicStrongCAS64Valid(*this))
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+case Arg::SimpleAddr:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[2].ptr().isGP())
 OPGEN_RETURN(false);
 OPGEN_RETURN(true);
 #endif
@@ -14198,6 +14485,36 @@ default:
 break;
 }
 break;
+case 3:
+switch (this->args[0].kind()) {
+case Arg::Tmp:
+switch (this->args[1].kind()) {
+case Arg::SimpleAddr:
+switch (this->args[2].kind()) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].ptr().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
 default:
 break;
 }
@@ -14229,6 +14546,36 @@ OPGEN_RETURN(false);
 OPGEN_RETURN(true);
 #endif
 break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case 3:
+switch (this->args[0].kind()) {
+case Arg::Tmp:
+switch (this->args[1].kind()) {
+case Arg::SimpleAddr:
+switch (this->args[2].kind()) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].ptr().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
 break;
 default:
 break;
@@ -14278,6 +14625,36 @@ default:
 break;
 }
 break;
+case 3:
+switch (this->args[0].kind()) {
+case Arg::Tmp:
+switch (this->args[1].kind()) {
+case Arg::SimpleAddr:
+switch (this->args[2].kind()) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].ptr().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
 default:
 break;
 }
@@ -14309,6 +14686,36 @@ OPGEN_RETURN(false);
 OPGEN_RETURN(true);
 #endif
 break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case 3:
+switch (this->args[0].kind()) {
+case Arg::Tmp:
+switch (this->args[1].kind()) {
+case Arg::SimpleAddr:
+switch (this->args[2].kind()) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].ptr().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
 break;
 default:
 break;
@@ -14358,6 +14765,36 @@ default:
 break;
 }
 break;
+case 3:
+switch (this->args[0].kind()) {
+case Arg::Tmp:
+switch (this->args[1].kind()) {
+case Arg::SimpleAddr:
+switch (this->args[2].kind()) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].ptr().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
 default:
 break;
 }
@@ -14389,6 +14826,36 @@ OPGEN_RETURN(false);
 OPGEN_RETURN(true);
 #endif
 break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case 3:
+switch (this->args[0].kind()) {
+case Arg::Tmp:
+switch (this->args[1].kind()) {
+case Arg::SimpleAddr:
+switch (this->args[2].kind()) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].ptr().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
 break;
 default:
 break;
@@ -14438,6 +14905,36 @@ default:
 break;
 }
 break;
+case 3:
+switch (this->args[0].kind()) {
+case Arg::Tmp:
+switch (this->args[1].kind()) {
+case Arg::SimpleAddr:
+switch (this->args[2].kind()) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].ptr().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
 default:
 break;
 }
@@ -14469,6 +14966,36 @@ OPGEN_RETURN(false);
 OPGEN_RETURN(true);
 #endif
 break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case 3:
+switch (this->args[0].kind()) {
+case Arg::Tmp:
+switch (this->args[1].kind()) {
+case Arg::SimpleAddr:
+switch (this->args[2].kind()) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].ptr().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
 break;
 default:
 break;
@@ -15037,6 +15564,438 @@ OPGEN_RETURN(false);
 OPGEN_RETURN(true);
 #endif
 break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgOr8:
+switch (this->args.size()) {
+case 3:
+switch (this->args[0].kind()) {
+case Arg::Tmp:
+switch (this->args[1].kind()) {
+case Arg::SimpleAddr:
+switch (this->args[2].kind()) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].ptr().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgOr16:
+switch (this->args.size()) {
+case 3:
+switch (this->args[0].kind()) {
+case Arg::Tmp:
+switch (this->args[1].kind()) {
+case Arg::SimpleAddr:
+switch (this->args[2].kind()) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].ptr().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgOr32:
+switch (this->args.size()) {
+case 3:
+switch (this->args[0].kind()) {
+case Arg::Tmp:
+switch (this->args[1].kind()) {
+case Arg::SimpleAddr:
+switch (this->args[2].kind()) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].ptr().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgOr64:
+switch (this->args.size()) {
+case 3:
+switch (this->args[0].kind()) {
+case Arg::Tmp:
+switch (this->args[1].kind()) {
+case Arg::SimpleAddr:
+switch (this->args[2].kind()) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].ptr().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgClear8:
+switch (this->args.size()) {
+case 3:
+switch (this->args[0].kind()) {
+case Arg::Tmp:
+switch (this->args[1].kind()) {
+case Arg::SimpleAddr:
+switch (this->args[2].kind()) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].ptr().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgClear16:
+switch (this->args.size()) {
+case 3:
+switch (this->args[0].kind()) {
+case Arg::Tmp:
+switch (this->args[1].kind()) {
+case Arg::SimpleAddr:
+switch (this->args[2].kind()) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].ptr().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgClear32:
+switch (this->args.size()) {
+case 3:
+switch (this->args[0].kind()) {
+case Arg::Tmp:
+switch (this->args[1].kind()) {
+case Arg::SimpleAddr:
+switch (this->args[2].kind()) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].ptr().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgClear64:
+switch (this->args.size()) {
+case 3:
+switch (this->args[0].kind()) {
+case Arg::Tmp:
+switch (this->args[1].kind()) {
+case Arg::SimpleAddr:
+switch (this->args[2].kind()) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].ptr().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgXor8:
+switch (this->args.size()) {
+case 3:
+switch (this->args[0].kind()) {
+case Arg::Tmp:
+switch (this->args[1].kind()) {
+case Arg::SimpleAddr:
+switch (this->args[2].kind()) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].ptr().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgXor16:
+switch (this->args.size()) {
+case 3:
+switch (this->args[0].kind()) {
+case Arg::Tmp:
+switch (this->args[1].kind()) {
+case Arg::SimpleAddr:
+switch (this->args[2].kind()) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].ptr().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgXor32:
+switch (this->args.size()) {
+case 3:
+switch (this->args[0].kind()) {
+case Arg::Tmp:
+switch (this->args[1].kind()) {
+case Arg::SimpleAddr:
+switch (this->args[2].kind()) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].ptr().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgXor64:
+switch (this->args.size()) {
+case 3:
+switch (this->args[0].kind()) {
+case Arg::Tmp:
+switch (this->args[1].kind()) {
+case Arg::SimpleAddr:
+switch (this->args[2].kind()) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+if (!args[0].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[1].ptr().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
 break;
 default:
 break;
@@ -15841,6 +16800,130 @@ case Arg::BitImm:
 if (!Arg::isValidIndexForm(args[1].scale(), args[1].offset(), Width64))
 OPGEN_RETURN(false);
 if (!Arg::isValidBitImmForm(args[2].value()))
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::BranchTestBit64:
+switch (this->args.size()) {
+case 3:
+switch (this->args[0].kind()) {
+case Arg::ResCond:
+switch (this->args[1].kind()) {
+case Arg::Tmp:
+switch (this->args[2].kind()) {
+case Arg::Imm:
+#if CPU(X86_64)
+if (!args[1].tmp().isGP())
+OPGEN_RETURN(false);
+if (!Arg::isValidImmForm(args[2].value()))
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+case Arg::Tmp:
+#if CPU(X86_64)
+if (!args[1].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+case Arg::Addr:
+case Arg::Stack:
+case Arg::CallArg:
+switch (this->args[2].kind()) {
+case Arg::Imm:
+#if CPU(X86_64)
+if (!Arg::isValidAddrForm(args[1].offset()))
+OPGEN_RETURN(false);
+if (!Arg::isValidImmForm(args[2].value()))
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::BranchTestBit32:
+switch (this->args.size()) {
+case 3:
+switch (this->args[0].kind()) {
+case Arg::ResCond:
+switch (this->args[1].kind()) {
+case Arg::Tmp:
+switch (this->args[2].kind()) {
+case Arg::Imm:
+#if CPU(X86) || CPU(X86_64)
+if (!args[1].tmp().isGP())
+OPGEN_RETURN(false);
+if (!Arg::isValidImmForm(args[2].value()))
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+case Arg::Tmp:
+#if CPU(X86) || CPU(X86_64)
+if (!args[1].tmp().isGP())
+OPGEN_RETURN(false);
+if (!args[2].tmp().isGP())
+OPGEN_RETURN(false);
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+case Arg::Addr:
+case Arg::Stack:
+case Arg::CallArg:
+switch (this->args[2].kind()) {
+case Arg::Imm:
+#if CPU(X86) || CPU(X86_64)
+if (!Arg::isValidAddrForm(args[1].offset()))
+OPGEN_RETURN(false);
+if (!Arg::isValidImmForm(args[2].value()))
 OPGEN_RETURN(false);
 OPGEN_RETURN(true);
 #endif
@@ -22920,6 +24003,8 @@ break;
 break;
 case Arg::Index:
 break;
+case Arg::SimpleAddr:
+break;
 default:
 break;
 }
@@ -23014,6 +24099,8 @@ OPGEN_RETURN(true);
 break;
 break;
 case Arg::Index:
+break;
+case Arg::SimpleAddr:
 break;
 default:
 break;
@@ -23110,6 +24197,8 @@ break;
 break;
 case Arg::Index:
 break;
+case Arg::SimpleAddr:
+break;
 default:
 break;
 }
@@ -23204,6 +24293,8 @@ OPGEN_RETURN(true);
 break;
 break;
 case Arg::Index:
+break;
+case Arg::SimpleAddr:
 break;
 default:
 break;
@@ -24592,6 +25683,8 @@ case 0:
 OPGEN_RETURN(false);
 break;
 case 1:
+switch (args.size()) {
+case 2:
 switch (args[0].kind()) {
 case Arg::Tmp:
 switch (Arg::Addr) {
@@ -24612,6 +25705,13 @@ break;
 default:
 break;
 }
+break;
+default:
+break;
+}
+break;
+case 2:
+OPGEN_RETURN(false);
 break;
 default:
 break;
@@ -24623,6 +25723,8 @@ case 0:
 OPGEN_RETURN(false);
 break;
 case 1:
+switch (args.size()) {
+case 2:
 switch (args[0].kind()) {
 case Arg::Tmp:
 switch (Arg::Addr) {
@@ -24643,6 +25745,13 @@ break;
 default:
 break;
 }
+break;
+default:
+break;
+}
+break;
+case 2:
+OPGEN_RETURN(false);
 break;
 default:
 break;
@@ -24654,6 +25763,8 @@ case 0:
 OPGEN_RETURN(false);
 break;
 case 1:
+switch (args.size()) {
+case 2:
 switch (args[0].kind()) {
 case Arg::Tmp:
 switch (Arg::Addr) {
@@ -24674,6 +25785,13 @@ break;
 default:
 break;
 }
+break;
+default:
+break;
+}
+break;
+case 2:
+OPGEN_RETURN(false);
 break;
 default:
 break;
@@ -24685,6 +25803,8 @@ case 0:
 OPGEN_RETURN(false);
 break;
 case 1:
+switch (args.size()) {
+case 2:
 switch (args[0].kind()) {
 case Arg::Tmp:
 switch (Arg::Addr) {
@@ -24705,6 +25825,13 @@ break;
 default:
 break;
 }
+break;
+default:
+break;
+}
+break;
+case 2:
+OPGEN_RETURN(false);
 break;
 default:
 break;
@@ -24716,6 +25843,8 @@ case 0:
 OPGEN_RETURN(false);
 break;
 case 1:
+switch (args.size()) {
+case 2:
 switch (args[0].kind()) {
 case Arg::Tmp:
 switch (Arg::Addr) {
@@ -24736,6 +25865,13 @@ break;
 default:
 break;
 }
+break;
+default:
+break;
+}
+break;
+case 2:
+OPGEN_RETURN(false);
 break;
 default:
 break;
@@ -24747,6 +25883,8 @@ case 0:
 OPGEN_RETURN(false);
 break;
 case 1:
+switch (args.size()) {
+case 2:
 switch (args[0].kind()) {
 case Arg::Tmp:
 switch (Arg::Addr) {
@@ -24767,6 +25905,13 @@ break;
 default:
 break;
 }
+break;
+default:
+break;
+}
+break;
+case 2:
+OPGEN_RETURN(false);
 break;
 default:
 break;
@@ -24778,6 +25923,8 @@ case 0:
 OPGEN_RETURN(false);
 break;
 case 1:
+switch (args.size()) {
+case 2:
 switch (args[0].kind()) {
 case Arg::Tmp:
 switch (Arg::Addr) {
@@ -24803,12 +25950,21 @@ default:
 break;
 }
 break;
+case 2:
+OPGEN_RETURN(false);
+break;
+default:
+break;
+}
+break;
 case Opcode::AtomicXchg64:
 switch (argIndex) {
 case 0:
 OPGEN_RETURN(false);
 break;
 case 1:
+switch (args.size()) {
+case 2:
 switch (args[0].kind()) {
 case Arg::Tmp:
 switch (Arg::Addr) {
@@ -24829,6 +25985,13 @@ break;
 default:
 break;
 }
+break;
+default:
+break;
+}
+break;
+case 2:
+OPGEN_RETURN(false);
 break;
 default:
 break;
@@ -25068,6 +26231,186 @@ case 0:
 OPGEN_RETURN(false);
 break;
 case 1:
+OPGEN_RETURN(false);
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgOr8:
+switch (argIndex) {
+case 0:
+OPGEN_RETURN(false);
+break;
+case 1:
+OPGEN_RETURN(false);
+break;
+case 2:
+OPGEN_RETURN(false);
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgOr16:
+switch (argIndex) {
+case 0:
+OPGEN_RETURN(false);
+break;
+case 1:
+OPGEN_RETURN(false);
+break;
+case 2:
+OPGEN_RETURN(false);
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgOr32:
+switch (argIndex) {
+case 0:
+OPGEN_RETURN(false);
+break;
+case 1:
+OPGEN_RETURN(false);
+break;
+case 2:
+OPGEN_RETURN(false);
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgOr64:
+switch (argIndex) {
+case 0:
+OPGEN_RETURN(false);
+break;
+case 1:
+OPGEN_RETURN(false);
+break;
+case 2:
+OPGEN_RETURN(false);
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgClear8:
+switch (argIndex) {
+case 0:
+OPGEN_RETURN(false);
+break;
+case 1:
+OPGEN_RETURN(false);
+break;
+case 2:
+OPGEN_RETURN(false);
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgClear16:
+switch (argIndex) {
+case 0:
+OPGEN_RETURN(false);
+break;
+case 1:
+OPGEN_RETURN(false);
+break;
+case 2:
+OPGEN_RETURN(false);
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgClear32:
+switch (argIndex) {
+case 0:
+OPGEN_RETURN(false);
+break;
+case 1:
+OPGEN_RETURN(false);
+break;
+case 2:
+OPGEN_RETURN(false);
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgClear64:
+switch (argIndex) {
+case 0:
+OPGEN_RETURN(false);
+break;
+case 1:
+OPGEN_RETURN(false);
+break;
+case 2:
+OPGEN_RETURN(false);
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgXor8:
+switch (argIndex) {
+case 0:
+OPGEN_RETURN(false);
+break;
+case 1:
+OPGEN_RETURN(false);
+break;
+case 2:
+OPGEN_RETURN(false);
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgXor16:
+switch (argIndex) {
+case 0:
+OPGEN_RETURN(false);
+break;
+case 1:
+OPGEN_RETURN(false);
+break;
+case 2:
+OPGEN_RETURN(false);
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgXor32:
+switch (argIndex) {
+case 0:
+OPGEN_RETURN(false);
+break;
+case 1:
+OPGEN_RETURN(false);
+break;
+case 2:
+OPGEN_RETURN(false);
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgXor64:
+switch (argIndex) {
+case 0:
+OPGEN_RETURN(false);
+break;
+case 1:
+OPGEN_RETURN(false);
+break;
+case 2:
 OPGEN_RETURN(false);
 break;
 default:
@@ -25529,6 +26872,86 @@ break;
 }
 break;
 case Arg::Index:
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case 2:
+OPGEN_RETURN(false);
+break;
+default:
+break;
+}
+break;
+case Opcode::BranchTestBit64:
+switch (argIndex) {
+case 0:
+OPGEN_RETURN(false);
+break;
+case 1:
+switch (args[0].kind()) {
+case Arg::ResCond:
+switch (Arg::Addr) {
+case Arg::Tmp:
+break;
+case Arg::Addr:
+case Arg::Stack:
+case Arg::CallArg:
+switch (args[2].kind()) {
+case Arg::Imm:
+#if CPU(X86_64)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case 2:
+OPGEN_RETURN(false);
+break;
+default:
+break;
+}
+break;
+case Opcode::BranchTestBit32:
+switch (argIndex) {
+case 0:
+OPGEN_RETURN(false);
+break;
+case 1:
+switch (args[0].kind()) {
+case Arg::ResCond:
+switch (Arg::Addr) {
+case Arg::Tmp:
+break;
+case Arg::Addr:
+case Arg::Stack:
+case Arg::CallArg:
+switch (args[2].kind()) {
+case Arg::Imm:
+#if CPU(X86) || CPU(X86_64)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
 break;
 default:
 break;
@@ -26856,6 +28279,8 @@ case Opcode::Branch64:
 case Opcode::BranchTest8:
 case Opcode::BranchTest32:
 case Opcode::BranchTest64:
+case Opcode::BranchTestBit64:
+case Opcode::BranchTestBit32:
 case Opcode::BranchDouble:
 case Opcode::BranchFloat:
 case Opcode::BranchAdd32:
@@ -26969,6 +28394,18 @@ case Opcode::LoadLink64:
 case Opcode::LoadLinkAcq64:
 case Opcode::StoreCond64:
 case Opcode::StoreCondRel64:
+case Opcode::AtomicXchgOr8:
+case Opcode::AtomicXchgOr16:
+case Opcode::AtomicXchgOr32:
+case Opcode::AtomicXchgOr64:
+case Opcode::AtomicXchgClear8:
+case Opcode::AtomicXchgClear16:
+case Opcode::AtomicXchgClear32:
+case Opcode::AtomicXchgClear64:
+case Opcode::AtomicXchgXor8:
+case Opcode::AtomicXchgXor16:
+case Opcode::AtomicXchgXor32:
+case Opcode::AtomicXchgXor64:
 case Opcode::MemoryFence:
 case Opcode::StoreFence:
 case Opcode::LoadFence:
@@ -27068,12 +28505,26 @@ case Opcode::LoadLink64:
 case Opcode::LoadLinkAcq64:
 case Opcode::StoreCond64:
 case Opcode::StoreCondRel64:
+case Opcode::AtomicXchgOr8:
+case Opcode::AtomicXchgOr16:
+case Opcode::AtomicXchgOr32:
+case Opcode::AtomicXchgOr64:
+case Opcode::AtomicXchgClear8:
+case Opcode::AtomicXchgClear16:
+case Opcode::AtomicXchgClear32:
+case Opcode::AtomicXchgClear64:
+case Opcode::AtomicXchgXor8:
+case Opcode::AtomicXchgXor16:
+case Opcode::AtomicXchgXor32:
+case Opcode::AtomicXchgXor64:
 case Opcode::Branch8:
 case Opcode::Branch32:
 case Opcode::Branch64:
 case Opcode::BranchTest8:
 case Opcode::BranchTest32:
 case Opcode::BranchTest64:
+case Opcode::BranchTestBit64:
+case Opcode::BranchTestBit32:
 case Opcode::BranchDouble:
 case Opcode::BranchFloat:
 case Opcode::BranchAdd32:
@@ -30123,7 +31574,7 @@ switch (this->args[0].kind()) {
 case Arg::Tmp:
 switch (this->args[1].kind()) {
 case Arg::Tmp:
-jit.zeroExtend32ToPtr(args[0].gpr(), args[1].gpr());
+jit.zeroExtend32ToWord(args[0].gpr(), args[1].gpr());
 OPGEN_RETURN(result);
 break;
 break;
@@ -30159,7 +31610,7 @@ case Arg::Imm:
 switch (this->args[1].kind()) {
 case Arg::Tmp:
 #if CPU(X86) || CPU(X86_64)
-jit.zeroExtend32ToPtr(args[0].asTrustedImm32(), args[1].gpr());
+jit.zeroExtend32ToWord(args[0].asTrustedImm32(), args[1].gpr());
 OPGEN_RETURN(result);
 #endif
 break;
@@ -30929,6 +32380,13 @@ OPGEN_RETURN(result);
 #endif
 break;
 break;
+case Arg::SimpleAddr:
+#if CPU(ARM64E)
+jit.atomicStrongCAS8(args[0].gpr(), args[1].gpr(), args[2].asAddress());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
 default:
 break;
 }
@@ -30975,6 +32433,13 @@ break;
 case Arg::Index:
 #if CPU(X86) || CPU(X86_64)
 jit.atomicStrongCAS16(args[0].gpr(), args[1].gpr(), args[2].asBaseIndex());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+case Arg::SimpleAddr:
+#if CPU(ARM64E)
+jit.atomicStrongCAS16(args[0].gpr(), args[1].gpr(), args[2].asAddress());
 OPGEN_RETURN(result);
 #endif
 break;
@@ -31029,6 +32494,13 @@ OPGEN_RETURN(result);
 #endif
 break;
 break;
+case Arg::SimpleAddr:
+#if CPU(ARM64E)
+jit.atomicStrongCAS32(args[0].gpr(), args[1].gpr(), args[2].asAddress());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
 default:
 break;
 }
@@ -31075,6 +32547,13 @@ break;
 case Arg::Index:
 #if CPU(X86_64)
 jit.atomicStrongCAS64(args[0].gpr(), args[1].gpr(), args[2].asBaseIndex());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+case Arg::SimpleAddr:
+#if CPU(ARM64E)
+jit.atomicStrongCAS64(args[0].gpr(), args[1].gpr(), args[2].asAddress());
 OPGEN_RETURN(result);
 #endif
 break;
@@ -32352,6 +33831,8 @@ break;
 }
 break;
 case Opcode::AtomicXchgAdd8:
+switch (this->args.size()) {
+case 2:
 switch (this->args[1].kind()) {
 case Arg::Addr:
 case Arg::Stack:
@@ -32373,7 +33854,20 @@ default:
 break;
 }
 break;
+case 3:
+#if CPU(ARM64E)
+jit.atomicXchgAdd8(args[0].gpr(), args[1].asAddress(), args[2].gpr());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
 case Opcode::AtomicXchgAdd16:
+switch (this->args.size()) {
+case 2:
 switch (this->args[1].kind()) {
 case Arg::Addr:
 case Arg::Stack:
@@ -32395,7 +33889,20 @@ default:
 break;
 }
 break;
+case 3:
+#if CPU(ARM64E)
+jit.atomicXchgAdd16(args[0].gpr(), args[1].asAddress(), args[2].gpr());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
 case Opcode::AtomicXchgAdd32:
+switch (this->args.size()) {
+case 2:
 switch (this->args[1].kind()) {
 case Arg::Addr:
 case Arg::Stack:
@@ -32417,7 +33924,20 @@ default:
 break;
 }
 break;
+case 3:
+#if CPU(ARM64E)
+jit.atomicXchgAdd32(args[0].gpr(), args[1].asAddress(), args[2].gpr());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
 case Opcode::AtomicXchgAdd64:
+switch (this->args.size()) {
+case 2:
 switch (this->args[1].kind()) {
 case Arg::Addr:
 case Arg::Stack:
@@ -32439,7 +33959,20 @@ default:
 break;
 }
 break;
+case 3:
+#if CPU(ARM64E)
+jit.atomicXchgAdd64(args[0].gpr(), args[1].asAddress(), args[2].gpr());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
 case Opcode::AtomicXchg8:
+switch (this->args.size()) {
+case 2:
 switch (this->args[1].kind()) {
 case Arg::Addr:
 case Arg::Stack:
@@ -32461,7 +33994,20 @@ default:
 break;
 }
 break;
+case 3:
+#if CPU(ARM64E)
+jit.atomicXchg8(args[0].gpr(), args[1].asAddress(), args[2].gpr());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
 case Opcode::AtomicXchg16:
+switch (this->args.size()) {
+case 2:
 switch (this->args[1].kind()) {
 case Arg::Addr:
 case Arg::Stack:
@@ -32483,7 +34029,20 @@ default:
 break;
 }
 break;
+case 3:
+#if CPU(ARM64E)
+jit.atomicXchg16(args[0].gpr(), args[1].asAddress(), args[2].gpr());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
 case Opcode::AtomicXchg32:
+switch (this->args.size()) {
+case 2:
 switch (this->args[1].kind()) {
 case Arg::Addr:
 case Arg::Stack:
@@ -32505,7 +34064,20 @@ default:
 break;
 }
 break;
+case 3:
+#if CPU(ARM64E)
+jit.atomicXchg32(args[0].gpr(), args[1].asAddress(), args[2].gpr());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
 case Opcode::AtomicXchg64:
+switch (this->args.size()) {
+case 2:
 switch (this->args[1].kind()) {
 case Arg::Addr:
 case Arg::Stack:
@@ -32519,6 +34091,17 @@ break;
 case Arg::Index:
 #if CPU(X86_64)
 jit.atomicXchg64(args[0].gpr(), args[1].asBaseIndex());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+case 3:
+#if CPU(ARM64E)
+jit.atomicXchg64(args[0].gpr(), args[1].asAddress(), args[2].gpr());
 OPGEN_RETURN(result);
 #endif
 break;
@@ -32649,6 +34232,90 @@ break;
 case Opcode::Depend64:
 #if CPU(ARM64)
 jit.depend64(args[0].gpr(), args[1].gpr());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+case Opcode::AtomicXchgOr8:
+#if CPU(ARM64E)
+jit.atomicXchgOr8(args[0].gpr(), args[1].asAddress(), args[2].gpr());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+case Opcode::AtomicXchgOr16:
+#if CPU(ARM64E)
+jit.atomicXchgOr16(args[0].gpr(), args[1].asAddress(), args[2].gpr());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+case Opcode::AtomicXchgOr32:
+#if CPU(ARM64E)
+jit.atomicXchgOr32(args[0].gpr(), args[1].asAddress(), args[2].gpr());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+case Opcode::AtomicXchgOr64:
+#if CPU(ARM64E)
+jit.atomicXchgOr64(args[0].gpr(), args[1].asAddress(), args[2].gpr());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+case Opcode::AtomicXchgClear8:
+#if CPU(ARM64E)
+jit.atomicXchgClear8(args[0].gpr(), args[1].asAddress(), args[2].gpr());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+case Opcode::AtomicXchgClear16:
+#if CPU(ARM64E)
+jit.atomicXchgClear16(args[0].gpr(), args[1].asAddress(), args[2].gpr());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+case Opcode::AtomicXchgClear32:
+#if CPU(ARM64E)
+jit.atomicXchgClear32(args[0].gpr(), args[1].asAddress(), args[2].gpr());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+case Opcode::AtomicXchgClear64:
+#if CPU(ARM64E)
+jit.atomicXchgClear64(args[0].gpr(), args[1].asAddress(), args[2].gpr());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+case Opcode::AtomicXchgXor8:
+#if CPU(ARM64E)
+jit.atomicXchgXor8(args[0].gpr(), args[1].asAddress(), args[2].gpr());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+case Opcode::AtomicXchgXor16:
+#if CPU(ARM64E)
+jit.atomicXchgXor16(args[0].gpr(), args[1].asAddress(), args[2].gpr());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+case Opcode::AtomicXchgXor32:
+#if CPU(ARM64E)
+jit.atomicXchgXor32(args[0].gpr(), args[1].asAddress(), args[2].gpr());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+case Opcode::AtomicXchgXor64:
+#if CPU(ARM64E)
+jit.atomicXchgXor64(args[0].gpr(), args[1].asAddress(), args[2].gpr());
 OPGEN_RETURN(result);
 #endif
 break;
@@ -33012,6 +34679,76 @@ break;
 case Arg::Index:
 #if CPU(X86_64)
 result = jit.branchTest64(args[0].asResultCondition(), args[1].asBaseIndex(), args[2].asTrustedImm32());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+case Opcode::BranchTestBit64:
+switch (this->args[1].kind()) {
+case Arg::Tmp:
+switch (this->args[2].kind()) {
+case Arg::Imm:
+#if CPU(X86_64)
+result = jit.branchTestBit64(args[0].asResultCondition(), args[1].gpr(), args[2].asTrustedImm32());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+case Arg::Tmp:
+#if CPU(X86_64)
+result = jit.branchTestBit64(args[0].asResultCondition(), args[1].gpr(), args[2].gpr());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+case Arg::Addr:
+case Arg::Stack:
+case Arg::CallArg:
+#if CPU(X86_64)
+result = jit.branchTestBit64(args[0].asResultCondition(), args[1].asAddress(), args[2].asTrustedImm32());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+case Opcode::BranchTestBit32:
+switch (this->args[1].kind()) {
+case Arg::Tmp:
+switch (this->args[2].kind()) {
+case Arg::Imm:
+#if CPU(X86) || CPU(X86_64)
+result = jit.branchTestBit32(args[0].asResultCondition(), args[1].gpr(), args[2].asTrustedImm32());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+case Arg::Tmp:
+#if CPU(X86) || CPU(X86_64)
+result = jit.branchTestBit32(args[0].asResultCondition(), args[1].gpr(), args[2].gpr());
+OPGEN_RETURN(result);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+case Arg::Addr:
+case Arg::Stack:
+case Arg::CallArg:
+#if CPU(X86) || CPU(X86_64)
+result = jit.branchTestBit32(args[0].asResultCondition(), args[1].asAddress(), args[2].asTrustedImm32());
 OPGEN_RETURN(result);
 #endif
 break;

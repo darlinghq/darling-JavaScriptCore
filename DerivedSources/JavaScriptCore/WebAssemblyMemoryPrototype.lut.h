@@ -13,8 +13,8 @@ static const struct CompactHashIndex prototypeTableWebAssemblyMemoryIndex[5] = {
 };
 
 static const struct HashTableValue prototypeTableWebAssemblyMemoryValues[2] = {
-   { "grow", static_cast<unsigned>(PropertyAttribute::DontEnum|PropertyAttribute::Function), NoIntrinsic, { (intptr_t)static_cast<RawNativeFunction>(webAssemblyMemoryProtoFuncGrow), (intptr_t)(1) } },
-   { "buffer", static_cast<unsigned>(PropertyAttribute::DontEnum|PropertyAttribute::Accessor), NoIntrinsic, { (intptr_t)static_cast<RawNativeFunction>(webAssemblyMemoryProtoFuncBuffer), (intptr_t)static_cast<RawNativeFunction>(nullptr) } },
+   { "grow", static_cast<unsigned>(PropertyAttribute::Function), NoIntrinsic, { (intptr_t)static_cast<RawNativeFunction>(webAssemblyMemoryProtoFuncGrow), (intptr_t)(1) } },
+   { "buffer", static_cast<unsigned>(PropertyAttribute::Accessor), NoIntrinsic, { (intptr_t)static_cast<RawNativeFunction>(webAssemblyMemoryProtoFuncBuffer), (intptr_t)static_cast<RawNativeFunction>(nullptr) } },
 };
 
 static const struct HashTable prototypeTableWebAssemblyMemory =

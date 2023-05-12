@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2017 Apple Inc. All rights reserved.
+ * Copyright (C) 2016-2019 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,7 +29,6 @@
 #include "FrameTracers.h"
 #include "JSCInlines.h"
 #include "JSTypedArrays.h"
-#include "ObjectPrototype.h"
 #include "ReleaseHeapAccessScope.h"
 #include "TypedArrayController.h"
 
@@ -44,15 +43,15 @@ STATIC_ASSERT_IS_TRIVIALLY_DESTRUCTIBLE(AtomicsObject);
     macro(exchange, Exchange, 3)                                        \
     macro(isLockFree, IsLockFree, 1)                                    \
     macro(load, Load, 2)                                                \
+    macro(notify, Notify, 3)                                            \
     macro(or, Or, 3)                                                    \
     macro(store, Store, 3)                                              \
     macro(sub, Sub, 3)                                                  \
     macro(wait, Wait, 4)                                                \
-    macro(wake, Wake, 3)                                                \
     macro(xor, Xor, 3)
 
-#define DECLARE_FUNC_PROTO(lowerName, upperName, count)                 \
-    EncodedJSValue JSC_HOST_CALL atomicsFunc ## upperName(ExecState*);
+#define DECLARE_FUNC_PROTO(lowerName, upperName, count)  \
+    static JSC_DECLARE_HOST_FUNCTION(atomicsFunc ## upperName);
 FOR_EACH_ATOMICS_FUNC(DECLARE_FUNC_PROTO)
 #undef DECLARE_FUNC_PROTO
 
@@ -81,104 +80,136 @@ void AtomicsObject::finishCreation(VM& vm, JSGlobalObject* globalObject)
     ASSERT(inherits(vm, info()));
     
 #define PUT_DIRECT_NATIVE_FUNC(lowerName, upperName, count) \
-    putDirectNativeFunctionWithoutTransition(vm, globalObject, Identifier::fromString(&vm, #lowerName), count, atomicsFunc ## upperName, Atomics ## upperName ## Intrinsic, static_cast<unsigned>(PropertyAttribute::DontEnum));
+    putDirectNativeFunctionWithoutTransition(vm, globalObject, Identifier::fromString(vm, #lowerName), count, atomicsFunc ## upperName, Atomics ## upperName ## Intrinsic, static_cast<unsigned>(PropertyAttribute::DontEnum));
     FOR_EACH_ATOMICS_FUNC(PUT_DIRECT_NATIVE_FUNC)
 #undef PUT_DIRECT_NATIVE_FUNC
+
+    JSC_TO_STRING_TAG_WITHOUT_TRANSITION();
 }
 
 namespace {
 
 template<typename Adaptor, typename Func>
-EncodedJSValue atomicOperationWithArgsCase(ExecState* exec, const JSValue* args, ThrowScope& scope, JSArrayBufferView* typedArrayView, unsigned accessIndex, const Func& func)
+EncodedJSValue atomicReadModifyWriteCase(JSGlobalObject* globalObject, const JSValue* args, ThrowScope& scope, JSArrayBufferView* typedArrayView, unsigned accessIndex, const Func& func)
 {
     JSGenericTypedArrayView<Adaptor>* typedArray = jsCast<JSGenericTypedArrayView<Adaptor>*>(typedArrayView);
     
     double extraArgs[Func::numExtraArgs + 1]; // Add 1 to avoid 0 size array error in VS.
     for (unsigned i = 0; i < Func::numExtraArgs; ++i) {
-        double value = args[2 + i].toInteger(exec);
+        double value = args[2 + i].toIntegerOrInfinity(globalObject);
         RETURN_IF_EXCEPTION(scope, JSValue::encode(jsUndefined()));
         extraArgs[i] = value;
     }
 
+    if (typedArray->isDetached())
+        return throwVMTypeError(globalObject, scope, typedArrayBufferHasBeenDetachedErrorMessage);
+
     return JSValue::encode(func(typedArray->typedVector() + accessIndex, extraArgs));
 }
 
-unsigned validatedAccessIndex(VM& vm, ExecState* exec, JSValue accessIndexValue, JSArrayBufferView* typedArrayView)
+static unsigned validateAtomicAccess(VM& vm, JSGlobalObject* globalObject, JSArrayBufferView* typedArrayView, JSValue accessIndexValue)
 {
     auto scope = DECLARE_THROW_SCOPE(vm);
-    if (UNLIKELY(!accessIndexValue.isInt32())) {
-        double accessIndexDouble = accessIndexValue.toNumber(exec);
+    unsigned accessIndex = 0;
+    if (LIKELY(accessIndexValue.isUInt32()))
+        accessIndex = accessIndexValue.asUInt32();
+    else {
+        accessIndex = accessIndexValue.toIndex(globalObject, "accessIndex");
         RETURN_IF_EXCEPTION(scope, 0);
-        if (accessIndexDouble == 0)
-            accessIndexValue = jsNumber(0);
-        else {
-            accessIndexValue = jsNumber(accessIndexDouble);
-            if (!accessIndexValue.isInt32()) {
-                throwRangeError(exec, scope, "Access index is not an integer."_s);
-                return 0;
-            }
-        }
     }
-    int32_t accessIndex = accessIndexValue.asInt32();
     
     ASSERT(typedArrayView->length() <= static_cast<unsigned>(INT_MAX));
-    if (static_cast<unsigned>(accessIndex) >= typedArrayView->length()) {
-        throwRangeError(exec, scope, "Access index out of bounds for atomic access."_s);
+    if (accessIndex >= typedArrayView->length()) {
+        throwRangeError(globalObject, scope, "Access index out of bounds for atomic access."_s);
         return 0;
     }
     
     return accessIndex;
 }
 
+static JSArrayBufferView* validateTypedArray(JSGlobalObject* globalObject, JSValue typedArrayValue)
+{
+    VM& vm = globalObject->vm();
+    auto scope = DECLARE_THROW_SCOPE(vm);
+
+    if (!typedArrayValue.isCell()) {
+        throwTypeError(globalObject, scope, "Argument needs to be a typed array."_s);
+        return nullptr;
+    }
+
+    JSCell* typedArrayCell = typedArrayValue.asCell();
+    if (!isTypedView(typedArrayCell->classInfo(vm)->typedArrayStorageType)) {
+        throwTypeError(globalObject, scope, "Argument needs to be a typed array."_s);
+        return nullptr;
+    }
+
+    JSArrayBufferView* typedArray = jsCast<JSArrayBufferView*>(typedArrayCell);
+    if (typedArray->isDetached()) {
+        throwTypeError(globalObject, scope, "Argument typed array is detached."_s);
+        return nullptr;
+    }
+    return typedArray;
+}
+
+enum class TypedArrayOperationMode { Read, Write };
+template<TypedArrayOperationMode mode>
+inline JSArrayBufferView* validateIntegerTypedArray(JSGlobalObject* globalObject, JSValue typedArrayValue)
+{
+    VM& vm = globalObject->vm();
+    auto scope = DECLARE_THROW_SCOPE(vm);
+
+    JSArrayBufferView* typedArray = validateTypedArray(globalObject, typedArrayValue);
+    RETURN_IF_EXCEPTION(scope, { });
+
+    if constexpr (mode == TypedArrayOperationMode::Write) {
+        switch (typedArray->type()) {
+        case Int32ArrayType:
+            break;
+        default:
+            throwTypeError(globalObject, scope, "Typed array argument must be an Int32Array."_s);
+            return { };
+        }
+    } else {
+        switch (typedArray->type()) {
+        case Int8ArrayType:
+        case Int16ArrayType:
+        case Int32ArrayType:
+        case Uint8ArrayType:
+        case Uint16ArrayType:
+        case Uint32ArrayType:
+            break;
+        default:
+            throwTypeError(globalObject, scope, "Typed array argument must be an Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, or Uint32Array."_s);
+            return { };
+        }
+    }
+    return typedArray;
+}
+
 template<typename Func>
-EncodedJSValue atomicOperationWithArgs(VM& vm, ExecState* exec, const JSValue* args, const Func& func)
+EncodedJSValue atomicReadModifyWrite(VM& vm, JSGlobalObject* globalObject, const JSValue* args, const Func& func)
 {
     auto scope = DECLARE_THROW_SCOPE(vm);
 
-    JSValue typedArrayValue = args[0];
-    if (!typedArrayValue.isCell()) {
-        throwTypeError(exec, scope, "Typed array argument must be a cell."_s);
-        return JSValue::encode(jsUndefined());
-    }
-    
-    JSCell* typedArrayCell = typedArrayValue.asCell();
-    
-    JSType type = typedArrayCell->type();
-    switch (type) {
+    JSArrayBufferView* typedArrayView = validateIntegerTypedArray<TypedArrayOperationMode::Read>(globalObject, args[0]);
+    RETURN_IF_EXCEPTION(scope, { });
+
+    unsigned accessIndex = validateAtomicAccess(vm, globalObject, typedArrayView, args[1]);
+    RETURN_IF_EXCEPTION(scope, { });
+
+    switch (typedArrayView->type()) {
     case Int8ArrayType:
+        return atomicReadModifyWriteCase<Int8Adaptor>(globalObject, args, scope, typedArrayView, accessIndex, func);
     case Int16ArrayType:
+        return atomicReadModifyWriteCase<Int16Adaptor>(globalObject, args, scope, typedArrayView, accessIndex, func);
     case Int32ArrayType:
+        return atomicReadModifyWriteCase<Int32Adaptor>(globalObject, args, scope, typedArrayView, accessIndex, func);
     case Uint8ArrayType:
+        return atomicReadModifyWriteCase<Uint8Adaptor>(globalObject, args, scope, typedArrayView, accessIndex, func);
     case Uint16ArrayType:
+        return atomicReadModifyWriteCase<Uint16Adaptor>(globalObject, args, scope, typedArrayView, accessIndex, func);
     case Uint32ArrayType:
-        break;
-    default:
-        throwTypeError(exec, scope, "Typed array argument must be an Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, or Uint32Array."_s);
-        return JSValue::encode(jsUndefined());
-    }
-    
-    JSArrayBufferView* typedArrayView = jsCast<JSArrayBufferView*>(typedArrayCell);
-    if (!typedArrayView->isShared()) {
-        throwTypeError(exec, scope, "Typed array argument must wrap a SharedArrayBuffer."_s);
-        return JSValue::encode(jsUndefined());
-    }
-    
-    unsigned accessIndex = validatedAccessIndex(vm, exec, args[1], typedArrayView);
-    RETURN_IF_EXCEPTION(scope, JSValue::encode(jsUndefined()));
-    
-    switch (type) {
-    case Int8ArrayType:
-        return atomicOperationWithArgsCase<Int8Adaptor>(exec, args, scope, typedArrayView, accessIndex, func);
-    case Int16ArrayType:
-        return atomicOperationWithArgsCase<Int16Adaptor>(exec, args, scope, typedArrayView, accessIndex, func);
-    case Int32ArrayType:
-        return atomicOperationWithArgsCase<Int32Adaptor>(exec, args, scope, typedArrayView, accessIndex, func);
-    case Uint8ArrayType:
-        return atomicOperationWithArgsCase<Uint8Adaptor>(exec, args, scope, typedArrayView, accessIndex, func);
-    case Uint16ArrayType:
-        return atomicOperationWithArgsCase<Uint16Adaptor>(exec, args, scope, typedArrayView, accessIndex, func);
-    case Uint32ArrayType:
-        return atomicOperationWithArgsCase<Uint32Adaptor>(exec, args, scope, typedArrayView, accessIndex, func);
+        return atomicReadModifyWriteCase<Uint32Adaptor>(globalObject, args, scope, typedArrayView, accessIndex, func);
     default:
         RELEASE_ASSERT_NOT_REACHED();
         return JSValue::encode(jsUndefined());
@@ -186,16 +217,16 @@ EncodedJSValue atomicOperationWithArgs(VM& vm, ExecState* exec, const JSValue* a
 }
 
 template<typename Func>
-EncodedJSValue atomicOperationWithArgs(ExecState* exec, const Func& func)
+EncodedJSValue atomicReadModifyWrite(JSGlobalObject* globalObject, CallFrame* callFrame, const Func& func)
 {
     JSValue args[2 + Func::numExtraArgs];
     for (unsigned i = 2 + Func::numExtraArgs; i--;)
-        args[i] = exec->argument(i);
-    return atomicOperationWithArgs(exec->vm(), exec, args, func);
+        args[i] = callFrame->argument(i);
+    return atomicReadModifyWrite(globalObject->vm(), globalObject, args, func);
 }
 
 struct AddFunc {
-    static const unsigned numExtraArgs = 1;
+    static constexpr unsigned numExtraArgs = 1;
     
     template<typename T>
     JSValue operator()(T* ptr, const double* args) const
@@ -205,7 +236,7 @@ struct AddFunc {
 };
 
 struct AndFunc {
-    static const unsigned numExtraArgs = 1;
+    static constexpr unsigned numExtraArgs = 1;
     
     template<typename T>
     JSValue operator()(T* ptr, const double* args) const
@@ -215,7 +246,7 @@ struct AndFunc {
 };
 
 struct CompareExchangeFunc {
-    static const unsigned numExtraArgs = 2;
+    static constexpr unsigned numExtraArgs = 2;
     
     template<typename T>
     JSValue operator()(T* ptr, const double* args) const
@@ -227,7 +258,7 @@ struct CompareExchangeFunc {
 };
 
 struct ExchangeFunc {
-    static const unsigned numExtraArgs = 1;
+    static constexpr unsigned numExtraArgs = 1;
     
     template<typename T>
     JSValue operator()(T* ptr, const double* args) const
@@ -237,7 +268,7 @@ struct ExchangeFunc {
 };
 
 struct LoadFunc {
-    static const unsigned numExtraArgs = 0;
+    static constexpr unsigned numExtraArgs = 0;
     
     template<typename T>
     JSValue operator()(T* ptr, const double*) const
@@ -247,7 +278,7 @@ struct LoadFunc {
 };
 
 struct OrFunc {
-    static const unsigned numExtraArgs = 1;
+    static constexpr unsigned numExtraArgs = 1;
     
     template<typename T>
     JSValue operator()(T* ptr, const double* args) const
@@ -257,7 +288,7 @@ struct OrFunc {
 };
 
 struct StoreFunc {
-    static const unsigned numExtraArgs = 1;
+    static constexpr unsigned numExtraArgs = 1;
     
     template<typename T>
     JSValue operator()(T* ptr, const double* args) const
@@ -270,7 +301,7 @@ struct StoreFunc {
 };
 
 struct SubFunc {
-    static const unsigned numExtraArgs = 1;
+    static constexpr unsigned numExtraArgs = 1;
     
     template<typename T>
     JSValue operator()(T* ptr, const double* args) const
@@ -280,7 +311,7 @@ struct SubFunc {
 };
 
 struct XorFunc {
-    static const unsigned numExtraArgs = 1;
+    static constexpr unsigned numExtraArgs = 1;
     
     template<typename T>
     JSValue operator()(T* ptr, const double* args) const
@@ -289,12 +320,12 @@ struct XorFunc {
     }
 };
 
-EncodedJSValue isLockFree(ExecState* exec, JSValue arg)
+EncodedJSValue isLockFree(JSGlobalObject* globalObject, JSValue arg)
 {
-    VM& vm = exec->vm();
+    VM& vm = globalObject->vm();
     auto scope = DECLARE_THROW_SCOPE(vm);
 
-    int32_t size = arg.toInt32(exec);
+    int32_t size = arg.toInt32(globalObject);
     RETURN_IF_EXCEPTION(scope, JSValue::encode(jsUndefined()));
     
     bool result;
@@ -313,98 +344,84 @@ EncodedJSValue isLockFree(ExecState* exec, JSValue arg)
 
 } // anonymous namespace
 
-EncodedJSValue JSC_HOST_CALL atomicsFuncAdd(ExecState* exec)
+JSC_DEFINE_HOST_FUNCTION(atomicsFuncAdd, (JSGlobalObject* globalObject, CallFrame* callFrame))
 {
-    return atomicOperationWithArgs(exec, AddFunc());
+    return atomicReadModifyWrite(globalObject, callFrame, AddFunc());
 }
 
-EncodedJSValue JSC_HOST_CALL atomicsFuncAnd(ExecState* exec)
+JSC_DEFINE_HOST_FUNCTION(atomicsFuncAnd, (JSGlobalObject* globalObject, CallFrame* callFrame))
 {
-    return atomicOperationWithArgs(exec, AndFunc());
+    return atomicReadModifyWrite(globalObject, callFrame, AndFunc());
 }
 
-EncodedJSValue JSC_HOST_CALL atomicsFuncCompareExchange(ExecState* exec)
+JSC_DEFINE_HOST_FUNCTION(atomicsFuncCompareExchange, (JSGlobalObject* globalObject, CallFrame* callFrame))
 {
-    return atomicOperationWithArgs(exec, CompareExchangeFunc());
+    return atomicReadModifyWrite(globalObject, callFrame, CompareExchangeFunc());
 }
 
-EncodedJSValue JSC_HOST_CALL atomicsFuncExchange(ExecState* exec)
+JSC_DEFINE_HOST_FUNCTION(atomicsFuncExchange, (JSGlobalObject* globalObject, CallFrame* callFrame))
 {
-    return atomicOperationWithArgs(exec, ExchangeFunc());
+    return atomicReadModifyWrite(globalObject, callFrame, ExchangeFunc());
 }
 
-EncodedJSValue JSC_HOST_CALL atomicsFuncIsLockFree(ExecState* exec)
+JSC_DEFINE_HOST_FUNCTION(atomicsFuncIsLockFree, (JSGlobalObject* globalObject, CallFrame* callFrame))
 {
-    return isLockFree(exec, exec->argument(0));
+    return isLockFree(globalObject, callFrame->argument(0));
 }
 
-EncodedJSValue JSC_HOST_CALL atomicsFuncLoad(ExecState* exec)
+JSC_DEFINE_HOST_FUNCTION(atomicsFuncLoad, (JSGlobalObject* globalObject, CallFrame* callFrame))
 {
-    return atomicOperationWithArgs(exec, LoadFunc());
+    return atomicReadModifyWrite(globalObject, callFrame, LoadFunc());
 }
 
-EncodedJSValue JSC_HOST_CALL atomicsFuncOr(ExecState* exec)
+JSC_DEFINE_HOST_FUNCTION(atomicsFuncOr, (JSGlobalObject* globalObject, CallFrame* callFrame))
 {
-    return atomicOperationWithArgs(exec, OrFunc());
+    return atomicReadModifyWrite(globalObject, callFrame, OrFunc());
 }
 
-EncodedJSValue JSC_HOST_CALL atomicsFuncStore(ExecState* exec)
+JSC_DEFINE_HOST_FUNCTION(atomicsFuncStore, (JSGlobalObject* globalObject, CallFrame* callFrame))
 {
-    return atomicOperationWithArgs(exec, StoreFunc());
+    return atomicReadModifyWrite(globalObject, callFrame, StoreFunc());
 }
 
-EncodedJSValue JSC_HOST_CALL atomicsFuncSub(ExecState* exec)
+JSC_DEFINE_HOST_FUNCTION(atomicsFuncSub, (JSGlobalObject* globalObject, CallFrame* callFrame))
 {
-    return atomicOperationWithArgs(exec, SubFunc());
+    return atomicReadModifyWrite(globalObject, callFrame, SubFunc());
 }
 
-EncodedJSValue JSC_HOST_CALL atomicsFuncWait(ExecState* exec)
+JSC_DEFINE_HOST_FUNCTION(atomicsFuncWait, (JSGlobalObject* globalObject, CallFrame* callFrame))
 {
-    VM& vm = exec->vm();
+    VM& vm = globalObject->vm();
     auto scope = DECLARE_THROW_SCOPE(vm);
-    
-    JSInt32Array* typedArray = jsDynamicCast<JSInt32Array*>(vm, exec->argument(0));
-    if (!typedArray) {
-        throwTypeError(exec, scope, "Typed array for wait/wake must be an Int32Array."_s);
-        return JSValue::encode(jsUndefined());
-    }
-    
+
+    auto* typedArrayBuffer = validateIntegerTypedArray<TypedArrayOperationMode::Write>(globalObject, callFrame->argument(0));
+    RETURN_IF_EXCEPTION(scope, { });
+    auto* typedArray = jsCast<JSInt32Array*>(typedArrayBuffer);
+
     if (!typedArray->isShared()) {
-        throwTypeError(exec, scope, "Typed array for wait/wake must wrap a SharedArrayBuffer."_s);
+        throwTypeError(globalObject, scope, "Typed array for wait/notify must wrap a SharedArrayBuffer."_s);
         return JSValue::encode(jsUndefined());
     }
 
-    unsigned accessIndex = validatedAccessIndex(vm, exec, exec->argument(1), typedArray);
-    RETURN_IF_EXCEPTION(scope, JSValue::encode(jsUndefined()));
-    
+    unsigned accessIndex = validateAtomicAccess(vm, globalObject, typedArray, callFrame->argument(1));
+    RETURN_IF_EXCEPTION(scope, { });
+
     int32_t* ptr = typedArray->typedVector() + accessIndex;
-    
-    int32_t expectedValue = exec->argument(2).toInt32(exec);
+
+    int32_t expectedValue = callFrame->argument(2).toInt32(globalObject);
     RETURN_IF_EXCEPTION(scope, JSValue::encode(jsUndefined()));
-    
-    double timeoutInMilliseconds = exec->argument(3).toNumber(exec);
+
+    double timeoutInMilliseconds = callFrame->argument(3).toNumber(globalObject);
     RETURN_IF_EXCEPTION(scope, JSValue::encode(jsUndefined()));
-    
+    Seconds timeout = Seconds::infinity();
+    if (!std::isnan(timeoutInMilliseconds))
+        timeout = std::max(Seconds::fromMilliseconds(timeoutInMilliseconds), 0_s);
+
     if (!vm.m_typedArrayController->isAtomicsWaitAllowedOnCurrentThread()) {
-        throwTypeError(exec, scope, "Atomics.wait cannot be called from the current thread."_s);
+        throwTypeError(globalObject, scope, "Atomics.wait cannot be called from the current thread."_s);
         return JSValue::encode(jsUndefined());
     }
-    
-    Seconds timeout = Seconds::fromMilliseconds(timeoutInMilliseconds);
 
-    // This covers the proposed rule:
-    //
-    // 4. If timeout is not provided or is undefined then let t be +inf. Otherwise:
-    //     a. Let q be ? ToNumber(timeout).
-    //     b. If q is NaN then let t be +inf, otherwise let t be max(0, q).
-    //
-    // exec->argument(3) returns undefined if it's not provided and ToNumber(undefined) returns NaN,
-    // so NaN is the only special case.
-    if (!std::isnan(timeout))
-        timeout = std::max(0_s, timeout);
-    else
-        timeout = Seconds::infinity();
-    
     bool didPassValidation = false;
     ParkingLot::ParkResult result;
     {
@@ -418,131 +435,139 @@ EncodedJSValue JSC_HOST_CALL atomicsFuncWait(ExecState* exec)
             [] () { },
             MonotonicTime::now() + timeout);
     }
-    const char* resultString;
     if (!didPassValidation)
-        resultString = "not-equal";
-    else if (!result.wasUnparked)
-        resultString = "timed-out";
-    else
-        resultString = "ok";
-    return JSValue::encode(jsString(exec, resultString));
+        return JSValue::encode(vm.smallStrings.notEqualString());
+    if (!result.wasUnparked)
+        return JSValue::encode(vm.smallStrings.timedOutString());
+    return JSValue::encode(vm.smallStrings.okString());
 }
 
-EncodedJSValue JSC_HOST_CALL atomicsFuncWake(ExecState* exec)
+JSC_DEFINE_HOST_FUNCTION(atomicsFuncNotify, (JSGlobalObject* globalObject, CallFrame* callFrame))
 {
-    VM& vm = exec->vm();
+    VM& vm = globalObject->vm();
     auto scope = DECLARE_THROW_SCOPE(vm);
-    
-    JSInt32Array* typedArray = jsDynamicCast<JSInt32Array*>(vm, exec->argument(0));
-    if (!typedArray) {
-        throwTypeError(exec, scope, "Typed array for wait/wake must be an Int32Array."_s);
-        return JSValue::encode(jsUndefined());
-    }
-    
-    if (!typedArray->isShared()) {
-        throwTypeError(exec, scope, "Typed array for wait/wake must wrap a SharedArrayBuffer."_s);
-        return JSValue::encode(jsUndefined());
-    }
 
-    unsigned accessIndex = validatedAccessIndex(vm, exec, exec->argument(1), typedArray);
-    RETURN_IF_EXCEPTION(scope, JSValue::encode(jsUndefined()));
-    
-    int32_t* ptr = typedArray->typedVector() + accessIndex;
-    
-    JSValue countValue = exec->argument(2);
+    auto* typedArrayBuffer = validateIntegerTypedArray<TypedArrayOperationMode::Write>(globalObject, callFrame->argument(0));
+    RETURN_IF_EXCEPTION(scope, { });
+    auto* typedArray = jsCast<JSInt32Array*>(typedArrayBuffer);
+
+    unsigned accessIndex = validateAtomicAccess(vm, globalObject, typedArray, callFrame->argument(1));
+    RETURN_IF_EXCEPTION(scope, { });
+
+    JSValue countValue = callFrame->argument(2);
     unsigned count = UINT_MAX;
     if (!countValue.isUndefined()) {
-        int32_t countInt = countValue.toInt32(exec);
-        RETURN_IF_EXCEPTION(scope, JSValue::encode(jsUndefined()));
-        count = std::max(0, countInt);
+        double countInt = countValue.toIntegerOrInfinity(globalObject);
+        RETURN_IF_EXCEPTION(scope, { });
+        double countDouble = std::max(0.0, countInt);
+        if (countDouble < UINT_MAX)
+            count = static_cast<unsigned>(countDouble);
     }
 
+    if (!typedArray->isShared())
+        return JSValue::encode(jsNumber(0));
+
+    int32_t* ptr = typedArray->typedVector() + accessIndex;
     return JSValue::encode(jsNumber(ParkingLot::unparkCount(ptr, count)));
 }
 
-EncodedJSValue JSC_HOST_CALL atomicsFuncXor(ExecState* exec)
+JSC_DEFINE_HOST_FUNCTION(atomicsFuncXor, (JSGlobalObject* globalObject, CallFrame* callFrame))
 {
-    return atomicOperationWithArgs(exec, XorFunc());
+    return atomicReadModifyWrite(globalObject, callFrame, XorFunc());
 }
 
-EncodedJSValue JIT_OPERATION operationAtomicsAdd(ExecState* exec, EncodedJSValue base, EncodedJSValue index, EncodedJSValue operand)
+IGNORE_WARNINGS_BEGIN("frame-address")
+
+JSC_DEFINE_JIT_OPERATION(operationAtomicsAdd, EncodedJSValue, (JSGlobalObject* globalObject, EncodedJSValue base, EncodedJSValue index, EncodedJSValue operand))
 {
-    VM& vm = exec->vm();
-    NativeCallFrameTracer tracer(&vm, exec);
+    VM& vm = globalObject->vm();
+    CallFrame* callFrame = DECLARE_CALL_FRAME(vm);
+    JITOperationPrologueCallFrameTracer tracer(vm, callFrame);
     JSValue args[] = {JSValue::decode(base), JSValue::decode(index), JSValue::decode(operand)};
-    return atomicOperationWithArgs(vm, exec, args, AddFunc());
+    return atomicReadModifyWrite(vm, globalObject, args, AddFunc());
 }
 
-EncodedJSValue JIT_OPERATION operationAtomicsAnd(ExecState* exec, EncodedJSValue base, EncodedJSValue index, EncodedJSValue operand)
+JSC_DEFINE_JIT_OPERATION(operationAtomicsAnd, EncodedJSValue, (JSGlobalObject* globalObject, EncodedJSValue base, EncodedJSValue index, EncodedJSValue operand))
 {
-    VM& vm = exec->vm();
-    NativeCallFrameTracer tracer(&vm, exec);
+    VM& vm = globalObject->vm();
+    CallFrame* callFrame = DECLARE_CALL_FRAME(vm);
+    JITOperationPrologueCallFrameTracer tracer(vm, callFrame);
     JSValue args[] = {JSValue::decode(base), JSValue::decode(index), JSValue::decode(operand)};
-    return atomicOperationWithArgs(vm, exec, args, AndFunc());
+    return atomicReadModifyWrite(vm, globalObject, args, AndFunc());
 }
 
-EncodedJSValue JIT_OPERATION operationAtomicsCompareExchange(ExecState* exec, EncodedJSValue base, EncodedJSValue index, EncodedJSValue expected, EncodedJSValue newValue)
+JSC_DEFINE_JIT_OPERATION(operationAtomicsCompareExchange, EncodedJSValue, (JSGlobalObject* globalObject, EncodedJSValue base, EncodedJSValue index, EncodedJSValue expected, EncodedJSValue newValue))
 {
-    VM& vm = exec->vm();
-    NativeCallFrameTracer tracer(&vm, exec);
+    VM& vm = globalObject->vm();
+    CallFrame* callFrame = DECLARE_CALL_FRAME(vm);
+    JITOperationPrologueCallFrameTracer tracer(vm, callFrame);
     JSValue args[] = {JSValue::decode(base), JSValue::decode(index), JSValue::decode(expected), JSValue::decode(newValue)};
-    return atomicOperationWithArgs(vm, exec, args, CompareExchangeFunc());
+    return atomicReadModifyWrite(vm, globalObject, args, CompareExchangeFunc());
 }
 
-EncodedJSValue JIT_OPERATION operationAtomicsExchange(ExecState* exec, EncodedJSValue base, EncodedJSValue index, EncodedJSValue operand)
+JSC_DEFINE_JIT_OPERATION(operationAtomicsExchange, EncodedJSValue, (JSGlobalObject* globalObject, EncodedJSValue base, EncodedJSValue index, EncodedJSValue operand))
 {
-    VM& vm = exec->vm();
-    NativeCallFrameTracer tracer(&vm, exec);
+    VM& vm = globalObject->vm();
+    CallFrame* callFrame = DECLARE_CALL_FRAME(vm);
+    JITOperationPrologueCallFrameTracer tracer(vm, callFrame);
     JSValue args[] = {JSValue::decode(base), JSValue::decode(index), JSValue::decode(operand)};
-    return atomicOperationWithArgs(vm, exec, args, ExchangeFunc());
+    return atomicReadModifyWrite(vm, globalObject, args, ExchangeFunc());
 }
 
-EncodedJSValue JIT_OPERATION operationAtomicsIsLockFree(ExecState* exec, EncodedJSValue size)
+JSC_DEFINE_JIT_OPERATION(operationAtomicsIsLockFree, EncodedJSValue, (JSGlobalObject* globalObject, EncodedJSValue size))
 {
-    VM& vm = exec->vm();
-    NativeCallFrameTracer tracer(&vm, exec);
-    return isLockFree(exec, JSValue::decode(size));
+    VM& vm = globalObject->vm();
+    CallFrame* callFrame = DECLARE_CALL_FRAME(vm);
+    JITOperationPrologueCallFrameTracer tracer(vm, callFrame);
+    return isLockFree(globalObject, JSValue::decode(size));
 }
 
-EncodedJSValue JIT_OPERATION operationAtomicsLoad(ExecState* exec, EncodedJSValue base, EncodedJSValue index)
+JSC_DEFINE_JIT_OPERATION(operationAtomicsLoad, EncodedJSValue, (JSGlobalObject* globalObject, EncodedJSValue base, EncodedJSValue index))
 {
-    VM& vm = exec->vm();
-    NativeCallFrameTracer tracer(&vm, exec);
+    VM& vm = globalObject->vm();
+    CallFrame* callFrame = DECLARE_CALL_FRAME(vm);
+    JITOperationPrologueCallFrameTracer tracer(vm, callFrame);
     JSValue args[] = {JSValue::decode(base), JSValue::decode(index)};
-    return atomicOperationWithArgs(vm, exec, args, LoadFunc());
+    return atomicReadModifyWrite(vm, globalObject, args, LoadFunc());
 }
 
-EncodedJSValue JIT_OPERATION operationAtomicsOr(ExecState* exec, EncodedJSValue base, EncodedJSValue index, EncodedJSValue operand)
+JSC_DEFINE_JIT_OPERATION(operationAtomicsOr, EncodedJSValue, (JSGlobalObject* globalObject, EncodedJSValue base, EncodedJSValue index, EncodedJSValue operand))
 {
-    VM& vm = exec->vm();
-    NativeCallFrameTracer tracer(&vm, exec);
+    VM& vm = globalObject->vm();
+    CallFrame* callFrame = DECLARE_CALL_FRAME(vm);
+    JITOperationPrologueCallFrameTracer tracer(vm, callFrame);
     JSValue args[] = {JSValue::decode(base), JSValue::decode(index), JSValue::decode(operand)};
-    return atomicOperationWithArgs(vm, exec, args, OrFunc());
+    return atomicReadModifyWrite(vm, globalObject, args, OrFunc());
 }
 
-EncodedJSValue JIT_OPERATION operationAtomicsStore(ExecState* exec, EncodedJSValue base, EncodedJSValue index, EncodedJSValue operand)
+JSC_DEFINE_JIT_OPERATION(operationAtomicsStore, EncodedJSValue, (JSGlobalObject* globalObject, EncodedJSValue base, EncodedJSValue index, EncodedJSValue operand))
 {
-    VM& vm = exec->vm();
-    NativeCallFrameTracer tracer(&vm, exec);
+    VM& vm = globalObject->vm();
+    CallFrame* callFrame = DECLARE_CALL_FRAME(vm);
+    JITOperationPrologueCallFrameTracer tracer(vm, callFrame);
     JSValue args[] = {JSValue::decode(base), JSValue::decode(index), JSValue::decode(operand)};
-    return atomicOperationWithArgs(vm, exec, args, StoreFunc());
+    return atomicReadModifyWrite(vm, globalObject, args, StoreFunc());
 }
 
-EncodedJSValue JIT_OPERATION operationAtomicsSub(ExecState* exec, EncodedJSValue base, EncodedJSValue index, EncodedJSValue operand)
+JSC_DEFINE_JIT_OPERATION(operationAtomicsSub, EncodedJSValue, (JSGlobalObject* globalObject, EncodedJSValue base, EncodedJSValue index, EncodedJSValue operand))
 {
-    VM& vm = exec->vm();
-    NativeCallFrameTracer tracer(&vm, exec);
+    VM& vm = globalObject->vm();
+    CallFrame* callFrame = DECLARE_CALL_FRAME(vm);
+    JITOperationPrologueCallFrameTracer tracer(vm, callFrame);
     JSValue args[] = {JSValue::decode(base), JSValue::decode(index), JSValue::decode(operand)};
-    return atomicOperationWithArgs(vm, exec, args, SubFunc());
+    return atomicReadModifyWrite(vm, globalObject, args, SubFunc());
 }
 
-EncodedJSValue JIT_OPERATION operationAtomicsXor(ExecState* exec, EncodedJSValue base, EncodedJSValue index, EncodedJSValue operand)
+JSC_DEFINE_JIT_OPERATION(operationAtomicsXor, EncodedJSValue, (JSGlobalObject* globalObject, EncodedJSValue base, EncodedJSValue index, EncodedJSValue operand))
 {
-    VM& vm = exec->vm();
-    NativeCallFrameTracer tracer(&vm, exec);
+    VM& vm = globalObject->vm();
+    CallFrame* callFrame = DECLARE_CALL_FRAME(vm);
+    JITOperationPrologueCallFrameTracer tracer(vm, callFrame);
     JSValue args[] = {JSValue::decode(base), JSValue::decode(index), JSValue::decode(operand)};
-    return atomicOperationWithArgs(vm, exec, args, XorFunc());
+    return atomicReadModifyWrite(vm, globalObject, args, XorFunc());
 }
+
+IGNORE_WARNINGS_END
 
 } // namespace JSC
 

@@ -2629,7 +2629,7 @@ static const char _wordcharData[65536] = {
 
 std::unique_ptr<CharacterClass> nonwordUnicodeIgnoreCaseCharCreate()
 {
-    auto characterClass = std::make_unique<CharacterClass>();
+    auto characterClass = makeUnique<CharacterClass>();
     characterClass->m_ranges.append(CharacterRange(0x00, 0x2f));
     characterClass->m_ranges.append(CharacterRange(0x3a, 0x40));
     characterClass->m_ranges.append(CharacterRange(0x5b, 0x5e));
@@ -2644,7 +2644,7 @@ std::unique_ptr<CharacterClass> nonwordUnicodeIgnoreCaseCharCreate()
 
 std::unique_ptr<CharacterClass> digitsCreate()
 {
-    auto characterClass = std::make_unique<CharacterClass>();
+    auto characterClass = makeUnique<CharacterClass>();
     characterClass->m_ranges.append(CharacterRange(0x30, 0x39));
     characterClass->m_characterWidths = CharacterClassWidths::HasBMPChars;
     return characterClass;
@@ -2652,7 +2652,7 @@ std::unique_ptr<CharacterClass> digitsCreate()
 
 std::unique_ptr<CharacterClass> spacesCreate()
 {
-    auto characterClass = std::make_unique<CharacterClass>(_spacesData, false);
+    auto characterClass = makeUnique<CharacterClass>(_spacesData, false);
     characterClass->m_ranges.append(CharacterRange(0x09, 0x0d));
     characterClass->m_matches.append(0x20);
     characterClass->m_matchesUnicode.append(0x00a0);
@@ -2670,7 +2670,7 @@ std::unique_ptr<CharacterClass> spacesCreate()
 
 std::unique_ptr<CharacterClass> nondigitsCreate()
 {
-    auto characterClass = std::make_unique<CharacterClass>();
+    auto characterClass = makeUnique<CharacterClass>();
     characterClass->m_ranges.append(CharacterRange(0x00, 0x2f));
     characterClass->m_ranges.append(CharacterRange(0x3a, 0x7f));
     characterClass->m_rangesUnicode.append(CharacterRange(0x0080, 0x10ffff));
@@ -2680,7 +2680,7 @@ std::unique_ptr<CharacterClass> nondigitsCreate()
 
 std::unique_ptr<CharacterClass> nonspacesCreate()
 {
-    auto characterClass = std::make_unique<CharacterClass>(_spacesData, true);
+    auto characterClass = makeUnique<CharacterClass>(_spacesData, true);
     characterClass->m_ranges.append(CharacterRange(0x00, 0x08));
     characterClass->m_ranges.append(CharacterRange(0x0e, 0x1f));
     characterClass->m_ranges.append(CharacterRange(0x21, 0x7f));
@@ -2700,7 +2700,7 @@ std::unique_ptr<CharacterClass> nonspacesCreate()
 
 std::unique_ptr<CharacterClass> nonwordcharCreate()
 {
-    auto characterClass = std::make_unique<CharacterClass>(_wordcharData, true);
+    auto characterClass = makeUnique<CharacterClass>(_wordcharData, true);
     characterClass->m_ranges.append(CharacterRange(0x00, 0x2f));
     characterClass->m_ranges.append(CharacterRange(0x3a, 0x40));
     characterClass->m_ranges.append(CharacterRange(0x5b, 0x5e));
@@ -2713,7 +2713,7 @@ std::unique_ptr<CharacterClass> nonwordcharCreate()
 
 std::unique_ptr<CharacterClass> newlineCreate()
 {
-    auto characterClass = std::make_unique<CharacterClass>();
+    auto characterClass = makeUnique<CharacterClass>();
     characterClass->m_matches.append(0x0a);
     characterClass->m_matches.append(0x0d);
     characterClass->m_matchesUnicode.append(0x2028);
@@ -2724,7 +2724,7 @@ std::unique_ptr<CharacterClass> newlineCreate()
 
 std::unique_ptr<CharacterClass> wordcharCreate()
 {
-    auto characterClass = std::make_unique<CharacterClass>(_wordcharData, false);
+    auto characterClass = makeUnique<CharacterClass>(_wordcharData, false);
     characterClass->m_ranges.append(CharacterRange(0x30, 0x39));
     characterClass->m_ranges.append(CharacterRange(0x41, 0x5a));
     characterClass->m_matches.append(0x5f);
@@ -2735,7 +2735,7 @@ std::unique_ptr<CharacterClass> wordcharCreate()
 
 std::unique_ptr<CharacterClass> wordUnicodeIgnoreCaseCharCreate()
 {
-    auto characterClass = std::make_unique<CharacterClass>();
+    auto characterClass = makeUnique<CharacterClass>();
     characterClass->m_ranges.append(CharacterRange(0x30, 0x39));
     characterClass->m_ranges.append(CharacterRange(0x41, 0x5a));
     characterClass->m_matches.append(0x5f);

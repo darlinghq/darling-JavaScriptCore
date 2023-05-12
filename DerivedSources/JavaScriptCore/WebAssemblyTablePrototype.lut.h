@@ -16,10 +16,10 @@ static const struct CompactHashIndex prototypeTableWebAssemblyTableIndex[8] = {
 };
 
 static const struct HashTableValue prototypeTableWebAssemblyTableValues[4] = {
-   { "length", static_cast<unsigned>(PropertyAttribute::DontEnum|PropertyAttribute::Accessor), NoIntrinsic, { (intptr_t)static_cast<RawNativeFunction>(webAssemblyTableProtoFuncLength), (intptr_t)static_cast<RawNativeFunction>(nullptr) } },
-   { "grow", static_cast<unsigned>(PropertyAttribute::DontEnum|PropertyAttribute::Function), NoIntrinsic, { (intptr_t)static_cast<RawNativeFunction>(webAssemblyTableProtoFuncGrow), (intptr_t)(1) } },
-   { "get", static_cast<unsigned>(PropertyAttribute::DontEnum|PropertyAttribute::Function), NoIntrinsic, { (intptr_t)static_cast<RawNativeFunction>(webAssemblyTableProtoFuncGet), (intptr_t)(1) } },
-   { "set", static_cast<unsigned>(PropertyAttribute::DontEnum|PropertyAttribute::Function), NoIntrinsic, { (intptr_t)static_cast<RawNativeFunction>(webAssemblyTableProtoFuncSet), (intptr_t)(2) } },
+   { "length", static_cast<unsigned>(PropertyAttribute::Accessor), NoIntrinsic, { (intptr_t)static_cast<RawNativeFunction>(webAssemblyTableProtoFuncLength), (intptr_t)static_cast<RawNativeFunction>(nullptr) } },
+   { "grow", static_cast<unsigned>(PropertyAttribute::Function), NoIntrinsic, { (intptr_t)static_cast<RawNativeFunction>(webAssemblyTableProtoFuncGrow), (intptr_t)(1) } },
+   { "get", static_cast<unsigned>(PropertyAttribute::Function), NoIntrinsic, { (intptr_t)static_cast<RawNativeFunction>(webAssemblyTableProtoFuncGet), (intptr_t)(1) } },
+   { "set", static_cast<unsigned>(PropertyAttribute::Function), NoIntrinsic, { (intptr_t)static_cast<RawNativeFunction>(webAssemblyTableProtoFuncSet), (intptr_t)(2) } },
 };
 
 static const struct HashTable prototypeTableWebAssemblyTable =

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2012-2019 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -44,31 +44,30 @@ void JSSymbolTableObject::visitChildren(JSCell* cell, SlotVisitor& visitor)
     visitor.append(thisObject->m_symbolTable);
 }
 
-bool JSSymbolTableObject::deleteProperty(JSCell* cell, ExecState* exec, PropertyName propertyName)
+bool JSSymbolTableObject::deleteProperty(JSCell* cell, JSGlobalObject* globalObject, PropertyName propertyName, DeletePropertySlot& slot)
 {
     JSSymbolTableObject* thisObject = jsCast<JSSymbolTableObject*>(cell);
     if (thisObject->symbolTable()->contains(propertyName.uid()))
         return false;
 
-    return Base::deleteProperty(thisObject, exec, propertyName);
+    return Base::deleteProperty(thisObject, globalObject, propertyName, slot);
 }
 
-void JSSymbolTableObject::getOwnNonIndexPropertyNames(JSObject* object, ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
+void JSSymbolTableObject::getOwnSpecialPropertyNames(JSObject* object, JSGlobalObject* globalObject, PropertyNameArray& propertyNames, DontEnumPropertiesMode mode)
 {
+    VM& vm = globalObject->vm();
     JSSymbolTableObject* thisObject = jsCast<JSSymbolTableObject*>(object);
     {
         ConcurrentJSLocker locker(thisObject->symbolTable()->m_lock);
         SymbolTable::Map::iterator end = thisObject->symbolTable()->end(locker);
         for (SymbolTable::Map::iterator it = thisObject->symbolTable()->begin(locker); it != end; ++it) {
-            if (!(it->value.getAttributes() & PropertyAttribute::DontEnum) || mode.includeDontEnumProperties()) {
+            if (mode == DontEnumPropertiesMode::Include || !it->value.isDontEnum()) {
                 if (it->key->isSymbol() && !propertyNames.includeSymbolProperties())
                     continue;
-                propertyNames.add(Identifier::fromUid(exec, it->key.get()));
+                propertyNames.add(Identifier::fromUid(vm, it->key.get()));
             }
         }
     }
-
-    Base::getOwnNonIndexPropertyNames(thisObject, exec, propertyNames, mode);
 }
 
 } // namespace JSC

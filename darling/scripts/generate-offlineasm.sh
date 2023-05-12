@@ -6,20 +6,24 @@ if [ "$(uname -s)" == "Darwin" ]; then
 	exit 1
 fi
 
-# ***
-# edit these before running!
-# ***
-DARLING_SDK_ROOT="${HOME}/dsdk/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
-DARLING_BUILD_ROOT="${HOME}/build/darling"
+export SRCROOT=$(cd ../.. && pwd)
+SCRIPT_DIR=$(pwd)
+DARLING_ROOT=$(cd ${SRCROOT}/../../.. && pwd)
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" >/dev/null 2>&1; pwd -P)"
+if [[ -z "$DARLING_BUILD_ROOT" ]]; then
+	DARLING_BUILD_ROOT="$DARLING_ROOT/build"
+fi
+
+if [[ -z "$DARLING_SDK_ROOT" ]]; then
+	DARLING_SDK_ROOT="${DARLING_ROOT}/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+fi
+
+FRAMEWORK_HEADER_ROOT="${DARLING_ROOT}/framework-include"
+DERIVED_DIR="${SRCROOT}/DerivedSources/JavaScriptCore"
+
 export ARCHS=(X86_64 C_LOOP)
 export CONFIGS=(debug release)
-export SRCROOT="${SCRIPT_DIR}/../../.."
-DERIVED_DIR="${SRCROOT}/DerivedSources/JavaScriptCore"
-DARLING_ROOT="${SRCROOT}/../../.."
-SDKROOT="${DARLING_ROOT}/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
-FRAMEWORK_HEADER_ROOT="${DARLING_ROOT}/framework-include"
+BUILD_VARIANTS=normal
 DEFINITIONS=(
 	# IMPORTANT! keep this in sync with the definitions in CMakeLists.txt
 	ENABLE_3D_TRANSFORMS
@@ -166,7 +170,7 @@ INCLUDES=(
 	"${SRCROOT}/wasm/js"
 	"${SRCROOT}/yarr"
 
-	"${SRCROOT}/include"
+	"${SRCROOT}/darling/include"
 )
 CFLAGS=(
 	-std=gnu++17
@@ -175,7 +179,7 @@ CFLAGS=(
 	"-isystem${DARLING_ROOT}/src/external/libcxx/include"
 	-B "${DARLING_BUILD_ROOT}/src/external/cctools-port/cctools/ld64/src/"
 	-B "${DARLING_BUILD_ROOT}/src/external/cctools-port/cctools/misc/"
-	"-fuse-ld=${DARLING_BUILD_ROOT}/src/external/cctools-port/cctools/ld64/src/x86_64-apple-darwin19-ld"
+	"-fuse-ld=${DARLING_BUILD_ROOT}/src/external/cctools-port/cctools/ld64/src/x86_64-apple-darwin20-ld"
 )
 
 DEFINITIONS_release=(
@@ -268,28 +272,37 @@ for ARCH in "${ARCHS[@]}"; do
 		mkdir -p "${LLINT_DIR}"
 
 		echo "  Generating ${ARCH}/${CONFIG}/LLIntDesiredSettings.h"
-		/usr/bin/env ruby -W0 "${SRCROOT}/offlineasm/generate_settings_extractor.rb" "-I${DERIVED_DIR}" "${SRCROOT}/llint/LowLevelInterpreter.asm" "${LLINT_DIR}/LLIntDesiredSettings.h" "${ARCH}" || die
+		/usr/bin/env ruby "${SRCROOT}/offlineasm/generate_settings_extractor.rb" "-I${DERIVED_DIR}" "${SRCROOT}/llint/LowLevelInterpreter.asm" "${LLINT_DIR}/LLIntDesiredSettings.h" "${ARCH}" || die
 
 		echo "  Compiling ${ARCH}/${CONFIG}/JSCLLIntSettingsExtractor"
 		clang "${CFLAGS_ARCH_CONFIG[@]}" "-I${LLINT_DIR}" "${SRCROOT}/llint/LLIntSettingsExtractor.cpp" -o "${LLINT_DIR}/JSCLLIntSettingsExtractor" || die
 
 		echo "  Generating ${ARCH}/${CONFIG}/LLIntDesiredOffsets.h"
-		/usr/bin/env ruby -W0 "${SRCROOT}/offlineasm/generate_offset_extractor.rb" "-I${DERIVED_DIR}" "${SRCROOT}/llint/LowLevelInterpreter.asm" "${LLINT_DIR}/JSCLLIntSettingsExtractor" "${LLINT_DIR}/LLIntDesiredOffsets.h" "${ARCH}" || die
+		/usr/bin/env ruby "${SRCROOT}/offlineasm/generate_offset_extractor.rb" "-I${DERIVED_DIR}" "${SRCROOT}/llint/LowLevelInterpreter.asm" "${LLINT_DIR}/JSCLLIntSettingsExtractor" "${LLINT_DIR}/LLIntDesiredOffsets.h" "${ARCH}" "${BUILD_VARIANTS}" || die
 
 		echo "  Compiling ${ARCH}/${CONFIG}/JSCLLIntOffsetsExtractor"
 		clang "${CFLAGS_ARCH_CONFIG[@]}" "-I${LLINT_DIR}" "${SRCROOT}/llint/LLIntOffsetsExtractor.cpp" -o "${LLINT_DIR}/JSCLLIntOffsetsExtractor" || die
 
 		echo "  Generating ${ARCH}/${CONFIG}/LLIntAssembly.h"
-		/usr/bin/env ruby -W0 "${SRCROOT}/offlineasm/asm.rb" "-I${DERIVED_DIR}" "${SRCROOT}/llint/LowLevelInterpreter.asm" "${LLINT_DIR}/JSCLLIntOffsetsExtractor" "${LLINT_DIR}/LLIntAssembly.h" || die
+		/usr/bin/env ruby "${SRCROOT}/offlineasm/asm.rb" "-I${DERIVED_DIR}" "${SRCROOT}/llint/LowLevelInterpreter.asm" "${LLINT_DIR}/JSCLLIntOffsetsExtractor" "${LLINT_DIR}/LLIntAssembly.h" "${BUILD_VARIANTS}" || die
 	done
 done
 
-echo "Generating final LLIntAssembly.h"
-rm -f "${SRCROOT}/DerivedSources/JavaScriptCore/LLIntAssembly.h"
-touch "${SRCROOT}/DerivedSources/JavaScriptCore/LLIntAssembly.h"
 for ARCH in "${ARCHS[@]}"; do
 	for CONFIG in "${CONFIGS[@]}"; do
-		echo "// offlineasm code for ${ARCH}-${CONFIG}" >> "${SRCROOT}/DerivedSources/JavaScriptCore/LLIntAssembly.h"
-		cat "${SRCROOT}/LLIntOffsets/${ARCH}/${CONFIG}/LLIntAssembly.h" >> "${SRCROOT}/DerivedSources/JavaScriptCore/LLIntAssembly.h"
+		TMP_PATH="${DERIVED_DIR}/LLIntOffsets/${ARCH}/${CONFIG}"
+		rm -rf $TMP_PATH
+		mkdir -p "$TMP_PATH"
+
+		echo "// offlineasm code for ${ARCH}-${CONFIG}" >> "${TMP_PATH}/LLIntAssembly.h"
+		cat "${SRCROOT}/LLIntOffsets/${ARCH}/${CONFIG}/LLIntAssembly.h" >> "${TMP_PATH}/LLIntAssembly.h"
+
+		# The really weird thing about C_LOOP is that the script above implies that C_LOOP is only 
+		# required for i386, however, LowLevelInterpreter.cpp will fail to link on X86_64 without 
+		# the C_LOOP header
+		if [[ "$ARCH" = "X86_64" ]]; then
+			echo "// offlineasm code for C_LOOP-${CONFIG}" >> "${TMP_PATH}/LLIntAssembly.h"
+			cat "${SRCROOT}/LLIntOffsets/C_LOOP/${CONFIG}/LLIntAssembly.h" >> "${TMP_PATH}/LLIntAssembly.h"
+		fi
 	done
 done

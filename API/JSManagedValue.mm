@@ -35,18 +35,14 @@
 #import "JSValueInternal.h"
 #import "JSWeakValue.h"
 #import "WeakHandleOwner.h"
-#ifdef DARLING
-#import "ObjCRuntimeExtras.h"
-#else
 #import "ObjcRuntimeExtras.h"
-#endif
 #import "JSCInlines.h"
 #import <wtf/NeverDestroyed.h>
 
-class JSManagedValueHandleOwner : public JSC::WeakHandleOwner {
+class JSManagedValueHandleOwner final : public JSC::WeakHandleOwner {
 public:
-    void finalize(JSC::Handle<JSC::Unknown>, void* context) override;
-    bool isReachableFromOpaqueRoots(JSC::Handle<JSC::Unknown>, void* context, JSC::SlotVisitor&, const char**) override;
+    void finalize(JSC::Handle<JSC::Unknown>, void* context) final;
+    bool isReachableFromOpaqueRoots(JSC::Handle<JSC::Unknown>, void* context, JSC::SlotVisitor&, const char**) final;
 };
 
 static JSManagedValueHandleOwner& managedValueHandleOwner()
@@ -55,12 +51,16 @@ static JSManagedValueHandleOwner& managedValueHandleOwner()
     return jsManagedValueHandleOwner;
 }
 
+#if defined(DARLING) && __i386__
+@implementation JSManagedValue
+#else
 @implementation JSManagedValue {
     JSC::Weak<JSC::JSGlobalObject> m_globalObject;
     RefPtr<JSC::JSLock> m_lock;
     JSC::JSWeakValue m_weakValue;
     NSMapTable *m_owners;
 }
+#endif
 
 + (JSManagedValue *)managedValueWithValue:(JSValue *)value
 {
@@ -88,19 +88,18 @@ static JSManagedValueHandleOwner& managedValueHandleOwner()
     if (!value)
         return self;
 
-    JSC::ExecState* exec = toJS([value.context JSGlobalContextRef]);
-    JSC::JSGlobalObject* globalObject = exec->lexicalGlobalObject();
+    JSC::JSGlobalObject* globalObject = toJS([value.context JSGlobalContextRef]);
     auto& owner = managedValueHandleOwner();
     JSC::Weak<JSC::JSGlobalObject> weak(globalObject, &owner, (__bridge void*)self);
     m_globalObject.swap(weak);
 
-    m_lock = &exec->vm().apiLock();
+    m_lock = &globalObject->vm().apiLock();
 
     NSPointerFunctionsOptions weakIDOptions = NSPointerFunctionsWeakMemory | NSPointerFunctionsObjectPersonality;
     NSPointerFunctionsOptions integerOptions = NSPointerFunctionsOpaqueMemory | NSPointerFunctionsIntegerPersonality;
     m_owners = [[NSMapTable alloc] initWithKeyOptions:weakIDOptions valueOptions:integerOptions capacity:1];
 
-    JSC::JSValue jsValue = toJS(exec, [value JSValueRef]);
+    JSC::JSValue jsValue = toJS(globalObject, [value JSValueRef]);
     if (jsValue.isObject())
         m_weakValue.setObject(JSC::jsCast<JSC::JSObject*>(jsValue.asCell()), owner, (__bridge void*)self);
     else if (jsValue.isString())
@@ -161,8 +160,8 @@ static JSManagedValueHandleOwner& managedValueHandleOwner()
         return nil;
     if (m_weakValue.isClear())
         return nil;
-    JSC::ExecState* exec = m_globalObject->globalExec();
-    JSContext *context = [JSContext contextWithJSGlobalContextRef:toGlobalRef(exec)];
+    JSC::JSGlobalObject* globalObject = m_globalObject.get();
+    JSContext *context = [JSContext contextWithJSGlobalContextRef:toGlobalRef(globalObject)];
     JSC::JSValue value;
     if (m_weakValue.isPrimitive())
         value = m_weakValue.primitive();
@@ -170,7 +169,7 @@ static JSManagedValueHandleOwner& managedValueHandleOwner()
         value = m_weakValue.string();
     else
         value = m_weakValue.object();
-    return [JSValue valueWithJSValueRef:toRef(exec, value) inContext:context];
+    return [JSValue valueWithJSValueRef:toRef(globalObject, value) inContext:context];
 }
 
 - (void)disconnectValue

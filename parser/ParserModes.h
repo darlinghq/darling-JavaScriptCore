@@ -26,6 +26,7 @@
 #pragma once
 
 #include "ConstructAbility.h"
+#include "ConstructorKind.h"
 #include "Identifier.h"
 
 namespace JSC {
@@ -34,7 +35,6 @@ enum class JSParserStrictMode { NotStrict, Strict };
 enum class JSParserBuiltinMode { NotBuiltin, Builtin };
 enum class JSParserScriptMode { Classic, Module };
 
-enum class ConstructorKind { None, Base, Extends };
 enum class SuperBinding { Needed, NotNeeded };
 
 enum class CodeGenerationMode : uint8_t {
@@ -66,6 +66,7 @@ enum class SourceParseMode : uint8_t {
     AsyncGeneratorWrapperFunctionMode = 16,
     AsyncGeneratorWrapperMethodMode   = 17,
     GeneratorWrapperMethodMode        = 18,
+    ClassFieldInitializerMode         = 19,
 };
 
 class SourceParseModeSet { 
@@ -114,7 +115,8 @@ ALWAYS_INLINE bool isFunctionParseMode(SourceParseMode parseMode)
         SourceParseMode::AsyncArrowFunctionBodyMode,
         SourceParseMode::AsyncGeneratorBodyMode,
         SourceParseMode::AsyncGeneratorWrapperFunctionMode,
-        SourceParseMode::AsyncGeneratorWrapperMethodMode).contains(parseMode);
+        SourceParseMode::AsyncGeneratorWrapperMethodMode,
+        SourceParseMode::ClassFieldInitializerMode).contains(parseMode);
 } 
 
 ALWAYS_INLINE bool isAsyncFunctionParseMode(SourceParseMode parseMode) 
@@ -304,22 +306,22 @@ inline bool functionNameScopeIsDynamic(bool usesEval, bool isStrictMode)
 
 typedef uint16_t CodeFeatures;
 
-const CodeFeatures NoFeatures =                       0;
-const CodeFeatures EvalFeature =                 1 << 0;
-const CodeFeatures ArgumentsFeature =            1 << 1;
-const CodeFeatures WithFeature =                 1 << 2;
-const CodeFeatures ThisFeature =                 1 << 3;
-const CodeFeatures StrictModeFeature =           1 << 4;
-const CodeFeatures ShadowsArgumentsFeature =     1 << 5;
-const CodeFeatures ArrowFunctionFeature =        1 << 6;
-const CodeFeatures ArrowFunctionContextFeature = 1 << 7;
-const CodeFeatures SuperCallFeature =            1 << 8;
-const CodeFeatures SuperPropertyFeature =        1 << 9;
-const CodeFeatures NewTargetFeature =            1 << 10;
-const CodeFeatures NoEvalCacheFeature =          1 << 11;
+const CodeFeatures NoFeatures =                         0;
+const CodeFeatures EvalFeature =                   1 << 0;
+const CodeFeatures ArgumentsFeature =              1 << 1;
+const CodeFeatures WithFeature =                   1 << 2;
+const CodeFeatures ThisFeature =                   1 << 3;
+const CodeFeatures StrictModeFeature =             1 << 4;
+const CodeFeatures ShadowsArgumentsFeature =       1 << 5;
+const CodeFeatures ArrowFunctionFeature =          1 << 6;
+const CodeFeatures ArrowFunctionContextFeature =   1 << 7;
+const CodeFeatures SuperCallFeature =              1 << 8;
+const CodeFeatures SuperPropertyFeature =          1 << 9;
+const CodeFeatures NewTargetFeature =              1 << 10;
+const CodeFeatures NoEvalCacheFeature =            1 << 11;
+const CodeFeatures NonSimpleParameterListFeature = 1 << 12;
 
-const CodeFeatures AllFeatures = EvalFeature | ArgumentsFeature | WithFeature | ThisFeature | StrictModeFeature | ShadowsArgumentsFeature | ArrowFunctionFeature | ArrowFunctionContextFeature |
-    SuperCallFeature | SuperPropertyFeature | NewTargetFeature | NoEvalCacheFeature;
+const CodeFeatures AllFeatures = EvalFeature | ArgumentsFeature | WithFeature | ThisFeature | StrictModeFeature | ShadowsArgumentsFeature | ArrowFunctionFeature | ArrowFunctionContextFeature | SuperCallFeature | SuperPropertyFeature | NewTargetFeature | NoEvalCacheFeature | NonSimpleParameterListFeature;
 
 typedef uint8_t InnerArrowFunctionCodeFeatures;
     

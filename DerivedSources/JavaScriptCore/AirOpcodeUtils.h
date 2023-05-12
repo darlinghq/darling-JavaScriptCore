@@ -6250,6 +6250,12 @@ break;
 case Arg::Index:
 break;
 break;
+case Arg::SimpleAddr:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
 default:
 break;
 }
@@ -6324,6 +6330,12 @@ case Arg::CallArg:
 break;
 break;
 case Arg::Index:
+break;
+break;
+case Arg::SimpleAddr:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
 break;
 break;
 default:
@@ -6402,6 +6414,12 @@ break;
 case Arg::Index:
 break;
 break;
+case Arg::SimpleAddr:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
 default:
 break;
 }
@@ -6476,6 +6494,12 @@ case Arg::CallArg:
 break;
 break;
 case Arg::Index:
+break;
+break;
+case Arg::SimpleAddr:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
 break;
 break;
 default:
@@ -7922,6 +7946,30 @@ default:
 break;
 }
 break;
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::SimpleAddr:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
 default:
 break;
 }
@@ -7945,6 +7993,30 @@ case Arg::Index:
 OPGEN_RETURN(true);
 #endif
 break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::SimpleAddr:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
 break;
 default:
 break;
@@ -7986,6 +8058,30 @@ default:
 break;
 }
 break;
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::SimpleAddr:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
 default:
 break;
 }
@@ -8009,6 +8105,30 @@ case Arg::Index:
 OPGEN_RETURN(true);
 #endif
 break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::SimpleAddr:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
 break;
 default:
 break;
@@ -8050,6 +8170,30 @@ default:
 break;
 }
 break;
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::SimpleAddr:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
 default:
 break;
 }
@@ -8073,6 +8217,30 @@ case Arg::Index:
 OPGEN_RETURN(true);
 #endif
 break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::SimpleAddr:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
 break;
 default:
 break;
@@ -8114,6 +8282,30 @@ default:
 break;
 }
 break;
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::SimpleAddr:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
 default:
 break;
 }
@@ -8137,6 +8329,30 @@ case Arg::Index:
 OPGEN_RETURN(true);
 #endif
 break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::SimpleAddr:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
 break;
 default:
 break;
@@ -8617,6 +8833,366 @@ case Arg::Tmp:
 OPGEN_RETURN(true);
 #endif
 break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgOr8:
+switch (sizeof...(Arguments)) {
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::SimpleAddr:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgOr16:
+switch (sizeof...(Arguments)) {
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::SimpleAddr:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgOr32:
+switch (sizeof...(Arguments)) {
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::SimpleAddr:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgOr64:
+switch (sizeof...(Arguments)) {
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::SimpleAddr:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgClear8:
+switch (sizeof...(Arguments)) {
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::SimpleAddr:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgClear16:
+switch (sizeof...(Arguments)) {
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::SimpleAddr:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgClear32:
+switch (sizeof...(Arguments)) {
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::SimpleAddr:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgClear64:
+switch (sizeof...(Arguments)) {
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::SimpleAddr:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgXor8:
+switch (sizeof...(Arguments)) {
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::SimpleAddr:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgXor16:
+switch (sizeof...(Arguments)) {
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::SimpleAddr:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgXor32:
+switch (sizeof...(Arguments)) {
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::SimpleAddr:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::AtomicXchgXor64:
+switch (sizeof...(Arguments)) {
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::SimpleAddr:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Tmp:
+#if CPU(ARM64E)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
 break;
 default:
 break;
@@ -9252,6 +9828,106 @@ case Arg::Index:
 switch (opgenHiddenPtrIdentity(kinds)[2]) {
 case Arg::BitImm:
 #if CPU(X86_64)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::BranchTestBit64:
+switch (sizeof...(Arguments)) {
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::ResCond:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Imm:
+#if CPU(X86_64)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+case Arg::Tmp:
+#if CPU(X86_64)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+case Arg::Addr:
+case Arg::Stack:
+case Arg::CallArg:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Imm:
+#if CPU(X86_64)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+default:
+break;
+}
+break;
+case Opcode::BranchTestBit32:
+switch (sizeof...(Arguments)) {
+case 3:
+switch (opgenHiddenPtrIdentity(kinds)[0]) {
+case Arg::ResCond:
+switch (opgenHiddenPtrIdentity(kinds)[1]) {
+case Arg::Tmp:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Imm:
+#if CPU(X86) || CPU(X86_64)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+case Arg::Tmp:
+#if CPU(X86) || CPU(X86_64)
+OPGEN_RETURN(true);
+#endif
+break;
+break;
+default:
+break;
+}
+break;
+case Arg::Addr:
+case Arg::Stack:
+case Arg::CallArg:
+switch (opgenHiddenPtrIdentity(kinds)[2]) {
+case Arg::Imm:
+#if CPU(X86) || CPU(X86_64)
 OPGEN_RETURN(true);
 #endif
 break;
@@ -11442,6 +12118,8 @@ case Opcode::Branch64:
 case Opcode::BranchTest8:
 case Opcode::BranchTest32:
 case Opcode::BranchTest64:
+case Opcode::BranchTestBit64:
+case Opcode::BranchTestBit32:
 case Opcode::BranchDouble:
 case Opcode::BranchFloat:
 case Opcode::BranchAdd32:

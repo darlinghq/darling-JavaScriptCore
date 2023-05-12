@@ -27,11 +27,8 @@
 #include "AlignedMemoryAllocator.h"
 
 #include "BlockDirectory.h"
-#include "Heap.h"
-#include "Subspace.h"
-
-// just like runtime/NativeExecutable.cpp, this was added for Darling (to build for debug), but it seems like this file should include it anyways
 #include "HeapInlines.h"
+#include "Subspace.h"
 
 namespace JSC { 
 
@@ -43,12 +40,12 @@ AlignedMemoryAllocator::~AlignedMemoryAllocator()
 {
 }
 
-void AlignedMemoryAllocator::registerDirectory(BlockDirectory* directory)
+void AlignedMemoryAllocator::registerDirectory(Heap& heap, BlockDirectory* directory)
 {
     RELEASE_ASSERT(!directory->nextDirectoryInAlignedMemoryAllocator());
     
     if (m_directories.isEmpty()) {
-        ASSERT(!Thread::mayBeGCThread() || directory->heap()->worldIsStopped());
+        ASSERT_UNUSED(heap, !Thread::mayBeGCThread() || heap.worldIsStopped());
         for (Subspace* subspace = m_subspaces.first(); subspace; subspace = subspace->nextSubspaceInAlignedMemoryAllocator())
             subspace->didCreateFirstDirectory(directory);
     }

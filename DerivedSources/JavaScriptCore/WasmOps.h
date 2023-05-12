@@ -43,16 +43,16 @@ static constexpr unsigned numTypes = 8;
     macro(I64, -0x2, B3::Int64, 2) \
     macro(F32, -0x3, B3::Float, 3) \
     macro(Func, -0x20, B3::Void, 4) \
-    macro(Anyref, -0x11, B3::Int64, 5) \
+    macro(Externref, -0x11, B3::Int64, 5) \
     macro(Funcref, -0x10, B3::Int64, 6) \
     macro(F64, -0x4, B3::Double, 7)
-#define CREATE_ENUM_VALUE(name, id, b3type, inc) name = id,
+#define CREATE_ENUM_VALUE(name, id, ...) name = id,
 enum Type : int8_t {
     FOR_EACH_WASM_TYPE(CREATE_ENUM_VALUE)
 };
 #undef CREATE_ENUM_VALUE
 
-#define CREATE_CASE(name, id, b3type, inc) case id: return true;
+#define CREATE_CASE(name, id, ...) case id: return true;
 template <typename Int>
 inline bool isValidType(Int i)
 {
@@ -65,7 +65,7 @@ inline bool isValidType(Int i)
 }
 #undef CREATE_CASE
 
-#define CREATE_CASE(name, id, b3type, inc) case name: return b3type;
+#define CREATE_CASE(name, id, b3type, ...) case name: return b3type;
 inline B3::Type toB3Type(Type type)
 {
     switch (type) {
@@ -76,7 +76,7 @@ inline B3::Type toB3Type(Type type)
 }
 #undef CREATE_CASE
 
-#define CREATE_CASE(name, id, b3type, inc) case name: return #name;
+#define CREATE_CASE(name, ...) case name: return #name;
 inline const char* makeString(Type type)
 {
     switch (type) {
@@ -87,7 +87,7 @@ inline const char* makeString(Type type)
 }
 #undef CREATE_CASE
 
-#define CREATE_CASE(name, id, b3type, inc) case id: return inc;
+#define CREATE_CASE(name, id, b3type, inc, ...) case id: return inc;
 inline int linearizeType(Type type)
 {
     switch (type) {
@@ -98,7 +98,7 @@ inline int linearizeType(Type type)
 }
 #undef CREATE_CASE
 
-#define CREATE_CASE(name, id, b3type, inc) case inc: return name;
+#define CREATE_CASE(name, id, b3type, inc, ...) case inc: return name;
 inline Type linearizedToType(int i)
 {
     switch (i) {
@@ -131,184 +131,272 @@ inline Type linearizedToType(int i)
     macro(CallIndirect, 0x11, Oops, 17)
 
 #define FOR_EACH_WASM_CONTROL_FLOW_OP(macro) \
-    macro(Return, 0xf, Oops, 0) \
-    macro(Nop, 0x1, Oops, 1) \
-    macro(Drop, 0x1a, Oops, 2) \
-    macro(BrIf, 0xd, Oops, 3) \
-    macro(Br, 0xc, Oops, 4) \
+    macro(Nop, 0x1, Oops, 0) \
+    macro(Drop, 0x1a, Oops, 1) \
+    macro(BrIf, 0xd, Oops, 2) \
+    macro(Br, 0xc, Oops, 3) \
+    macro(AnnotatedSelect, 0x1c, Oops, 4) \
     macro(Select, 0x1b, Oops, 5) \
     macro(Unreachable, 0x0, Oops, 6) \
     macro(Else, 0x5, Oops, 7) \
     macro(BrTable, 0xe, Oops, 8) \
     macro(Loop, 0x3, Oops, 9) \
-    macro(If, 0x4, Oops, 10) \
-    macro(End, 0xb, Oops, 11) \
-    macro(Block, 0x2, Oops, 12)
+    macro(Return, 0xf, Oops, 10) \
+    macro(If, 0x4, Oops, 11) \
+    macro(End, 0xb, Oops, 12) \
+    macro(Block, 0x2, Oops, 13)
 
 #define FOR_EACH_WASM_SIMPLE_UNARY_OP(macro) \
-    macro(F32Ceil, 0x8d, Ceil, 0) \
-    macro(F32DemoteF64, 0xb6, DoubleToFloat, 1) \
-    macro(I32Clz, 0x67, Clz, 2) \
-    macro(F64ConvertUI32, 0xb8, IToD(ZExt32(@0)), 3) \
-    macro(F32ReinterpretI32, 0xbe, BitwiseCast, 4) \
-    macro(F32Sqrt, 0x91, Sqrt, 5) \
-    macro(I64Eqz, 0x50, Equal(i64(0), @0), 6) \
-    macro(I64Clz, 0x79, Clz, 7) \
-    macro(F32Neg, 0x8c, Neg, 8) \
-    macro(F64Abs, 0x99, Abs, 9) \
-    macro(F32ConvertSI64, 0xb4, IToF, 10) \
-    macro(F64ConvertSI32, 0xb7, IToD, 11) \
-    macro(F32ConvertUI32, 0xb3, IToF(ZExt32(@0)), 12) \
-    macro(F64Ceil, 0x9b, Ceil, 13) \
-    macro(F64Floor, 0x9c, Floor, 14) \
-    macro(F32Abs, 0x8b, Abs, 15) \
-    macro(I32ReinterpretF32, 0xbc, BitwiseCast, 16) \
-    macro(F64ConvertSI64, 0xb9, IToD, 17) \
-    macro(F64PromoteF32, 0xbb, FloatToDouble, 18) \
-    macro(I64ExtendUI32, 0xad, ZExt32, 19) \
-    macro(F64ReinterpretI64, 0xbf, BitwiseCast, 20) \
-    macro(F32Floor, 0x8e, Floor, 21) \
-    macro(F32ConvertSI32, 0xb2, IToF, 22) \
-    macro(I32Eqz, 0x45, Equal(i32(0), @0), 23) \
-    macro(I64ReinterpretF64, 0xbd, BitwiseCast, 24) \
-    macro(F64Sqrt, 0x9f, Sqrt, 25) \
-    macro(I32WrapI64, 0xa7, Trunc, 26) \
-    macro(I64ExtendSI32, 0xac, SExt32, 27) \
-    macro(F64Neg, 0x9a, Neg, 28)
+    macro(F32Ceil, 0x8d, Ceil, 0, F32, F32) \
+    macro(F32DemoteF64, 0xb6, DoubleToFloat, 1, F64, F32) \
+    macro(I32Clz, 0x67, Clz, 2, I32, I32) \
+    macro(F64ConvertUI32, 0xb8, IToD(ZExt32(@0)), 3, I32, F64) \
+    macro(F32ReinterpretI32, 0xbe, BitwiseCast, 4, I32, F32) \
+    macro(F32Sqrt, 0x91, Sqrt, 5, F32, F32) \
+    macro(I64Eqz, 0x50, Equal(i64(0), @0), 6, I64, I32) \
+    macro(I64Clz, 0x79, Clz, 7, I64, I64) \
+    macro(F32Neg, 0x8c, Neg, 8, F32, F32) \
+    macro(F64Abs, 0x99, Abs, 9, F64, F64) \
+    macro(I64Extend32S, 0xc4, SExt32(Trunc(@0)), 10, I64, I64) \
+    macro(F32ConvertSI64, 0xb4, IToF, 11, I64, F32) \
+    macro(F64ConvertSI32, 0xb7, IToD, 12, I32, F64) \
+    macro(F32ConvertUI32, 0xb3, IToF(ZExt32(@0)), 13, I32, F32) \
+    macro(F64Ceil, 0x9b, Ceil, 14, F64, F64) \
+    macro(F64Floor, 0x9c, Floor, 15, F64, F64) \
+    macro(F32Abs, 0x8b, Abs, 16, F32, F32) \
+    macro(I32ReinterpretF32, 0xbc, BitwiseCast, 17, F32, I32) \
+    macro(F64ConvertSI64, 0xb9, IToD, 18, I64, F64) \
+    macro(F64PromoteF32, 0xbb, FloatToDouble, 19, F32, F64) \
+    macro(I64Extend16S, 0xc3, SExt32(SExt16(Trunc(@0))), 20, I64, I64) \
+    macro(I32Extend8S, 0xc0, SExt8, 21, I32, I32) \
+    macro(I64ExtendUI32, 0xad, ZExt32, 22, I32, I64) \
+    macro(F64ReinterpretI64, 0xbf, BitwiseCast, 23, I64, F64) \
+    macro(F32Floor, 0x8e, Floor, 24, F32, F32) \
+    macro(F32ConvertSI32, 0xb2, IToF, 25, I32, F32) \
+    macro(I32Eqz, 0x45, Equal(i32(0), @0), 26, I32, I32) \
+    macro(I64ReinterpretF64, 0xbd, BitwiseCast, 27, F64, I64) \
+    macro(F64Sqrt, 0x9f, Sqrt, 28, F64, F64) \
+    macro(I32Extend16S, 0xc1, SExt16, 29, I32, I32) \
+    macro(I32WrapI64, 0xa7, Trunc, 30, I64, I32) \
+    macro(I64Extend8S, 0xc2, SExt32(SExt8(Trunc(@0))), 31, I64, I64) \
+    macro(I64ExtendSI32, 0xac, SExt32, 32, I32, I64) \
+    macro(F64Neg, 0x9a, Neg, 33, F64, F64)
 
 #define FOR_EACH_WASM_UNARY_OP(macro) \
     FOR_EACH_WASM_SIMPLE_UNARY_OP(macro) \
-    macro(I64TruncSF32, 0xae, Oops, 0) \
-    macro(F32ConvertUI64, 0xb5, Oops, 1) \
-    macro(I32Ctz, 0x68, Oops, 2) \
-    macro(I32TruncSF64, 0xaa, Oops, 3) \
-    macro(I32TruncUF64, 0xab, Oops, 4) \
-    macro(I32Popcnt, 0x69, Oops, 5) \
-    macro(I64Popcnt, 0x7b, Oops, 6) \
-    macro(I64Ctz, 0x7a, Oops, 7) \
-    macro(I32TruncSF32, 0xa8, Oops, 8) \
-    macro(I64TruncUF64, 0xb1, Oops, 9) \
-    macro(I64TruncSF64, 0xb0, Oops, 10) \
-    macro(F64ConvertUI64, 0xba, Oops, 11) \
-    macro(F64Nearest, 0x9e, Oops, 12) \
-    macro(F64Trunc, 0x9d, Oops, 13) \
-    macro(F32Trunc, 0x8f, Oops, 14) \
-    macro(I32TruncUF32, 0xa9, Oops, 15) \
-    macro(I64TruncUF32, 0xaf, Oops, 16) \
-    macro(F32Nearest, 0x90, Oops, 17)
+    macro(I64TruncSF32, 0xae, Oops, 0, F32, I64) \
+    macro(I32Ctz, 0x68, Oops, 1, I32, I32) \
+    macro(I32TruncSF64, 0xaa, Oops, 2, F64, I32) \
+    macro(I32TruncUF64, 0xab, Oops, 3, F64, I32) \
+    macro(I32Popcnt, 0x69, Oops, 4, I32, I32) \
+    macro(I64Popcnt, 0x7b, Oops, 5, I64, I64) \
+    macro(I64Ctz, 0x7a, Oops, 6, I64, I64) \
+    macro(F32ConvertUI64, 0xb5, Oops, 7, I64, F32) \
+    macro(I32TruncSF32, 0xa8, Oops, 8, F32, I32) \
+    macro(I64TruncUF64, 0xb1, Oops, 9, F64, I64) \
+    macro(I64TruncSF64, 0xb0, Oops, 10, F64, I64) \
+    macro(F64ConvertUI64, 0xba, Oops, 11, I64, F64) \
+    macro(F64Nearest, 0x9e, Oops, 12, F64, F64) \
+    macro(F64Trunc, 0x9d, Oops, 13, F64, F64) \
+    macro(F32Trunc, 0x8f, Oops, 14, F32, F32) \
+    macro(I32TruncUF32, 0xa9, Oops, 15, F32, I32) \
+    macro(I64TruncUF32, 0xaf, Oops, 16, F32, I64) \
+    macro(F32Nearest, 0x90, Oops, 17, F32, F32)
 
 #define FOR_EACH_WASM_SIMPLE_BINARY_OP(macro) \
-    macro(I64ShrS, 0x87, SShr(@0, Trunc(@1)), 0) \
-    macro(I32Mul, 0x6c, Mul, 1) \
-    macro(I32Sub, 0x6b, Sub, 2) \
-    macro(F64Le, 0x65, LessEqual, 3) \
-    macro(F64Ne, 0x62, NotEqual, 4) \
-    macro(F64Lt, 0x63, LessThan, 5) \
-    macro(F32Max, 0x97, Select(Equal(@0, @1), BitAnd(@0, @1), Select(LessThan(@0, @1), @1, Select(GreaterThan(@0, @1), @0, Add(@0, @1)))), 6) \
-    macro(F64Mul, 0xa2, Mul, 7) \
-    macro(F32Div, 0x95, Div, 8) \
-    macro(F32Copysign, 0x98, BitwiseCast(BitOr(BitAnd(BitwiseCast(@1), i32(0x80000000)), BitAnd(BitwiseCast(@0), i32(0x7fffffff)))), 9) \
-    macro(I64And, 0x83, BitAnd, 10) \
-    macro(F32Ne, 0x5c, NotEqual, 11) \
-    macro(F64Gt, 0x64, GreaterThan, 12) \
-    macro(F64Ge, 0x66, GreaterEqual, 13) \
-    macro(I64GtS, 0x55, GreaterThan, 14) \
-    macro(I64GtU, 0x56, Above, 15) \
-    macro(F64Div, 0xa3, Div, 16) \
-    macro(F32Add, 0x92, Add, 17) \
-    macro(I64Or, 0x84, BitOr, 18) \
-    macro(I32LeU, 0x4d, BelowEqual, 19) \
-    macro(I32LeS, 0x4c, LessEqual, 20) \
-    macro(I64Ne, 0x52, NotEqual, 21) \
-    macro(I32And, 0x71, BitAnd, 22) \
-    macro(I32LtU, 0x49, Below, 23) \
-    macro(I64Rotr, 0x8a, RotR(@0, Trunc(@1)), 24) \
-    macro(I32LtS, 0x48, LessThan, 25) \
-    macro(I32Eq, 0x46, Equal, 26) \
-    macro(F64Copysign, 0xa6, BitwiseCast(BitOr(BitAnd(BitwiseCast(@1), i64(0x8000000000000000)), BitAnd(BitwiseCast(@0), i64(0x7fffffffffffffff)))), 27) \
-    macro(I64Rotl, 0x89, RotL(@0, Trunc(@1)), 28) \
-    macro(F32Lt, 0x5d, LessThan, 29) \
-    macro(F64Eq, 0x61, Equal, 30) \
-    macro(F32Le, 0x5f, LessEqual, 31) \
-    macro(F32Ge, 0x60, GreaterEqual, 32) \
-    macro(I32ShrU, 0x76, ZShr, 33) \
-    macro(I32ShrS, 0x75, SShr, 34) \
-    macro(I32GeU, 0x4f, AboveEqual, 35) \
-    macro(I32GeS, 0x4e, GreaterEqual, 36) \
-    macro(I32Shl, 0x74, Shl, 37) \
-    macro(I32Xor, 0x73, BitXor, 38) \
-    macro(F64Min, 0xa4, Select(Equal(@0, @1), BitOr(@0, @1), Select(LessThan(@0, @1), @0, Select(GreaterThan(@0, @1), @1, Add(@0, @1)))), 39) \
-    macro(F32Mul, 0x94, Mul, 40) \
-    macro(I64Sub, 0x7d, Sub, 41) \
-    macro(I32Add, 0x6a, Add, 42) \
-    macro(F64Sub, 0xa1, Sub, 43) \
-    macro(I32Or, 0x72, BitOr, 44) \
-    macro(I64LtU, 0x54, Below, 45) \
-    macro(I64LtS, 0x53, LessThan, 46) \
-    macro(I64Xor, 0x85, BitXor, 47) \
-    macro(I64GeU, 0x5a, AboveEqual, 48) \
-    macro(F32Min, 0x96, Select(Equal(@0, @1), BitOr(@0, @1), Select(LessThan(@0, @1), @0, Select(GreaterThan(@0, @1), @1, Add(@0, @1)))), 49) \
-    macro(I64Mul, 0x7e, Mul, 50) \
-    macro(F32Sub, 0x93, Sub, 51) \
-    macro(F64Add, 0xa0, Add, 52) \
-    macro(I64GeS, 0x59, GreaterEqual, 53) \
-    macro(I32Ne, 0x47, NotEqual, 54) \
-    macro(F32Eq, 0x5b, Equal, 55) \
-    macro(I64Eq, 0x51, Equal, 56) \
-    macro(I64ShrU, 0x88, ZShr(@0, Trunc(@1)), 57) \
-    macro(I64Shl, 0x86, Shl(@0, Trunc(@1)), 58) \
-    macro(F32Gt, 0x5e, GreaterThan, 59) \
-    macro(I32Rotl, 0x77, RotL, 60) \
-    macro(I32Rotr, 0x78, RotR, 61) \
-    macro(I32GtU, 0x4b, Above, 62) \
-    macro(I32GtS, 0x4a, GreaterThan, 63) \
-    macro(F64Max, 0xa5, Select(Equal(@0, @1), BitAnd(@0, @1), Select(LessThan(@0, @1), @1, Select(GreaterThan(@0, @1), @0, Add(@0, @1)))), 64) \
-    macro(I64LeU, 0x58, BelowEqual, 65) \
-    macro(I64LeS, 0x57, LessEqual, 66) \
-    macro(I64Add, 0x7c, Add, 67)
+    macro(I64ShrS, 0x87, SShr(@0, Trunc(@1)), 0, I64, I64, I64) \
+    macro(I32Mul, 0x6c, Mul, 1, I32, I32, I32) \
+    macro(I32Sub, 0x6b, Sub, 2, I32, I32, I32) \
+    macro(F64Le, 0x65, LessEqual, 3, F64, F64, I32) \
+    macro(F64Ne, 0x62, NotEqual, 4, F64, F64, I32) \
+    macro(F64Lt, 0x63, LessThan, 5, F64, F64, I32) \
+    macro(F32Max, 0x97, Select(Equal(@0, @1), BitAnd(@0, @1), Select(LessThan(@0, @1), @1, Select(GreaterThan(@0, @1), @0, Add(@0, @1)))), 6, F32, F32, F32) \
+    macro(F64Mul, 0xa2, Mul, 7, F64, F64, F64) \
+    macro(F32Eq, 0x5b, Equal, 8, F32, F32, I32) \
+    macro(F32Copysign, 0x98, BitwiseCast(BitOr(BitAnd(BitwiseCast(@1), i32(0x80000000)), BitAnd(BitwiseCast(@0), i32(0x7fffffff)))), 9, F32, F32, F32) \
+    macro(I64And, 0x83, BitAnd, 10, I64, I64, I64) \
+    macro(F32Ne, 0x5c, NotEqual, 11, F32, F32, I32) \
+    macro(F64Gt, 0x64, GreaterThan, 12, F64, F64, I32) \
+    macro(F64Ge, 0x66, GreaterEqual, 13, F64, F64, I32) \
+    macro(I64GtS, 0x55, GreaterThan, 14, I64, I64, I32) \
+    macro(I64GtU, 0x56, Above, 15, I64, I64, I32) \
+    macro(F64Div, 0xa3, Div, 16, F64, F64, F64) \
+    macro(F32Add, 0x92, Add, 17, F32, F32, F32) \
+    macro(I64Or, 0x84, BitOr, 18, I64, I64, I64) \
+    macro(I32LeU, 0x4d, BelowEqual, 19, I32, I32, I32) \
+    macro(I32LeS, 0x4c, LessEqual, 20, I32, I32, I32) \
+    macro(I64Ne, 0x52, NotEqual, 21, I64, I64, I32) \
+    macro(I64Sub, 0x7d, Sub, 22, I64, I64, I64) \
+    macro(I32And, 0x71, BitAnd, 23, I32, I32, I32) \
+    macro(I32LtU, 0x49, Below, 24, I32, I32, I32) \
+    macro(I64Rotr, 0x8a, RotR(@0, Trunc(@1)), 25, I64, I64, I64) \
+    macro(I32LtS, 0x48, LessThan, 26, I32, I32, I32) \
+    macro(I32Eq, 0x46, Equal, 27, I32, I32, I32) \
+    macro(F64Copysign, 0xa6, BitwiseCast(BitOr(BitAnd(BitwiseCast(@1), i64(0x8000000000000000)), BitAnd(BitwiseCast(@0), i64(0x7fffffffffffffff)))), 28, F64, F64, F64) \
+    macro(I64Rotl, 0x89, RotL(@0, Trunc(@1)), 29, I64, I64, I64) \
+    macro(F32Lt, 0x5d, LessThan, 30, F32, F32, I32) \
+    macro(F64Eq, 0x61, Equal, 31, F64, F64, I32) \
+    macro(F32Le, 0x5f, LessEqual, 32, F32, F32, I32) \
+    macro(F32Ge, 0x60, GreaterEqual, 33, F32, F32, I32) \
+    macro(I32ShrU, 0x76, ZShr, 34, I32, I32, I32) \
+    macro(I32ShrS, 0x75, SShr, 35, I32, I32, I32) \
+    macro(I32GeU, 0x4f, AboveEqual, 36, I32, I32, I32) \
+    macro(I32GeS, 0x4e, GreaterEqual, 37, I32, I32, I32) \
+    macro(I32Shl, 0x74, Shl, 38, I32, I32, I32) \
+    macro(I32Xor, 0x73, BitXor, 39, I32, I32, I32) \
+    macro(F64Min, 0xa4, Select(Equal(@0, @1), BitOr(@0, @1), Select(LessThan(@0, @1), @0, Select(GreaterThan(@0, @1), @1, Add(@0, @1)))), 40, F64, F64, F64) \
+    macro(F32Mul, 0x94, Mul, 41, F32, F32, F32) \
+    macro(I32Add, 0x6a, Add, 42, I32, I32, I32) \
+    macro(F64Sub, 0xa1, Sub, 43, F64, F64, F64) \
+    macro(I32Or, 0x72, BitOr, 44, I32, I32, I32) \
+    macro(I64LtU, 0x54, Below, 45, I64, I64, I32) \
+    macro(I64LtS, 0x53, LessThan, 46, I64, I64, I32) \
+    macro(I64Xor, 0x85, BitXor, 47, I64, I64, I64) \
+    macro(I64GeU, 0x5a, AboveEqual, 48, I64, I64, I32) \
+    macro(F32Min, 0x96, Select(Equal(@0, @1), BitOr(@0, @1), Select(LessThan(@0, @1), @0, Select(GreaterThan(@0, @1), @1, Add(@0, @1)))), 49, F32, F32, F32) \
+    macro(I64Mul, 0x7e, Mul, 50, I64, I64, I64) \
+    macro(F32Sub, 0x93, Sub, 51, F32, F32, F32) \
+    macro(F64Add, 0xa0, Add, 52, F64, F64, F64) \
+    macro(I64GeS, 0x59, GreaterEqual, 53, I64, I64, I32) \
+    macro(I32Ne, 0x47, NotEqual, 54, I32, I32, I32) \
+    macro(F32Div, 0x95, Div, 55, F32, F32, F32) \
+    macro(I64Eq, 0x51, Equal, 56, I64, I64, I32) \
+    macro(I64ShrU, 0x88, ZShr(@0, Trunc(@1)), 57, I64, I64, I64) \
+    macro(I64Shl, 0x86, Shl(@0, Trunc(@1)), 58, I64, I64, I64) \
+    macro(F32Gt, 0x5e, GreaterThan, 59, F32, F32, I32) \
+    macro(I32Rotl, 0x77, RotL, 60, I32, I32, I32) \
+    macro(I32Rotr, 0x78, RotR, 61, I32, I32, I32) \
+    macro(I32GtU, 0x4b, Above, 62, I32, I32, I32) \
+    macro(I32GtS, 0x4a, GreaterThan, 63, I32, I32, I32) \
+    macro(F64Max, 0xa5, Select(Equal(@0, @1), BitAnd(@0, @1), Select(LessThan(@0, @1), @1, Select(GreaterThan(@0, @1), @0, Add(@0, @1)))), 64, F64, F64, F64) \
+    macro(I64LeU, 0x58, BelowEqual, 65, I64, I64, I32) \
+    macro(I64LeS, 0x57, LessEqual, 66, I64, I64, I32) \
+    macro(I64Add, 0x7c, Add, 67, I64, I64, I64)
 
 #define FOR_EACH_WASM_BINARY_OP(macro) \
     FOR_EACH_WASM_SIMPLE_BINARY_OP(macro) \
-    macro(I32DivU, 0x6e, Oops, 0) \
-    macro(I32DivS, 0x6d, Oops, 1) \
-    macro(I32RemU, 0x70, Oops, 2) \
-    macro(I32RemS, 0x6f, Oops, 3) \
-    macro(I64RemS, 0x81, Oops, 4) \
-    macro(I64RemU, 0x82, Oops, 5) \
-    macro(I64DivU, 0x80, Oops, 6) \
-    macro(I64DivS, 0x7f, Oops, 7)
+    macro(I32DivU, 0x6e, Oops, 0, I32, I32, I32) \
+    macro(I32DivS, 0x6d, Oops, 1, I32, I32, I32) \
+    macro(I32RemU, 0x70, Oops, 2, I32, I32, I32) \
+    macro(I64RemS, 0x81, Oops, 3, I64, I64, I64) \
+    macro(I64RemU, 0x82, Oops, 4, I64, I64, I64) \
+    macro(I32RemS, 0x6f, Oops, 5, I32, I32, I32) \
+    macro(I64DivU, 0x80, Oops, 6, I64, I64, I64) \
+    macro(I64DivS, 0x7f, Oops, 7, I64, I64, I64)
 
 #define FOR_EACH_WASM_MEMORY_LOAD_OP(macro) \
-    macro(I64Load32U, 0x35, Oops, 0) \
-    macro(I64Load32S, 0x34, Oops, 1) \
-    macro(I32Load16S, 0x2e, Oops, 2) \
-    macro(I32Load16U, 0x2f, Oops, 3) \
-    macro(I64Load, 0x29, Oops, 4) \
-    macro(F64Load, 0x2b, Oops, 5) \
-    macro(I32Load8S, 0x2c, Oops, 6) \
-    macro(I32Load8U, 0x2d, Oops, 7) \
-    macro(I32Load, 0x28, Oops, 8) \
-    macro(F32Load, 0x2a, Oops, 9) \
-    macro(I64Load8U, 0x31, Oops, 10) \
-    macro(I64Load8S, 0x30, Oops, 11) \
-    macro(I64Load16S, 0x32, Oops, 12) \
-    macro(I64Load16U, 0x33, Oops, 13)
+    macro(I64Load32U, 0x35, Oops, 0, I64) \
+    macro(I64Load32S, 0x34, Oops, 1, I64) \
+    macro(I32Load16S, 0x2e, Oops, 2, I32) \
+    macro(I32Load16U, 0x2f, Oops, 3, I32) \
+    macro(I64Load, 0x29, Oops, 4, I64) \
+    macro(F64Load, 0x2b, Oops, 5, F64) \
+    macro(I32Load8S, 0x2c, Oops, 6, I32) \
+    macro(I32Load8U, 0x2d, Oops, 7, I32) \
+    macro(I32Load, 0x28, Oops, 8, I32) \
+    macro(F32Load, 0x2a, Oops, 9, F32) \
+    macro(I64Load8U, 0x31, Oops, 10, I64) \
+    macro(I64Load8S, 0x30, Oops, 11, I64) \
+    macro(I64Load16S, 0x32, Oops, 12, I64) \
+    macro(I64Load16U, 0x33, Oops, 13, I64)
 
 #define FOR_EACH_WASM_MEMORY_STORE_OP(macro) \
-    macro(I64Store16, 0x3d, Oops, 0) \
-    macro(I64Store8, 0x3c, Oops, 1) \
-    macro(I32Store, 0x36, Oops, 2) \
-    macro(I32Store16, 0x3b, Oops, 3) \
-    macro(F32Store, 0x38, Oops, 4) \
-    macro(I64Store, 0x37, Oops, 5) \
-    macro(F64Store, 0x39, Oops, 6) \
-    macro(I32Store8, 0x3a, Oops, 7) \
-    macro(I64Store32, 0x3e, Oops, 8)
+    macro(I64Store16, 0x3d, Oops, 0, I64) \
+    macro(I64Store8, 0x3c, Oops, 1, I64) \
+    macro(I32Store, 0x36, Oops, 2, I32) \
+    macro(I32Store16, 0x3b, Oops, 3, I32) \
+    macro(F32Store, 0x38, Oops, 4, F32) \
+    macro(I64Store, 0x37, Oops, 5, I64) \
+    macro(F64Store, 0x39, Oops, 6, F64) \
+    macro(I32Store8, 0x3a, Oops, 7, I32) \
+    macro(I64Store32, 0x3e, Oops, 8, I64)
 
 #define FOR_EACH_WASM_EXT_TABLE_OP(macro) \
-    macro(TableFill, 0x11, Oops, 0) \
-    macro(TableGrow, 0x10, Oops, 1) \
-    macro(TableSize, 0xf, Oops, 2)
+    macro(ElemDrop, 0xd, Oops, 0) \
+    macro(MemoryFill, 0xb, Oops, 1) \
+    macro(DataDrop, 0x9, Oops, 2) \
+    macro(TableFill, 0x11, Oops, 3) \
+    macro(TableCopy, 0xe, Oops, 4) \
+    macro(MemoryCopy, 0xa, Oops, 5) \
+    macro(MemoryInit, 0x8, Oops, 6) \
+    macro(TableInit, 0xc, Oops, 7) \
+    macro(TableGrow, 0xf, Oops, 8) \
+    macro(TableSize, 0x10, Oops, 9)
+
+#define FOR_EACH_WASM_EXT_ATOMIC_LOAD_OP(macro) \
+    macro(I64AtomicLoad32U, 0x16, Oops, 0, I64) \
+    macro(I32AtomicLoad, 0x10, Oops, 1, I32) \
+    macro(I64AtomicLoad8U, 0x14, Oops, 2, I64) \
+    macro(I64AtomicLoad, 0x11, Oops, 3, I64) \
+    macro(I32AtomicLoad8U, 0x12, Oops, 4, I32) \
+    macro(I32AtomicLoad16U, 0x13, Oops, 5, I32) \
+    macro(I64AtomicLoad16U, 0x15, Oops, 6, I64)
+
+#define FOR_EACH_WASM_EXT_ATOMIC_STORE_OP(macro) \
+    macro(I64AtomicStore8U, 0x1b, Oops, 0, I64) \
+    macro(I64AtomicStore, 0x18, Oops, 1, I64) \
+    macro(I32AtomicStore8U, 0x19, Oops, 2, I32) \
+    macro(I32AtomicStore, 0x17, Oops, 3, I32) \
+    macro(I64AtomicStore16U, 0x1c, Oops, 4, I64) \
+    macro(I32AtomicStore16U, 0x1a, Oops, 5, I32) \
+    macro(I64AtomicStore32U, 0x1d, Oops, 6, I64)
+
+#define FOR_EACH_WASM_EXT_ATOMIC_BINARY_RMW_OP(macro) \
+    macro(I32AtomicRmwOr, 0x33, Oops, 0, I32) \
+    macro(I64AtomicRmwXchg, 0x42, Oops, 1, I64) \
+    macro(I32AtomicRmw8AddU, 0x20, Oops, 2, I32) \
+    macro(I64AtomicRmw16OrU, 0x38, Oops, 3, I64) \
+    macro(I64AtomicRmw32AndU, 0x32, Oops, 4, I64) \
+    macro(I32AtomicRmw16OrU, 0x36, Oops, 5, I32) \
+    macro(I64AtomicRmw16AddU, 0x23, Oops, 6, I64) \
+    macro(I64AtomicRmw32AddU, 0x24, Oops, 7, I64) \
+    macro(I32AtomicRmw8OrU, 0x35, Oops, 8, I32) \
+    macro(I32AtomicRmw8AndU, 0x2e, Oops, 9, I32) \
+    macro(I64AtomicRmw16SubU, 0x2a, Oops, 10, I64) \
+    macro(I32AtomicRmwAdd, 0x1e, Oops, 11, I32) \
+    macro(I64AtomicRmw8AddU, 0x22, Oops, 12, I64) \
+    macro(I32AtomicRmwXchg, 0x41, Oops, 13, I32) \
+    macro(I32AtomicRmw8XorU, 0x3c, Oops, 14, I32) \
+    macro(I32AtomicRmw8XchgU, 0x43, Oops, 15, I32) \
+    macro(I64AtomicRmw8OrU, 0x37, Oops, 16, I64) \
+    macro(I64AtomicRmw16XorU, 0x3f, Oops, 17, I64) \
+    macro(I64AtomicRmwSub, 0x26, Oops, 18, I64) \
+    macro(I32AtomicRmw16SubU, 0x28, Oops, 19, I32) \
+    macro(I64AtomicRmw32SubU, 0x2b, Oops, 20, I64) \
+    macro(I32AtomicRmwSub, 0x25, Oops, 21, I32) \
+    macro(I64AtomicRmwAnd, 0x2d, Oops, 22, I64) \
+    macro(I64AtomicRmw32XorU, 0x40, Oops, 23, I64) \
+    macro(I64AtomicRmw16XchgU, 0x46, Oops, 24, I64) \
+    macro(I32AtomicRmw16AndU, 0x2f, Oops, 25, I32) \
+    macro(I32AtomicRmw16AddU, 0x21, Oops, 26, I32) \
+    macro(I64AtomicRmw8AndU, 0x30, Oops, 27, I64) \
+    macro(I64AtomicRmw32OrU, 0x39, Oops, 28, I64) \
+    macro(I32AtomicRmwXor, 0x3a, Oops, 29, I32) \
+    macro(I64AtomicRmw16AndU, 0x31, Oops, 30, I64) \
+    macro(I32AtomicRmw16XchgU, 0x44, Oops, 31, I32) \
+    macro(I64AtomicRmwXor, 0x3b, Oops, 32, I64) \
+    macro(I32AtomicRmw16XorU, 0x3d, Oops, 33, I32) \
+    macro(I32AtomicRmw8SubU, 0x27, Oops, 34, I32) \
+    macro(I64AtomicRmw8XorU, 0x3e, Oops, 35, I64) \
+    macro(I32AtomicRmwAnd, 0x2c, Oops, 36, I32) \
+    macro(I64AtomicRmw32XchgU, 0x47, Oops, 37, I64) \
+    macro(I64AtomicRmwAdd, 0x1f, Oops, 38, I64) \
+    macro(I64AtomicRmw8SubU, 0x29, Oops, 39, I64) \
+    macro(I64AtomicRmw8XchgU, 0x45, Oops, 40, I64) \
+    macro(I64AtomicRmwOr, 0x34, Oops, 41, I64)
+
+#define FOR_EACH_WASM_EXT_ATOMIC_OTHER_OP(macro) \
+    macro(I32AtomicRmw8CmpxchgU, 0x4a, Oops, 0) \
+    macro(I64AtomicRmw8CmpxchgU, 0x4c, Oops, 1) \
+    macro(MemoryAtomicWait64, 0x2, Oops, 2) \
+    macro(MemoryAtomicNotify, 0x0, Oops, 3) \
+    macro(I64AtomicRmw16CmpxchgU, 0x4d, Oops, 4) \
+    macro(MemoryAtomicWait32, 0x1, Oops, 5) \
+    macro(AtomicFence, 0x3, Oops, 6) \
+    macro(I64AtomicRmw32CmpxchgU, 0x4e, Oops, 7) \
+    macro(I64AtomicRmwCmpxchg, 0x49, Oops, 8) \
+    macro(I32AtomicRmwCmpxchg, 0x48, Oops, 9) \
+    macro(I32AtomicRmw16CmpxchgU, 0x4b, Oops, 10)
 
 
 #define FOR_EACH_WASM_OP(macro) \
@@ -318,9 +406,10 @@ inline Type linearizedToType(int i)
     FOR_EACH_WASM_BINARY_OP(macro) \
     FOR_EACH_WASM_MEMORY_LOAD_OP(macro) \
     FOR_EACH_WASM_MEMORY_STORE_OP(macro) \
-    macro(ExtTable, 0xFC, Oops, 0)
+    macro(ExtTable,  0xFC, Oops, 0) \
+    macro(ExtAtomic, 0xFE, Oops, 0)
 
-#define CREATE_ENUM_VALUE(name, id, b3op, inc) name = id,
+#define CREATE_ENUM_VALUE(name, id, ...) name = id,
 
 enum OpType : uint8_t {
     FOR_EACH_WASM_OP(CREATE_ENUM_VALUE)
@@ -330,8 +419,8 @@ template<typename Int>
 inline bool isValidOpType(Int i)
 {
     // Bitset of valid ops.
-    static const uint8_t valid[] = { 0x3f, 0xf8, 0x3, 0xc, 0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x0, 0x0, 0x7, 0x0, 0x0, 0x0, 0x0, 0x10 };
-    return 0 <= i && i <= 252 && (valid[i / 8] & (1 << (i % 8)));
+    static const uint8_t valid[] = { 0x3f, 0xf8, 0x3, 0x1c, 0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x1f, 0x0, 0x7, 0x0, 0x0, 0x0, 0x0, 0x50 };
+    return 0 <= i && i <= 254 && (valid[i / 8] & (1 << (i % 8)));
 }
 
 enum class BinaryOpType : uint8_t {
@@ -354,12 +443,19 @@ enum class ExtTableOpType : uint8_t {
     FOR_EACH_WASM_EXT_TABLE_OP(CREATE_ENUM_VALUE)
 };
 
+enum class ExtAtomicOpType : uint8_t {
+    FOR_EACH_WASM_EXT_ATOMIC_LOAD_OP(CREATE_ENUM_VALUE)
+    FOR_EACH_WASM_EXT_ATOMIC_STORE_OP(CREATE_ENUM_VALUE)
+    FOR_EACH_WASM_EXT_ATOMIC_BINARY_RMW_OP(CREATE_ENUM_VALUE)
+    FOR_EACH_WASM_EXT_ATOMIC_OTHER_OP(CREATE_ENUM_VALUE)
+};
+
 #undef CREATE_ENUM_VALUE
 
 inline bool isControlOp(OpType op)
 {
     switch (op) {
-#define CREATE_CASE(name, id, b3op, inc) case OpType::name:
+#define CREATE_CASE(name, ...) case OpType::name:
     FOR_EACH_WASM_CONTROL_FLOW_OP(CREATE_CASE)
         return true;
 #undef CREATE_CASE
@@ -372,7 +468,7 @@ inline bool isControlOp(OpType op)
 inline bool isSimple(UnaryOpType op)
 {
     switch (op) {
-#define CREATE_CASE(name, id, b3op, inc) case UnaryOpType::name:
+#define CREATE_CASE(name, ...) case UnaryOpType::name:
     FOR_EACH_WASM_SIMPLE_UNARY_OP(CREATE_CASE)
         return true;
 #undef CREATE_CASE
@@ -385,7 +481,7 @@ inline bool isSimple(UnaryOpType op)
 inline bool isSimple(BinaryOpType op)
 {
     switch (op) {
-#define CREATE_CASE(name, id, b3op, inc) case BinaryOpType::name:
+#define CREATE_CASE(name, ...) case BinaryOpType::name:
     FOR_EACH_WASM_SIMPLE_BINARY_OP(CREATE_CASE)
         return true;
 #undef CREATE_CASE
@@ -428,7 +524,84 @@ inline uint32_t memoryLog2Alignment(OpType op)
     return 0;
 }
 
-#define CREATE_CASE(name, id, b3type, inc) case name: return #name;
+inline uint32_t memoryLog2Alignment(ExtAtomicOpType op)
+{
+    switch (op) {
+    case ExtAtomicOpType::I32AtomicRmwOr: return 2;
+    case ExtAtomicOpType::I64AtomicStore8U: return 0;
+    case ExtAtomicOpType::I32AtomicRmw8CmpxchgU: return 0;
+    case ExtAtomicOpType::I64AtomicRmwXchg: return 3;
+    case ExtAtomicOpType::I32AtomicRmw8AddU: return 0;
+    case ExtAtomicOpType::I64AtomicRmw8CmpxchgU: return 0;
+    case ExtAtomicOpType::I64AtomicRmw16OrU: return 1;
+    case ExtAtomicOpType::I64AtomicLoad32U: return 2;
+    case ExtAtomicOpType::I64AtomicRmw32AndU: return 2;
+    case ExtAtomicOpType::I32AtomicRmw16OrU: return 1;
+    case ExtAtomicOpType::I64AtomicRmw16AddU: return 1;
+    case ExtAtomicOpType::MemoryAtomicWait64: return 3;
+    case ExtAtomicOpType::MemoryAtomicNotify: return 2;
+    case ExtAtomicOpType::I64AtomicRmw32AddU: return 2;
+    case ExtAtomicOpType::I32AtomicRmw8OrU: return 0;
+    case ExtAtomicOpType::I64AtomicRmw16CmpxchgU: return 1;
+    case ExtAtomicOpType::I32AtomicRmw8AndU: return 0;
+    case ExtAtomicOpType::I64AtomicRmw16SubU: return 1;
+    case ExtAtomicOpType::I32AtomicRmwAdd: return 2;
+    case ExtAtomicOpType::MemoryAtomicWait32: return 2;
+    case ExtAtomicOpType::I64AtomicRmw8AddU: return 0;
+    case ExtAtomicOpType::I32AtomicRmwXchg: return 2;
+    case ExtAtomicOpType::I32AtomicRmw8XorU: return 0;
+    case ExtAtomicOpType::I32AtomicRmw8XchgU: return 0;
+    case ExtAtomicOpType::I64AtomicRmw8OrU: return 0;
+    case ExtAtomicOpType::I64AtomicRmw16XorU: return 1;
+    case ExtAtomicOpType::I64AtomicRmwSub: return 3;
+    case ExtAtomicOpType::I32AtomicRmw16SubU: return 1;
+    case ExtAtomicOpType::I32AtomicLoad: return 2;
+    case ExtAtomicOpType::I64AtomicRmw32SubU: return 2;
+    case ExtAtomicOpType::I32AtomicRmwSub: return 2;
+    case ExtAtomicOpType::I64AtomicRmwAnd: return 3;
+    case ExtAtomicOpType::I64AtomicStore: return 3;
+    case ExtAtomicOpType::AtomicFence: return 0;
+    case ExtAtomicOpType::I64AtomicRmw32XorU: return 2;
+    case ExtAtomicOpType::I32AtomicStore8U: return 0;
+    case ExtAtomicOpType::I64AtomicRmw16XchgU: return 1;
+    case ExtAtomicOpType::I32AtomicRmw16AndU: return 1;
+    case ExtAtomicOpType::I64AtomicRmw32CmpxchgU: return 2;
+    case ExtAtomicOpType::I64AtomicRmwCmpxchg: return 3;
+    case ExtAtomicOpType::I32AtomicStore: return 2;
+    case ExtAtomicOpType::I32AtomicRmw16AddU: return 1;
+    case ExtAtomicOpType::I64AtomicRmw8AndU: return 0;
+    case ExtAtomicOpType::I64AtomicRmw32OrU: return 2;
+    case ExtAtomicOpType::I32AtomicRmwXor: return 2;
+    case ExtAtomicOpType::I32AtomicRmwCmpxchg: return 2;
+    case ExtAtomicOpType::I64AtomicRmw16AndU: return 1;
+    case ExtAtomicOpType::I32AtomicRmw16XchgU: return 1;
+    case ExtAtomicOpType::I64AtomicRmwXor: return 3;
+    case ExtAtomicOpType::I32AtomicRmw16XorU: return 1;
+    case ExtAtomicOpType::I32AtomicRmw8SubU: return 0;
+    case ExtAtomicOpType::I64AtomicRmw8XorU: return 0;
+    case ExtAtomicOpType::I32AtomicRmwAnd: return 2;
+    case ExtAtomicOpType::I64AtomicRmw32XchgU: return 2;
+    case ExtAtomicOpType::I64AtomicStore16U: return 1;
+    case ExtAtomicOpType::I32AtomicStore16U: return 1;
+    case ExtAtomicOpType::I64AtomicLoad8U: return 0;
+    case ExtAtomicOpType::I64AtomicLoad: return 3;
+    case ExtAtomicOpType::I64AtomicRmwAdd: return 3;
+    case ExtAtomicOpType::I64AtomicRmw8SubU: return 0;
+    case ExtAtomicOpType::I32AtomicLoad8U: return 0;
+    case ExtAtomicOpType::I64AtomicStore32U: return 2;
+    case ExtAtomicOpType::I32AtomicLoad16U: return 1;
+    case ExtAtomicOpType::I64AtomicRmw8XchgU: return 0;
+    case ExtAtomicOpType::I64AtomicLoad16U: return 1;
+    case ExtAtomicOpType::I64AtomicRmwOr: return 3;
+    case ExtAtomicOpType::I32AtomicRmw16CmpxchgU: return 1;
+    default:
+        break;
+    }
+    RELEASE_ASSERT_NOT_REACHED();
+    return 0;
+}
+
+#define CREATE_CASE(name, ...) case name: return #name;
 inline const char* makeString(OpType op)
 {
     switch (op) {
@@ -440,6 +613,20 @@ inline const char* makeString(OpType op)
 #undef CREATE_CASE
 
 } } // namespace JSC::Wasm
+
+namespace WTF {
+
+inline void printInternal(PrintStream& out, JSC::Wasm::Type type)
+{
+    out.print(JSC::Wasm::makeString(type));
+}
+
+inline void printInternal(PrintStream& out, JSC::Wasm::OpType op)
+{
+    out.print(JSC::Wasm::makeString(op));
+}
+
+} // namespace WTF
 
 #endif // ENABLE(WEBASSEMBLY)
 

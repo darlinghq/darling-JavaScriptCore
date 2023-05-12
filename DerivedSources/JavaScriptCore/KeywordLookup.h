@@ -84,9 +84,9 @@
 
 namespace JSC {
 
-static ALWAYS_INLINE bool isIdentPartIncludingEscape(const LChar* code, const LChar* codeEnd);
-static ALWAYS_INLINE bool isIdentPartIncludingEscape(const UChar* code, const UChar* codeEnd);
-static const int maxTokenLength = 11;
+static ALWAYS_INLINE bool cannotBeIdentPartOrEscapeStart(LChar);
+static ALWAYS_INLINE bool cannotBeIdentPartOrEscapeStart(UChar);
+static constexpr int maxTokenLength = 11;
 
 template <>
 template <bool shouldCreateIdentifier> ALWAYS_INLINE JSTokenType Lexer<UChar>::parseKeyword(JSTokenData* data)
@@ -96,363 +96,363 @@ template <bool shouldCreateIdentifier> ALWAYS_INLINE JSTokenType Lexer<UChar>::p
     const UChar* code = m_code;
     if (code[0] == 'f') {
         if (COMPARE_7UCHARS(code + 1, 'u', 'n', 'c', 't', 'i', 'o', 'n')) {
-            if (!isIdentPartIncludingEscape(code+8, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[8]))) {
                 internalShift<8>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->functionKeyword;
+                    data->ident = &m_vm.propertyNames->functionKeyword;
                 return FUNCTION;
             }
         } else if (COMPARE_2UCHARS(code + 1, 'o', 'r')) {
-            if (!isIdentPartIncludingEscape(code+3, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[3]))) {
                 internalShift<3>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->forKeyword;
+                    data->ident = &m_vm.propertyNames->forKeyword;
                 return FOR;
             }
         } else if (COMPARE_4UCHARS(code + 1, 'a', 'l', 's', 'e')) {
-            if (!isIdentPartIncludingEscape(code+5, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[5]))) {
                 internalShift<5>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->falseKeyword;
+                    data->ident = &m_vm.propertyNames->falseKeyword;
                 return FALSETOKEN;
             }
         } else if (COMPARE_6UCHARS(code + 1, 'i', 'n', 'a', 'l', 'l', 'y')) {
-            if (!isIdentPartIncludingEscape(code+7, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[7]))) {
                 internalShift<7>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->finallyKeyword;
+                    data->ident = &m_vm.propertyNames->finallyKeyword;
                 return FINALLY;
             }
         }
     } else if (code[0] == 't') {
         if (code[1] == 'h') {
             if (COMPARE_2UCHARS(code + 2, 'i', 's')) {
-                if (!isIdentPartIncludingEscape(code+4, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[4]))) {
                     internalShift<4>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->thisKeyword;
+                        data->ident = &m_vm.propertyNames->thisKeyword;
                     return THISTOKEN;
                 }
             } else if (COMPARE_4UCHARS(code + 1, 'h', 'r', 'o', 'w')) {
-                if (!isIdentPartIncludingEscape(code+5, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[5]))) {
                     internalShift<5>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->throwKeyword;
+                        data->ident = &m_vm.propertyNames->throwKeyword;
                     return THROW;
                 }
             }
         } else if (code[1] == 'r') {
             if (COMPARE_2UCHARS(code + 2, 'u', 'e')) {
-                if (!isIdentPartIncludingEscape(code+4, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[4]))) {
                     internalShift<4>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->trueKeyword;
+                        data->ident = &m_vm.propertyNames->trueKeyword;
                     return TRUETOKEN;
                 }
             } else if (code[2] == 'y') {
-                if (!isIdentPartIncludingEscape(code+3, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[3]))) {
                     internalShift<3>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->tryKeyword;
+                        data->ident = &m_vm.propertyNames->tryKeyword;
                     return TRY;
                 }
             }
         } else if (COMPARE_5UCHARS(code + 1, 'y', 'p', 'e', 'o', 'f')) {
-            if (!isIdentPartIncludingEscape(code+6, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[6]))) {
                 internalShift<6>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->typeofKeyword;
+                    data->ident = &m_vm.propertyNames->typeofKeyword;
                 return TYPEOF;
             }
         }
     } else if (code[0] == 'i') {
         if (code[1] == 'f') {
-            if (!isIdentPartIncludingEscape(code+2, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[2]))) {
                 internalShift<2>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->ifKeyword;
+                    data->ident = &m_vm.propertyNames->ifKeyword;
                 return IF;
             }
         } else if (code[1] == 'n') {
-            if (!isIdentPartIncludingEscape(code+2, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[2]))) {
                 internalShift<2>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->inKeyword;
+                    data->ident = &m_vm.propertyNames->inKeyword;
                 return INTOKEN;
             }
             if (COMPARE_7UCHARS(code + 2, 't', 'e', 'r', 'f', 'a', 'c', 'e')) {
-                if (!isIdentPartIncludingEscape(code+9, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[9]))) {
                     internalShift<9>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->interfaceKeyword;
+                        data->ident = &m_vm.propertyNames->interfaceKeyword;
                     return RESERVED_IF_STRICT;
                 }
             } else if (COMPARE_8UCHARS(code + 2, 's', 't', 'a', 'n', 'c', 'e', 'o', 'f')) {
-                if (!isIdentPartIncludingEscape(code+10, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[10]))) {
                     internalShift<10>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->instanceofKeyword;
+                        data->ident = &m_vm.propertyNames->instanceofKeyword;
                     return INSTANCEOF;
                 }
             }
         } else if (COMPARE_2UCHARS(code + 1, 'm', 'p')) {
             if (COMPARE_4UCHARS(code + 2, 'p', 'o', 'r', 't')) {
-                if (!isIdentPartIncludingEscape(code+6, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[6]))) {
                     internalShift<6>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->importKeyword;
+                        data->ident = &m_vm.propertyNames->importKeyword;
                     return IMPORT;
                 }
             } else if (COMPARE_7UCHARS(code + 3, 'l', 'e', 'm', 'e', 'n', 't', 's')) {
-                if (!isIdentPartIncludingEscape(code+10, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[10]))) {
                     internalShift<10>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->implementsKeyword;
+                        data->ident = &m_vm.propertyNames->implementsKeyword;
                     return RESERVED_IF_STRICT;
                 }
             }
         }
     } else if (code[0] == 'v') {
         if (COMPARE_2UCHARS(code + 1, 'a', 'r')) {
-            if (!isIdentPartIncludingEscape(code+3, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[3]))) {
                 internalShift<3>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->varKeyword;
+                    data->ident = &m_vm.propertyNames->varKeyword;
                 return VAR;
             }
         } else if (COMPARE_4UCHARS(code, 'v', 'o', 'i', 'd')) {
-            if (!isIdentPartIncludingEscape(code+4, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[4]))) {
                 internalShift<4>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->voidKeyword;
+                    data->ident = &m_vm.propertyNames->voidKeyword;
                 return VOIDTOKEN;
             }
         }
     } else if (COMPARE_6UCHARS(code, 'r', 'e', 't', 'u', 'r', 'n')) {
-        if (!isIdentPartIncludingEscape(code+6, m_codeEnd)) {
+        if (LIKELY(cannotBeIdentPartOrEscapeStart(code[6]))) {
             internalShift<6>();
             if (shouldCreateIdentifier)
-                data->ident = &m_vm->propertyNames->returnKeyword;
+                data->ident = &m_vm.propertyNames->returnKeyword;
             return RETURN;
         }
     } else if (code[0] == 'n') {
         if (COMPARE_4UCHARS(code, 'n', 'u', 'l', 'l')) {
-            if (!isIdentPartIncludingEscape(code+4, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[4]))) {
                 internalShift<4>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->nullKeyword;
+                    data->ident = &m_vm.propertyNames->nullKeyword;
                 return NULLTOKEN;
             }
         } else if (COMPARE_2UCHARS(code + 1, 'e', 'w')) {
-            if (!isIdentPartIncludingEscape(code+3, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[3]))) {
                 internalShift<3>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->newKeyword;
+                    data->ident = &m_vm.propertyNames->newKeyword;
                 return NEW;
             }
         }
     } else if (code[0] == 'e') {
         if (COMPARE_4UCHARS(code, 'e', 'l', 's', 'e')) {
-            if (!isIdentPartIncludingEscape(code+4, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[4]))) {
                 internalShift<4>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->elseKeyword;
+                    data->ident = &m_vm.propertyNames->elseKeyword;
                 return ELSE;
             }
         } else if (code[1] == 'x') {
             if (COMPARE_4UCHARS(code + 2, 'p', 'o', 'r', 't')) {
-                if (!isIdentPartIncludingEscape(code+6, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[6]))) {
                     internalShift<6>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->exportKeyword;
-                    return EXPORT;
+                        data->ident = &m_vm.propertyNames->exportKeyword;
+                    return EXPORT_;
                 }
             } else if (COMPARE_5UCHARS(code + 2, 't', 'e', 'n', 'd', 's')) {
-                if (!isIdentPartIncludingEscape(code+7, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[7]))) {
                     internalShift<7>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->extendsKeyword;
+                        data->ident = &m_vm.propertyNames->extendsKeyword;
                     return EXTENDS;
                 }
             }
         } else if (COMPARE_4UCHARS(code, 'e', 'n', 'u', 'm')) {
-            if (!isIdentPartIncludingEscape(code+4, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[4]))) {
                 internalShift<4>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->enumKeyword;
+                    data->ident = &m_vm.propertyNames->enumKeyword;
                 return RESERVED;
             }
         }
     } else if (code[0] == 'c') {
         if (code[1] == 'a') {
             if (COMPARE_4UCHARS(code + 1, 'a', 't', 'c', 'h')) {
-                if (!isIdentPartIncludingEscape(code+5, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[5]))) {
                     internalShift<5>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->catchKeyword;
+                        data->ident = &m_vm.propertyNames->catchKeyword;
                     return CATCH;
                 }
             } else if (COMPARE_2UCHARS(code + 2, 's', 'e')) {
-                if (!isIdentPartIncludingEscape(code+4, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[4]))) {
                     internalShift<4>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->caseKeyword;
+                        data->ident = &m_vm.propertyNames->caseKeyword;
                     return CASE;
                 }
             }
         } else if (COMPARE_2UCHARS(code + 1, 'o', 'n')) {
             if (COMPARE_5UCHARS(code + 3, 't', 'i', 'n', 'u', 'e')) {
-                if (!isIdentPartIncludingEscape(code+8, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[8]))) {
                     internalShift<8>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->continueKeyword;
+                        data->ident = &m_vm.propertyNames->continueKeyword;
                     return CONTINUE;
                 }
             } else if (COMPARE_2UCHARS(code + 3, 's', 't')) {
-                if (!isIdentPartIncludingEscape(code+5, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[5]))) {
                     internalShift<5>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->constKeyword;
+                        data->ident = &m_vm.propertyNames->constKeyword;
                     return CONSTTOKEN;
                 }
             }
         } else if (COMPARE_4UCHARS(code + 1, 'l', 'a', 's', 's')) {
-            if (!isIdentPartIncludingEscape(code+5, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[5]))) {
                 internalShift<5>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->classKeyword;
+                    data->ident = &m_vm.propertyNames->classKeyword;
                 return CLASSTOKEN;
             }
         }
     } else if (COMPARE_5UCHARS(code, 'b', 'r', 'e', 'a', 'k')) {
-        if (!isIdentPartIncludingEscape(code+5, m_codeEnd)) {
+        if (LIKELY(cannotBeIdentPartOrEscapeStart(code[5]))) {
             internalShift<5>();
             if (shouldCreateIdentifier)
-                data->ident = &m_vm->propertyNames->breakKeyword;
+                data->ident = &m_vm.propertyNames->breakKeyword;
             return BREAK;
         }
     } else if (code[0] == 'w') {
         if (COMPARE_4UCHARS(code + 1, 'h', 'i', 'l', 'e')) {
-            if (!isIdentPartIncludingEscape(code+5, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[5]))) {
                 internalShift<5>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->whileKeyword;
+                    data->ident = &m_vm.propertyNames->whileKeyword;
                 return WHILE;
             }
         } else if (COMPARE_4UCHARS(code, 'w', 'i', 't', 'h')) {
-            if (!isIdentPartIncludingEscape(code+4, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[4]))) {
                 internalShift<4>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->withKeyword;
+                    data->ident = &m_vm.propertyNames->withKeyword;
                 return WITH;
             }
         }
     } else if (code[0] == 'd') {
         if (code[1] == 'e') {
             if (COMPARE_5UCHARS(code + 2, 'f', 'a', 'u', 'l', 't')) {
-                if (!isIdentPartIncludingEscape(code+7, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[7]))) {
                     internalShift<7>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->defaultKeyword;
+                        data->ident = &m_vm.propertyNames->defaultKeyword;
                     return DEFAULT;
                 }
             } else if (COMPARE_6UCHARS(code + 2, 'b', 'u', 'g', 'g', 'e', 'r')) {
-                if (!isIdentPartIncludingEscape(code+8, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[8]))) {
                     internalShift<8>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->debuggerKeyword;
+                        data->ident = &m_vm.propertyNames->debuggerKeyword;
                     return DEBUGGER;
                 }
             } else if (COMPARE_4UCHARS(code + 2, 'l', 'e', 't', 'e')) {
-                if (!isIdentPartIncludingEscape(code+6, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[6]))) {
                     internalShift<6>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->deleteKeyword;
+                        data->ident = &m_vm.propertyNames->deleteKeyword;
                     return DELETETOKEN;
                 }
             }
         } else if (code[1] == 'o') {
-            if (!isIdentPartIncludingEscape(code+2, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[2]))) {
                 internalShift<2>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->doKeyword;
+                    data->ident = &m_vm.propertyNames->doKeyword;
                 return DO;
             }
         }
     } else if (COMPARE_5UCHARS(code, 'a', 'w', 'a', 'i', 't')) {
-        if (!isIdentPartIncludingEscape(code+5, m_codeEnd)) {
+        if (LIKELY(cannotBeIdentPartOrEscapeStart(code[5]))) {
             internalShift<5>();
             if (shouldCreateIdentifier)
-                data->ident = &m_vm->propertyNames->awaitKeyword;
+                data->ident = &m_vm.propertyNames->awaitKeyword;
             return AWAIT;
         }
     } else if (COMPARE_5UCHARS(code, 'y', 'i', 'e', 'l', 'd')) {
-        if (!isIdentPartIncludingEscape(code+5, m_codeEnd)) {
+        if (LIKELY(cannotBeIdentPartOrEscapeStart(code[5]))) {
             internalShift<5>();
             if (shouldCreateIdentifier)
-                data->ident = &m_vm->propertyNames->yieldKeyword;
+                data->ident = &m_vm.propertyNames->yieldKeyword;
             return YIELD;
         }
     } else if (code[0] == 'p') {
         if (code[1] == 'r') {
             if (COMPARE_5UCHARS(code + 2, 'i', 'v', 'a', 't', 'e')) {
-                if (!isIdentPartIncludingEscape(code+7, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[7]))) {
                     internalShift<7>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->privateKeyword;
+                        data->ident = &m_vm.propertyNames->privateKeyword;
                     return RESERVED_IF_STRICT;
                 }
             } else if (COMPARE_7UCHARS(code + 2, 'o', 't', 'e', 'c', 't', 'e', 'd')) {
-                if (!isIdentPartIncludingEscape(code+9, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[9]))) {
                     internalShift<9>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->protectedKeyword;
+                        data->ident = &m_vm.propertyNames->protectedKeyword;
                     return RESERVED_IF_STRICT;
                 }
             }
         } else if (COMPARE_5UCHARS(code + 1, 'u', 'b', 'l', 'i', 'c')) {
-            if (!isIdentPartIncludingEscape(code+6, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[6]))) {
                 internalShift<6>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->publicKeyword;
+                    data->ident = &m_vm.propertyNames->publicKeyword;
                 return RESERVED_IF_STRICT;
             }
         } else if (COMPARE_6UCHARS(code + 1, 'a', 'c', 'k', 'a', 'g', 'e')) {
-            if (!isIdentPartIncludingEscape(code+7, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[7]))) {
                 internalShift<7>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->packageKeyword;
+                    data->ident = &m_vm.propertyNames->packageKeyword;
                 return RESERVED_IF_STRICT;
             }
         }
     } else if (code[0] == 's') {
         if (COMPARE_5UCHARS(code + 1, 'w', 'i', 't', 'c', 'h')) {
-            if (!isIdentPartIncludingEscape(code+6, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[6]))) {
                 internalShift<6>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->switchKeyword;
+                    data->ident = &m_vm.propertyNames->switchKeyword;
                 return SWITCH;
             }
         } else if (COMPARE_5UCHARS(code + 1, 't', 'a', 't', 'i', 'c')) {
-            if (!isIdentPartIncludingEscape(code+6, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[6]))) {
                 internalShift<6>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->staticKeyword;
+                    data->ident = &m_vm.propertyNames->staticKeyword;
                 return RESERVED_IF_STRICT;
             }
         } else if (COMPARE_4UCHARS(code + 1, 'u', 'p', 'e', 'r')) {
-            if (!isIdentPartIncludingEscape(code+5, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[5]))) {
                 internalShift<5>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->superKeyword;
+                    data->ident = &m_vm.propertyNames->superKeyword;
                 return SUPER;
             }
         }
     } else if (COMPARE_3UCHARS(code, 'l', 'e', 't')) {
-        if (!isIdentPartIncludingEscape(code+3, m_codeEnd)) {
+        if (LIKELY(cannotBeIdentPartOrEscapeStart(code[3]))) {
             internalShift<3>();
             if (shouldCreateIdentifier)
-                data->ident = &m_vm->propertyNames->letKeyword;
+                data->ident = &m_vm.propertyNames->letKeyword;
             return LET;
         }
     }
@@ -467,363 +467,363 @@ template <bool shouldCreateIdentifier> ALWAYS_INLINE JSTokenType Lexer<LChar>::p
     const LChar* code = m_code;
     if (code[0] == 'f') {
         if (COMPARE_7CHARS(code + 1, 'u', 'n', 'c', 't', 'i', 'o', 'n')) {
-            if (!isIdentPartIncludingEscape(code+8, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[8]))) {
                 internalShift<8>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->functionKeyword;
+                    data->ident = &m_vm.propertyNames->functionKeyword;
                 return FUNCTION;
             }
         } else if (COMPARE_2CHARS(code + 1, 'o', 'r')) {
-            if (!isIdentPartIncludingEscape(code+3, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[3]))) {
                 internalShift<3>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->forKeyword;
+                    data->ident = &m_vm.propertyNames->forKeyword;
                 return FOR;
             }
         } else if (COMPARE_4CHARS(code + 1, 'a', 'l', 's', 'e')) {
-            if (!isIdentPartIncludingEscape(code+5, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[5]))) {
                 internalShift<5>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->falseKeyword;
+                    data->ident = &m_vm.propertyNames->falseKeyword;
                 return FALSETOKEN;
             }
         } else if (COMPARE_6CHARS(code + 1, 'i', 'n', 'a', 'l', 'l', 'y')) {
-            if (!isIdentPartIncludingEscape(code+7, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[7]))) {
                 internalShift<7>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->finallyKeyword;
+                    data->ident = &m_vm.propertyNames->finallyKeyword;
                 return FINALLY;
             }
         }
     } else if (code[0] == 't') {
         if (code[1] == 'h') {
             if (COMPARE_2CHARS(code + 2, 'i', 's')) {
-                if (!isIdentPartIncludingEscape(code+4, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[4]))) {
                     internalShift<4>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->thisKeyword;
+                        data->ident = &m_vm.propertyNames->thisKeyword;
                     return THISTOKEN;
                 }
             } else if (COMPARE_4CHARS(code + 1, 'h', 'r', 'o', 'w')) {
-                if (!isIdentPartIncludingEscape(code+5, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[5]))) {
                     internalShift<5>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->throwKeyword;
+                        data->ident = &m_vm.propertyNames->throwKeyword;
                     return THROW;
                 }
             }
         } else if (code[1] == 'r') {
             if (COMPARE_2CHARS(code + 2, 'u', 'e')) {
-                if (!isIdentPartIncludingEscape(code+4, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[4]))) {
                     internalShift<4>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->trueKeyword;
+                        data->ident = &m_vm.propertyNames->trueKeyword;
                     return TRUETOKEN;
                 }
             } else if (code[2] == 'y') {
-                if (!isIdentPartIncludingEscape(code+3, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[3]))) {
                     internalShift<3>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->tryKeyword;
+                        data->ident = &m_vm.propertyNames->tryKeyword;
                     return TRY;
                 }
             }
         } else if (COMPARE_5CHARS(code + 1, 'y', 'p', 'e', 'o', 'f')) {
-            if (!isIdentPartIncludingEscape(code+6, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[6]))) {
                 internalShift<6>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->typeofKeyword;
+                    data->ident = &m_vm.propertyNames->typeofKeyword;
                 return TYPEOF;
             }
         }
     } else if (code[0] == 'i') {
         if (code[1] == 'f') {
-            if (!isIdentPartIncludingEscape(code+2, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[2]))) {
                 internalShift<2>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->ifKeyword;
+                    data->ident = &m_vm.propertyNames->ifKeyword;
                 return IF;
             }
         } else if (code[1] == 'n') {
-            if (!isIdentPartIncludingEscape(code+2, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[2]))) {
                 internalShift<2>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->inKeyword;
+                    data->ident = &m_vm.propertyNames->inKeyword;
                 return INTOKEN;
             }
             if (COMPARE_7CHARS(code + 2, 't', 'e', 'r', 'f', 'a', 'c', 'e')) {
-                if (!isIdentPartIncludingEscape(code+9, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[9]))) {
                     internalShift<9>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->interfaceKeyword;
+                        data->ident = &m_vm.propertyNames->interfaceKeyword;
                     return RESERVED_IF_STRICT;
                 }
             } else if (COMPARE_8CHARS(code + 2, 's', 't', 'a', 'n', 'c', 'e', 'o', 'f')) {
-                if (!isIdentPartIncludingEscape(code+10, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[10]))) {
                     internalShift<10>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->instanceofKeyword;
+                        data->ident = &m_vm.propertyNames->instanceofKeyword;
                     return INSTANCEOF;
                 }
             }
         } else if (COMPARE_2CHARS(code + 1, 'm', 'p')) {
             if (COMPARE_4CHARS(code + 2, 'p', 'o', 'r', 't')) {
-                if (!isIdentPartIncludingEscape(code+6, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[6]))) {
                     internalShift<6>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->importKeyword;
+                        data->ident = &m_vm.propertyNames->importKeyword;
                     return IMPORT;
                 }
             } else if (COMPARE_7CHARS(code + 3, 'l', 'e', 'm', 'e', 'n', 't', 's')) {
-                if (!isIdentPartIncludingEscape(code+10, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[10]))) {
                     internalShift<10>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->implementsKeyword;
+                        data->ident = &m_vm.propertyNames->implementsKeyword;
                     return RESERVED_IF_STRICT;
                 }
             }
         }
     } else if (code[0] == 'v') {
         if (COMPARE_2CHARS(code + 1, 'a', 'r')) {
-            if (!isIdentPartIncludingEscape(code+3, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[3]))) {
                 internalShift<3>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->varKeyword;
+                    data->ident = &m_vm.propertyNames->varKeyword;
                 return VAR;
             }
         } else if (COMPARE_4CHARS(code, 'v', 'o', 'i', 'd')) {
-            if (!isIdentPartIncludingEscape(code+4, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[4]))) {
                 internalShift<4>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->voidKeyword;
+                    data->ident = &m_vm.propertyNames->voidKeyword;
                 return VOIDTOKEN;
             }
         }
     } else if (COMPARE_6CHARS(code, 'r', 'e', 't', 'u', 'r', 'n')) {
-        if (!isIdentPartIncludingEscape(code+6, m_codeEnd)) {
+        if (LIKELY(cannotBeIdentPartOrEscapeStart(code[6]))) {
             internalShift<6>();
             if (shouldCreateIdentifier)
-                data->ident = &m_vm->propertyNames->returnKeyword;
+                data->ident = &m_vm.propertyNames->returnKeyword;
             return RETURN;
         }
     } else if (code[0] == 'n') {
         if (COMPARE_4CHARS(code, 'n', 'u', 'l', 'l')) {
-            if (!isIdentPartIncludingEscape(code+4, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[4]))) {
                 internalShift<4>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->nullKeyword;
+                    data->ident = &m_vm.propertyNames->nullKeyword;
                 return NULLTOKEN;
             }
         } else if (COMPARE_2CHARS(code + 1, 'e', 'w')) {
-            if (!isIdentPartIncludingEscape(code+3, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[3]))) {
                 internalShift<3>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->newKeyword;
+                    data->ident = &m_vm.propertyNames->newKeyword;
                 return NEW;
             }
         }
     } else if (code[0] == 'e') {
         if (COMPARE_4CHARS(code, 'e', 'l', 's', 'e')) {
-            if (!isIdentPartIncludingEscape(code+4, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[4]))) {
                 internalShift<4>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->elseKeyword;
+                    data->ident = &m_vm.propertyNames->elseKeyword;
                 return ELSE;
             }
         } else if (code[1] == 'x') {
             if (COMPARE_4CHARS(code + 2, 'p', 'o', 'r', 't')) {
-                if (!isIdentPartIncludingEscape(code+6, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[6]))) {
                     internalShift<6>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->exportKeyword;
-                    return EXPORT;
+                        data->ident = &m_vm.propertyNames->exportKeyword;
+                    return EXPORT_;
                 }
             } else if (COMPARE_5CHARS(code + 2, 't', 'e', 'n', 'd', 's')) {
-                if (!isIdentPartIncludingEscape(code+7, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[7]))) {
                     internalShift<7>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->extendsKeyword;
+                        data->ident = &m_vm.propertyNames->extendsKeyword;
                     return EXTENDS;
                 }
             }
         } else if (COMPARE_4CHARS(code, 'e', 'n', 'u', 'm')) {
-            if (!isIdentPartIncludingEscape(code+4, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[4]))) {
                 internalShift<4>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->enumKeyword;
+                    data->ident = &m_vm.propertyNames->enumKeyword;
                 return RESERVED;
             }
         }
     } else if (code[0] == 'c') {
         if (code[1] == 'a') {
             if (COMPARE_4CHARS(code + 1, 'a', 't', 'c', 'h')) {
-                if (!isIdentPartIncludingEscape(code+5, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[5]))) {
                     internalShift<5>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->catchKeyword;
+                        data->ident = &m_vm.propertyNames->catchKeyword;
                     return CATCH;
                 }
             } else if (COMPARE_2CHARS(code + 2, 's', 'e')) {
-                if (!isIdentPartIncludingEscape(code+4, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[4]))) {
                     internalShift<4>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->caseKeyword;
+                        data->ident = &m_vm.propertyNames->caseKeyword;
                     return CASE;
                 }
             }
         } else if (COMPARE_2CHARS(code + 1, 'o', 'n')) {
             if (COMPARE_5CHARS(code + 3, 't', 'i', 'n', 'u', 'e')) {
-                if (!isIdentPartIncludingEscape(code+8, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[8]))) {
                     internalShift<8>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->continueKeyword;
+                        data->ident = &m_vm.propertyNames->continueKeyword;
                     return CONTINUE;
                 }
             } else if (COMPARE_2CHARS(code + 3, 's', 't')) {
-                if (!isIdentPartIncludingEscape(code+5, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[5]))) {
                     internalShift<5>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->constKeyword;
+                        data->ident = &m_vm.propertyNames->constKeyword;
                     return CONSTTOKEN;
                 }
             }
         } else if (COMPARE_4CHARS(code + 1, 'l', 'a', 's', 's')) {
-            if (!isIdentPartIncludingEscape(code+5, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[5]))) {
                 internalShift<5>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->classKeyword;
+                    data->ident = &m_vm.propertyNames->classKeyword;
                 return CLASSTOKEN;
             }
         }
     } else if (COMPARE_5CHARS(code, 'b', 'r', 'e', 'a', 'k')) {
-        if (!isIdentPartIncludingEscape(code+5, m_codeEnd)) {
+        if (LIKELY(cannotBeIdentPartOrEscapeStart(code[5]))) {
             internalShift<5>();
             if (shouldCreateIdentifier)
-                data->ident = &m_vm->propertyNames->breakKeyword;
+                data->ident = &m_vm.propertyNames->breakKeyword;
             return BREAK;
         }
     } else if (code[0] == 'w') {
         if (COMPARE_4CHARS(code + 1, 'h', 'i', 'l', 'e')) {
-            if (!isIdentPartIncludingEscape(code+5, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[5]))) {
                 internalShift<5>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->whileKeyword;
+                    data->ident = &m_vm.propertyNames->whileKeyword;
                 return WHILE;
             }
         } else if (COMPARE_4CHARS(code, 'w', 'i', 't', 'h')) {
-            if (!isIdentPartIncludingEscape(code+4, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[4]))) {
                 internalShift<4>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->withKeyword;
+                    data->ident = &m_vm.propertyNames->withKeyword;
                 return WITH;
             }
         }
     } else if (code[0] == 'd') {
         if (code[1] == 'e') {
             if (COMPARE_5CHARS(code + 2, 'f', 'a', 'u', 'l', 't')) {
-                if (!isIdentPartIncludingEscape(code+7, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[7]))) {
                     internalShift<7>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->defaultKeyword;
+                        data->ident = &m_vm.propertyNames->defaultKeyword;
                     return DEFAULT;
                 }
             } else if (COMPARE_6CHARS(code + 2, 'b', 'u', 'g', 'g', 'e', 'r')) {
-                if (!isIdentPartIncludingEscape(code+8, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[8]))) {
                     internalShift<8>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->debuggerKeyword;
+                        data->ident = &m_vm.propertyNames->debuggerKeyword;
                     return DEBUGGER;
                 }
             } else if (COMPARE_4CHARS(code + 2, 'l', 'e', 't', 'e')) {
-                if (!isIdentPartIncludingEscape(code+6, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[6]))) {
                     internalShift<6>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->deleteKeyword;
+                        data->ident = &m_vm.propertyNames->deleteKeyword;
                     return DELETETOKEN;
                 }
             }
         } else if (code[1] == 'o') {
-            if (!isIdentPartIncludingEscape(code+2, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[2]))) {
                 internalShift<2>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->doKeyword;
+                    data->ident = &m_vm.propertyNames->doKeyword;
                 return DO;
             }
         }
     } else if (COMPARE_5CHARS(code, 'a', 'w', 'a', 'i', 't')) {
-        if (!isIdentPartIncludingEscape(code+5, m_codeEnd)) {
+        if (LIKELY(cannotBeIdentPartOrEscapeStart(code[5]))) {
             internalShift<5>();
             if (shouldCreateIdentifier)
-                data->ident = &m_vm->propertyNames->awaitKeyword;
+                data->ident = &m_vm.propertyNames->awaitKeyword;
             return AWAIT;
         }
     } else if (COMPARE_5CHARS(code, 'y', 'i', 'e', 'l', 'd')) {
-        if (!isIdentPartIncludingEscape(code+5, m_codeEnd)) {
+        if (LIKELY(cannotBeIdentPartOrEscapeStart(code[5]))) {
             internalShift<5>();
             if (shouldCreateIdentifier)
-                data->ident = &m_vm->propertyNames->yieldKeyword;
+                data->ident = &m_vm.propertyNames->yieldKeyword;
             return YIELD;
         }
     } else if (code[0] == 'p') {
         if (code[1] == 'r') {
             if (COMPARE_5CHARS(code + 2, 'i', 'v', 'a', 't', 'e')) {
-                if (!isIdentPartIncludingEscape(code+7, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[7]))) {
                     internalShift<7>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->privateKeyword;
+                        data->ident = &m_vm.propertyNames->privateKeyword;
                     return RESERVED_IF_STRICT;
                 }
             } else if (COMPARE_7CHARS(code + 2, 'o', 't', 'e', 'c', 't', 'e', 'd')) {
-                if (!isIdentPartIncludingEscape(code+9, m_codeEnd)) {
+                if (LIKELY(cannotBeIdentPartOrEscapeStart(code[9]))) {
                     internalShift<9>();
                     if (shouldCreateIdentifier)
-                        data->ident = &m_vm->propertyNames->protectedKeyword;
+                        data->ident = &m_vm.propertyNames->protectedKeyword;
                     return RESERVED_IF_STRICT;
                 }
             }
         } else if (COMPARE_5CHARS(code + 1, 'u', 'b', 'l', 'i', 'c')) {
-            if (!isIdentPartIncludingEscape(code+6, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[6]))) {
                 internalShift<6>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->publicKeyword;
+                    data->ident = &m_vm.propertyNames->publicKeyword;
                 return RESERVED_IF_STRICT;
             }
         } else if (COMPARE_6CHARS(code + 1, 'a', 'c', 'k', 'a', 'g', 'e')) {
-            if (!isIdentPartIncludingEscape(code+7, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[7]))) {
                 internalShift<7>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->packageKeyword;
+                    data->ident = &m_vm.propertyNames->packageKeyword;
                 return RESERVED_IF_STRICT;
             }
         }
     } else if (code[0] == 's') {
         if (COMPARE_5CHARS(code + 1, 'w', 'i', 't', 'c', 'h')) {
-            if (!isIdentPartIncludingEscape(code+6, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[6]))) {
                 internalShift<6>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->switchKeyword;
+                    data->ident = &m_vm.propertyNames->switchKeyword;
                 return SWITCH;
             }
         } else if (COMPARE_5CHARS(code + 1, 't', 'a', 't', 'i', 'c')) {
-            if (!isIdentPartIncludingEscape(code+6, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[6]))) {
                 internalShift<6>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->staticKeyword;
+                    data->ident = &m_vm.propertyNames->staticKeyword;
                 return RESERVED_IF_STRICT;
             }
         } else if (COMPARE_4CHARS(code + 1, 'u', 'p', 'e', 'r')) {
-            if (!isIdentPartIncludingEscape(code+5, m_codeEnd)) {
+            if (LIKELY(cannotBeIdentPartOrEscapeStart(code[5]))) {
                 internalShift<5>();
                 if (shouldCreateIdentifier)
-                    data->ident = &m_vm->propertyNames->superKeyword;
+                    data->ident = &m_vm.propertyNames->superKeyword;
                 return SUPER;
             }
         }
     } else if (COMPARE_3CHARS(code, 'l', 'e', 't')) {
-        if (!isIdentPartIncludingEscape(code+3, m_codeEnd)) {
+        if (LIKELY(cannotBeIdentPartOrEscapeStart(code[3]))) {
             internalShift<3>();
             if (shouldCreateIdentifier)
-                data->ident = &m_vm->propertyNames->letKeyword;
+                data->ident = &m_vm.propertyNames->letKeyword;
             return LET;
         }
     }

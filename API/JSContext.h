@@ -23,13 +23,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JSContext_h
-#define JSContext_h
-
-#include <JavaScriptCore/JavaScript.h>
-#include <JavaScriptCore/WebKitAvailability.h>
+#import <JavaScriptCore/JavaScript.h>
+#import <JavaScriptCore/WebKitAvailability.h>
 
 #if JSC_OBJC_API_ENABLED
+
+#if defined(DARLING) && __i386__
+#import <wtf/WeakObjCPtr.h>
+#import "JSVirtualMachine.h"
+#import "DarlingJSContextPrivate.h"
+#import "StrongInlines.h"
+#endif // __i386__
 
 @class JSScript, JSVirtualMachine, JSValue, JSContext;
 
@@ -40,7 +44,17 @@
  are tied to a context.
 */
 JSC_CLASS_AVAILABLE(macos(10.9), ios(7.0))
+#if defined(DARLING) && __i386__
+@interface JSContext : NSObject {
+    JSVirtualMachine *m_virtualMachine;
+    JSGlobalContextRef m_context;
+    JSC::Strong<JSC::JSObject> m_exception;
+    WeakObjCPtr<id <JSModuleLoaderDelegate>> m_moduleLoaderDelegate;
+    void(^_exceptionHandler)(JSContext *context, JSValue *exception);
+}
+#else
 @interface JSContext : NSObject
+#endif
 
 /*!
 @methodgroup Creating New JSContexts
@@ -233,6 +247,17 @@ JSC_CLASS_AVAILABLE(macos(10.9), ios(7.0))
 
 @end
 
-#endif
+#if defined(DARLING) && __i386__
+// Taken from JSContextPrivate.h
+@interface JSContext(Private)
+@property (setter=_setRemoteInspectionEnabled:) BOOL _remoteInspectionEnabled JSC_API_AVAILABLE(macos(10.10), ios(8.0));
+@property (setter=_setIncludesNativeCallStackWhenReportingExceptions:) BOOL _includesNativeCallStackWhenReportingExceptions JSC_API_AVAILABLE(macos(10.10), ios(8.0));
+@property (setter=_setDebuggerRunLoop:) CFRunLoopRef _debuggerRunLoop JSC_API_AVAILABLE(macos(10.10), ios(8.0));
+@property (nonatomic, weak) id <JSModuleLoaderDelegate> moduleLoaderDelegate JSC_API_AVAILABLE(macos(10.15), ios(13.0));
+- (JSValue *)evaluateJSScript:(JSScript *)script JSC_API_AVAILABLE(macos(10.15), ios(13.0));
+- (JSValue *)dependencyIdentifiersForModuleJSScript:(JSScript *)script JSC_API_AVAILABLE(macos(10.15), ios(13.0));
+- (void)_setITMLDebuggableType JSC_API_AVAILABLE(macos(11.0), ios(14.0));
+@end
+#endif // defined(DARLING) && __i386__
 
-#endif // JSContext_h
+#endif

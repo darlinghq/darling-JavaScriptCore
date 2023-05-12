@@ -1,3 +1,5 @@
+#include "assembler/MacroAssemblerCodeRef.cpp"
+#include "assembler/MacroAssemblerMIPS.cpp"
 #include "assembler/MacroAssemblerPrinter.cpp"
 #include "assembler/MacroAssemblerX86Common.cpp"
 #include "assembler/PerfLog.cpp"

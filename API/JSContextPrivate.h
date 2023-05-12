@@ -30,6 +30,8 @@
 
 #import <JavaScriptCore/JSContext.h>
 
+#if !defined(DARLING) || defined(DARLING) && !__i386__
+
 @protocol JSModuleLoaderDelegate <NSObject>
 
 @required
@@ -106,8 +108,15 @@
  */
 - (JSValue *)dependencyIdentifiersForModuleJSScript:(JSScript *)script JSC_API_AVAILABLE(macos(10.15), ios(13.0));
 
+/*!
+ @method
+ @abstract Mark this JSContext as an ITMLKit context for the purposes of remote inspection capabilities.
+ */
+- (void)_setITMLDebuggableType JSC_API_AVAILABLE(macos(11.0), ios(14.0));
+
 @end
 
+#endif // !defined(DARLING) || defined(DARLING) && !__i386__
 #endif
 
 #endif // JSContextInternal_h

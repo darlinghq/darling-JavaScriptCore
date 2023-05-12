@@ -16,9 +16,9 @@ static const struct CompactHashIndex constructorTableWebAssemblyModuleIndex[8] =
 };
 
 static const struct HashTableValue constructorTableWebAssemblyModuleValues[3] = {
-   { "customSections", static_cast<unsigned>(PropertyAttribute::DontEnum|PropertyAttribute::Function), NoIntrinsic, { (intptr_t)static_cast<RawNativeFunction>(webAssemblyModuleCustomSections), (intptr_t)(2) } },
-   { "imports", static_cast<unsigned>(PropertyAttribute::DontEnum|PropertyAttribute::Function), NoIntrinsic, { (intptr_t)static_cast<RawNativeFunction>(webAssemblyModuleImports), (intptr_t)(1) } },
-   { "exports", static_cast<unsigned>(PropertyAttribute::DontEnum|PropertyAttribute::Function), NoIntrinsic, { (intptr_t)static_cast<RawNativeFunction>(webAssemblyModuleExports), (intptr_t)(1) } },
+   { "customSections", static_cast<unsigned>(PropertyAttribute::Function), NoIntrinsic, { (intptr_t)static_cast<RawNativeFunction>(webAssemblyModuleCustomSections), (intptr_t)(2) } },
+   { "imports", static_cast<unsigned>(PropertyAttribute::Function), NoIntrinsic, { (intptr_t)static_cast<RawNativeFunction>(webAssemblyModuleImports), (intptr_t)(1) } },
+   { "exports", static_cast<unsigned>(PropertyAttribute::Function), NoIntrinsic, { (intptr_t)static_cast<RawNativeFunction>(webAssemblyModuleExports), (intptr_t)(1) } },
 };
 
 static const struct HashTable constructorTableWebAssemblyModule =
