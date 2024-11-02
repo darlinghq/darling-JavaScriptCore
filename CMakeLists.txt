@@ -845,6 +845,8 @@ add_compile_options(
 	-fvisibility-inlines-hidden
 	-fno-threadsafe-statics
 	--system-header-prefix=unicode/
+	
+	-Wno-error=missing-template-arg-list-after-template-kw
 )
 
 # JavaScriptCore now has support for "unified" builds (and Apple uses them)
