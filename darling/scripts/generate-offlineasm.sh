@@ -21,7 +21,7 @@ fi
 FRAMEWORK_HEADER_ROOT="${DARLING_ROOT}/framework-include"
 DERIVED_DIR="${SRCROOT}/DerivedSources/JavaScriptCore"
 
-export ARCHS=(X86_64 C_LOOP)
+export ARCHS=(ARM64)
 export CONFIGS=(debug release)
 BUILD_VARIANTS=normal
 DEFINITIONS=(
@@ -179,7 +179,11 @@ CFLAGS=(
 	"-isystem${DARLING_ROOT}/src/external/libcxx/include"
 	-B "${DARLING_BUILD_ROOT}/src/external/cctools-port/cctools/ld64/src/"
 	-B "${DARLING_BUILD_ROOT}/src/external/cctools-port/cctools/misc/"
-	"-fuse-ld=${DARLING_BUILD_ROOT}/src/external/cctools-port/cctools/ld64/src/x86_64-apple-darwin20-ld"
+	"-fuse-ld=${DARLING_BUILD_ROOT}/src/external/cctools-port/cctools/ld64/src/arm64-apple-darwin20-ld"
+	"-Wl,-syslibroot,${DARLING_BUILD_ROOT}/stage-link"
+	-nostdlib
+	-dynamiclib
+	-Wl,-undefined,dynamic_lookup
 )
 
 DEFINITIONS_release=(
@@ -191,6 +195,10 @@ CFLAGS_release=(
 
 CFLAGS_X86_64=(
 	-target x86_64-apple-darwin19
+)
+
+CFLAGS_ARM64=(
+	-target arm64-apple-darwin20
 )
 
 DEFINITIONS_C_LOOP=(

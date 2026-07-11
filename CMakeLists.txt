@@ -2180,6 +2180,15 @@ else()
 	add_darling_object_library(low_level_interpreter_i386 darling/source/empty.c)
 endif()
 
+if (TARGET_ARM64)
+	set(LOW_LEVEL_INTERPRETER_ARM64_HEADERS "DerivedSources/JavaScriptCore/LLIntOffsets/ARM64/debug")
+
+	add_darling_object_library(low_level_interpreter_arm64 64BIT_ONLY llint/LowLevelInterpreter.cpp)
+	target_include_directories(low_level_interpreter_arm64 PUBLIC ${LOW_LEVEL_INTERPRETER_ARM64_HEADERS})
+else()
+	add_darling_object_library(low_level_interpreter_arm64 darling/source/empty.c)
+endif()
+
 # these sources are the same, regardless of whether unified builds are enabled or not
 set(JSC_SOURCES ${JSC_SOURCES}
 	dfg/DFGSpeculativeJIT.cpp
@@ -2229,6 +2238,7 @@ add_framework(JavaScriptCore
 	OBJECTS
 		$<TARGET_OBJECTS:low_level_interpreter_x86_64>
 		$<TARGET_OBJECTS:low_level_interpreter_i386>
+		$<TARGET_OBJECTS:low_level_interpreter_arm64>
 
 	DEPENDENCIES
 		WTF
