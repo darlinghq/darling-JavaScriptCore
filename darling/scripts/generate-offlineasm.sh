@@ -22,6 +22,19 @@ FRAMEWORK_HEADER_ROOT="${DARLING_ROOT}/framework-include"
 DERIVED_DIR="${SRCROOT}/DerivedSources/JavaScriptCore"
 
 export ARCHS=(X86_64 C_LOOP ARM64)
+if (( $# )); then
+	ARCHS=("$@")
+	for ARCH in "${ARCHS[@]}"; do
+		case "$ARCH" in
+			X86_64|C_LOOP|ARM64) ;;
+			*) echo "Unknown architecture: $ARCH" >&2; exit 1 ;;
+		esac
+	done
+	# X86_64's published header also contains the C_LOOP implementation.
+	if [[ " ${ARCHS[*]} " == *" X86_64 "* && " ${ARCHS[*]} " != *" C_LOOP "* ]]; then
+		ARCHS+=(C_LOOP)
+	fi
+fi
 export CONFIGS=(debug release)
 BUILD_VARIANTS=normal
 DEFINITIONS=(
