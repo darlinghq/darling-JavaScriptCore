@@ -2181,7 +2181,9 @@ else()
 endif()
 
 if (TARGET_ARM64)
-	set(LOW_LEVEL_INTERPRETER_ARM64_HEADERS "DerivedSources/JavaScriptCore/LLIntOffsets/ARM64/debug")
+	# offlineasm guards differ with ASSERT_ENABLED (controlled by NDEBUG).
+	set(LOW_LEVEL_INTERPRETER_ARM64_CONFIG "$<IF:$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>,release,debug>")
+	set(LOW_LEVEL_INTERPRETER_ARM64_HEADERS "DerivedSources/JavaScriptCore/LLIntOffsets/ARM64/${LOW_LEVEL_INTERPRETER_ARM64_CONFIG}")
 
 	add_darling_object_library(low_level_interpreter_arm64 64BIT_ONLY llint/LowLevelInterpreter.cpp)
 	target_include_directories(low_level_interpreter_arm64 PUBLIC ${LOW_LEVEL_INTERPRETER_ARM64_HEADERS})
