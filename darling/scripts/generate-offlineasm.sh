@@ -6,9 +6,9 @@ if [ "$(uname -s)" == "Darwin" ]; then
 	exit 1
 fi
 
-export SRCROOT=$(cd ../.. && pwd)
-SCRIPT_DIR=$(pwd)
-DARLING_ROOT=$(cd ${SRCROOT}/../../.. && pwd)
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+export SRCROOT=$(cd -- "${SCRIPT_DIR}/../.." && pwd)
+DARLING_ROOT=${DARLING_ROOT:-$(cd -- "${SRCROOT}/../../.." && pwd)}
 
 if [[ -z "$DARLING_BUILD_ROOT" ]]; then
 	DARLING_BUILD_ROOT="$DARLING_ROOT/build"
@@ -21,7 +21,7 @@ fi
 FRAMEWORK_HEADER_ROOT="${DARLING_ROOT}/framework-include"
 DERIVED_DIR="${SRCROOT}/DerivedSources/JavaScriptCore"
 
-export ARCHS=(ARM64)
+export ARCHS=(X86_64 C_LOOP ARM64)
 export CONFIGS=(debug release)
 BUILD_VARIANTS=normal
 DEFINITIONS=(
@@ -179,11 +179,6 @@ CFLAGS=(
 	"-isystem${DARLING_ROOT}/src/external/libcxx/include"
 	-B "${DARLING_BUILD_ROOT}/src/external/cctools-port/cctools/ld64/src/"
 	-B "${DARLING_BUILD_ROOT}/src/external/cctools-port/cctools/misc/"
-	"-fuse-ld=${DARLING_BUILD_ROOT}/src/external/cctools-port/cctools/ld64/src/arm64-apple-darwin20-ld"
-	"-Wl,-syslibroot,${DARLING_BUILD_ROOT}/stage-link"
-	-nostdlib
-	-dynamiclib
-	-Wl,-undefined,dynamic_lookup
 )
 
 DEFINITIONS_release=(
@@ -195,10 +190,17 @@ CFLAGS_release=(
 
 CFLAGS_X86_64=(
 	-target x86_64-apple-darwin19
+	"-fuse-ld=${DARLING_BUILD_ROOT}/src/external/cctools-port/cctools/ld64/src/x86_64-apple-darwin20-ld"
 )
 
 CFLAGS_ARM64=(
 	-target arm64-apple-darwin20
+	"-fuse-ld=${DARLING_BUILD_ROOT}/src/external/cctools-port/cctools/ld64/src/arm64-apple-darwin20-ld"
+	# The extractors are inspected as Mach-O files, not executed. Avoid
+	# requiring a staged ARM64 libSystem merely to obtain their constants.
+	-nostdlib
+	-dynamiclib
+	-Wl,-undefined,dynamic_lookup
 )
 
 DEFINITIONS_C_LOOP=(
@@ -207,6 +209,7 @@ DEFINITIONS_C_LOOP=(
 )
 CFLAGS_C_LOOP=(
 	-target i386-apple-darwin19
+	"-fuse-ld=${DARLING_BUILD_ROOT}/src/external/cctools-port/cctools/ld64/src/x86_64-apple-darwin20-ld"
 )
 
 die() {
