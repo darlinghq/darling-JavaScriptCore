@@ -36,6 +36,22 @@
 #define JSC_API_AVAILABLE(...)
 #endif
 
+/* As in Apple's SDK copy of this header. Building JavaScriptCore itself,
+   config.h has defined these already. */
+#include <os/availability.h>
+#ifndef JSC_API_AVAILABLE
+#define JSC_API_AVAILABLE(...) API_AVAILABLE(__VA_ARGS__)
+#endif
+#ifndef JSC_CLASS_AVAILABLE
+#define JSC_CLASS_AVAILABLE(...) JS_EXPORT API_AVAILABLE(__VA_ARGS__)
+#endif
+#ifndef JSC_API_DEPRECATED
+#define JSC_API_DEPRECATED(...) API_DEPRECATED(__VA_ARGS__)
+#endif
+#ifndef JSC_API_DEPRECATED_WITH_REPLACEMENT
+#define JSC_API_DEPRECATED_WITH_REPLACEMENT(...) API_DEPRECATED_WITH_REPLACEMENT(__VA_ARGS__)
+#endif
+
 #else
 #define JSC_API_AVAILABLE(...)
 #endif
