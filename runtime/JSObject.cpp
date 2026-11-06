@@ -72,7 +72,7 @@ const ClassInfo JSObject::s_info = { "Object", nullptr, nullptr, nullptr, CREATE
 
 const ClassInfo JSFinalObject::s_info = { "Object", &Base::s_info, nullptr, nullptr, CREATE_METHOD_TABLE(JSFinalObject) };
 
-ALWAYS_INLINE void JSObject::getNonReifiedStaticPropertyNames(VM& vm, PropertyNameArray& propertyNames, DontEnumPropertiesMode mode)
+void JSObject::getNonReifiedStaticPropertyNames(VM& vm, PropertyNameArray& propertyNames, DontEnumPropertiesMode mode)
 {
     if (staticPropertiesReified(vm))
         return;
