@@ -2181,8 +2181,12 @@ else()
 endif()
 
 if (TARGET_ARM64)
-	# offlineasm guards differ with ASSERT_ENABLED (controlled by NDEBUG).
-	set(LOW_LEVEL_INTERPRETER_ARM64_CONFIG "$<IF:$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>,release,debug>")
+	# The offlineasm guards in LLIntAssembly.h depend on ASSERT_ENABLED, which is set whenever
+	# NDEBUG is absent. The top-level CMakeLists.txt strips -DNDEBUG from every build type, so
+	# ASSERT_ENABLED is always 1 here and only the "debug" header matches. Selecting "release"
+	# for RelWithDebInfo dropped the asm block and left _llint_entry/_vmEntry* undefined at link
+	# time. Use "debug" unconditionally, as the x86 branch above already does.
+	set(LOW_LEVEL_INTERPRETER_ARM64_CONFIG "debug")
 	set(LOW_LEVEL_INTERPRETER_ARM64_HEADERS "DerivedSources/JavaScriptCore/LLIntOffsets/ARM64/${LOW_LEVEL_INTERPRETER_ARM64_CONFIG}")
 
 	add_darling_object_library(low_level_interpreter_arm64 64BIT_ONLY llint/LowLevelInterpreter.cpp)
