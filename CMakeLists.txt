@@ -2156,13 +2156,13 @@ endif()
 
 # From my experience, I found using a combinied LLIntAssembly.h header results in a lot of memory being used
 # (I was able to get my 32GB system to run out of memory)... So to workaround that issue, we are going to 
-# rework how llint/LowLevelInterpreter.cpp gets build.
+# rework how llint/LowLevelInterpreter.cpp gets build: once per slice, each with that architecture's offsets.
 if (TARGET_x86_64)
 	# While the release header is able to build low_level_interpreter_x86_64, the linker does complain about
 	# undefined symbols, so we will just stick with the debug header.
 	set(LOW_LEVEL_INTERPRETER_X86_64_HEADERS "DerivedSources/JavaScriptCore/LLIntOffsets/X86_64/debug")
 
-	add_darling_object_library(low_level_interpreter_x86_64 64BIT_ONLY llint/LowLevelInterpreter.cpp)
+	add_darling_object_library(low_level_interpreter_x86_64 ARCHS x86_64 SOURCES llint/LowLevelInterpreter.cpp)
 	target_include_directories(low_level_interpreter_x86_64 PUBLIC ${LOW_LEVEL_INTERPRETER_X86_64_HEADERS})
 else()
 	add_darling_object_library(low_level_interpreter_x86_64 darling/source/empty.c)
@@ -2174,7 +2174,7 @@ if (TARGET_i386)
 	# header file instead.
 	set(LOW_LEVEL_INTERPRETER_I386_HEADERS "DerivedSources/JavaScriptCore/LLIntOffsets/C_LOOP/debug")
 	
-	add_darling_object_library(low_level_interpreter_i386 32BIT_ONLY llint/LowLevelInterpreter.cpp)
+	add_darling_object_library(low_level_interpreter_i386 ARCHS i386 SOURCES llint/LowLevelInterpreter.cpp)
 	target_include_directories(low_level_interpreter_i386 PUBLIC ${LOW_LEVEL_INTERPRETER_I386_HEADERS})
 else()
 	add_darling_object_library(low_level_interpreter_i386 darling/source/empty.c)
@@ -2189,7 +2189,7 @@ if (TARGET_ARM64)
 	set(LOW_LEVEL_INTERPRETER_ARM64_CONFIG "debug")
 	set(LOW_LEVEL_INTERPRETER_ARM64_HEADERS "DerivedSources/JavaScriptCore/LLIntOffsets/ARM64/${LOW_LEVEL_INTERPRETER_ARM64_CONFIG}")
 
-	add_darling_object_library(low_level_interpreter_arm64 64BIT_ONLY llint/LowLevelInterpreter.cpp)
+	add_darling_object_library(low_level_interpreter_arm64 ARCHS arm64 SOURCES llint/LowLevelInterpreter.cpp)
 	target_include_directories(low_level_interpreter_arm64 PUBLIC ${LOW_LEVEL_INTERPRETER_ARM64_HEADERS})
 else()
 	add_darling_object_library(low_level_interpreter_arm64 darling/source/empty.c)
